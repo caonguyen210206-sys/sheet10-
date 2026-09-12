@@ -410,7 +410,15 @@
 
     /* Inline decorative phone */
     .phone-illustration { width: 100%; height: auto; }
-  </style>
+  
+/* Visual stage and compact MC workspace */
+.hero-copy .hero-lede{max-width:390px;font-size:18px}.landing-grid{grid-template-columns:.85fr 1.15fr}.hotel-scene{min-height:570px}.section-grid .feature p{display:none}.feature{display:flex;gap:18px;align-items:center}.hero-foot .hero-stat:last-child{display:none}
+.layout-3{grid-template-columns:210px minmax(0,1fr) 250px}.page-heading p{display:none}.page-heading{margin-bottom:16px}.team-row small{display:none}.team-row{padding:9px 0}.host-preview .stage-content{padding:25px 5%;min-height:440px}.host-preview .signal-copy{font-size:36px}.host-preview .stage-phone{width:280px}.host-preview .stage-top h2{display:none}.winner-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:16px}.winner-picker .btn{font:700 22px monospace;padding:13px}.winner-picker .btn:hover{background:var(--mint);color:#10131b}summary{cursor:pointer;color:var(--gold);padding:8px 0}.stage-toolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px}
+body[data-role="stage"] .topbar{display:none}body[data-role="stage"] .page{padding-top:12px;max-width:1800px}body[data-role="stage"] .stage-screen{min-height:calc(100vh - 90px)}.stage-scene-art{opacity:.85;background:repeating-linear-gradient(90deg,transparent 0 19%,#f0c77910 20%,transparent 20.2%),linear-gradient(0deg,#05070c 0%,transparent 60%)}.stage-center .signal-copy{max-width:800px}.stage-center .subtle{font-size:15px;max-width:580px;margin:12px auto}.stage-phone{width:min(360px,60vw);filter:drop-shadow(0 15px 35px #000)}.stage-content{padding:25px 6%}.stage-center>svg{width:140px;height:140px}.signal-copy{font-size:clamp(32px,4vw,60px)}body[data-phase="buzz-open"] .stage-phone{animation:ringing .22s infinite alternate}body[data-phase="buzz-open"] .stage-screen{box-shadow:inset 0 0 90px #72e0c330}.question-panel{background:#111722ed;border:1px solid #f0c77933;border-radius:20px;padding:24px;width:100%;text-align:left}.question-panel h2{font-size:clamp(22px,2.5vw,36px)}.public-option{background:#253040;border:1px solid #f0c77933;min-height:62px}.solution{border-left:4px solid var(--mint);background:#72e0c315;padding:14px 20px;margin-top:18px}.solution p{margin-bottom:0}.score-chip{background:#141b27dd}.score-chip small:last-child{font-size:20px;color:var(--gold)}.stage-scene-art .scene-door{box-shadow:0 0 70px #ed6a7320,inset 3px 0 20px #000}.stage-scene-art .scene-file{opacity:.5}.stage-kicker{background:#10131b99;display:inline-block;padding:8px 14px;border-radius:30px}@keyframes ringing{to{transform:rotate(5deg) translateY(-5px)}}
+@media(max-width:1050px){.layout-3{grid-template-columns:1fr}.layout-3>aside:first-child{order:3}.landing-grid{grid-template-columns:1fr}.hotel-scene{min-height:420px}.winner-picker{grid-template-columns:repeat(5,1fr)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+</style>
 </head>
 <body>
   <div class="noise"></div><div class="grain"></div><div class="fog"></div>
@@ -452,7 +460,7 @@
     };
 
     function makeTeams() {
-      return teamNames.map((name, i) => ({ id: i + 1, number: i + 1, name, avatar: ['M','B','M','K','G','Đ','K','H','R','Đ','B','B','N','G','C'][i], online: i < 9, approved: i < 9, early: false, holds: 0, answered: 0, full: 0 }));
+      return teamNames.map((name, i) => ({ id: i + 1, number: i + 1, name, avatar: ['M','B','M','K','G','Đ','K','H','R','Đ','B','B','N','G','C'][i], online: true, approved: true, early: false, holds: 0, answered: 0, full: 0 }));
     }
     function initialState() {
       return { version: 1, sessionId: 'session-404-demo', title: 'Cuộc gọi từ phòng 404', joinCode: '404404', phase: 'lobby', currentIndex: 0, winnerTeamId: null, earlyTeams: [], deadline: null, signalName: 'ĐƯỜNG DÂY ĐANG IM LẶNG', soundEnabled: false, reducedMotion: false, teams: makeTeams(), results: [], adjustments: [], audit: [{ type:'session', text:'Tạo phiên demo 15 đội', at: Date.now() }], draft: emptyDraft(), noWinner: false, introPlayed: false };
@@ -510,7 +518,7 @@
     function showTime() { return state.deadline ? fmtTime(state.deadline - Date.now()) : ''; }
 
     function render() {
-      document.body.classList.toggle('reduced-motion', !!state.reducedMotion);
+      document.body.classList.toggle('reduced-motion', !!state.reducedMotion); document.body.dataset.role=currentRole; document.body.dataset.phase=state.phase;
       const app = document.getElementById('app');
       app.innerHTML = `${topbar()}<main class="page wrap">${currentRole === 'home' ? landing() : currentRole === 'host' ? host() : currentRole === 'stage' ? stagePage() : teamPage()}</main>${state.phase === 'scoreboard' ? scoreboardOverlay() : ''}`;
       bind();
@@ -519,12 +527,12 @@
     }
 
     function topbar() {
-      if (currentRole === 'home') return `<header class="topbar"><div class="brand"><div class="brand-mark">404</div><div class="brand-copy"><b>CUỘC GỌI TỪ PHÒNG 404</b><span>15 đội · 1 cuộc gọi · 1 quyền trả lời</span></div></div><div class="top-actions"><span class="pill"><i class="dot mint"></i>BẢN THỬ 15 CÂU</span><button class="btn sm ghost" data-action="rules-home">Xem luật</button></div></header>`;
+      if (currentRole === 'home') return `<header class="topbar"><div class="brand"><div class="brand-mark">404</div><div class="brand-copy"><b>CUỘC GỌI TỪ PHÒNG 404</b><span>15 đội · 1 cuộc gọi · 1 quyền trả lời</span></div></div><div class="top-actions"><span class="pill"><i class="dot mint"></i>15 HỒ SƠ</span><button class="btn sm ghost" data-action="rules-home">Xem luật</button></div></header>`;
       return `<header class="topbar"><button class="brand" data-action="home" style="border:0;background:transparent;color:inherit;padding:0;text-align:left"><div class="brand-mark">404</div><div class="brand-copy"><b>CUỘC GỌI TỪ PHÒNG 404</b><span>${esc(phaseText())} · ${state.currentIndex + 1}/15 · ${esc(chapterLabels[chapterIndex()])}</span></div></button><div class="top-actions"><span class="pill"><i class="dot ${state.phase === 'finished' ? 'gold' : 'mint'}"></i>${esc(phaseText())}</span>${currentRole === 'host' ? `<button class="btn sm ghost" data-action="toggle-motion">${state.reducedMotion ? 'Bật chuyển động' : 'Giảm chuyển động'}</button>` : ''}<button class="btn sm ghost" data-action="rules-home">Luật</button></div></header>`;
     }
 
     function landing() {
-      return `<section class="landing"><div class="landing-grid"><div class="hero-copy"><div class="eyebrow">Đêm trực · Hồ sơ chưa xác minh · 23:04</div><h1 class="hero-title">Cuộc gọi từ<br><em>phòng 404</em></h1><p class="hero-lede">Khách sạn đã đóng cửa nhiều năm, nhưng tổng đài vẫn hoạt động. Mười lăm đội điều tra sẽ lần theo từng manh mối — chỉ đội bắt được cuộc gọi mới được trả lời.</p><div class="hero-actions"><button class="btn gold" data-action="create-room">✦ Tạo phòng MC</button><button class="btn primary" data-action="join-room">▣ Tham gia với tư cách đội</button><button class="btn ghost" data-action="rules-home">Xem luật</button></div><div class="hero-foot"><div class="hero-stat"><b>15</b><span>Đội điều tra</span></div><div class="hero-stat"><b>1</b><span>Cuộc gọi / câu</span></div><div class="hero-stat"><b>10</b><span>Điểm tối đa</span></div><div class="hero-stat"><b>0</b><span>Điểm âm</span></div></div></div>${hotelScene()}</div></section><section class="section-grid"><div class="feature"><span class="feature-num">01</span><b>Một tín hiệu thật</b><p>Tín hiệu giả chỉ là bối cảnh. Nút “BẮT MÁY” mở đúng một lần cho mỗi câu.</p></div><div class="feature"><span class="feature-num">02</span><b>Trả lời trực tiếp</b><p>Đội thắng nhìn màn chiếu và nói với MC. Điện thoại chỉ dùng để giành quyền.</p></div><div class="feature"><span class="feature-num">03</span><b>BXH không phá hòa</b><p>Tổng điểm được tính từ kết quả hiện hành. Bằng điểm vẫn đồng hạng.</p></div></section>`;
+      return `<section class="landing"><div class="landing-grid"><div class="hero-copy"><div class="eyebrow">Đêm trực · Hồ sơ chưa xác minh · 23:04</div><h1 class="hero-title">Cuộc gọi từ<br><em>phòng 404</em></h1><p class="hero-lede">15 đội điều tra. Một đường dây bí ẩn. Ai sẽ mở được hồ sơ cuối cùng?</p><div class="hero-actions"><button class="btn gold" data-action="create-room">Bắt đầu đêm trực →</button><button class="btn primary" data-action="open-stage">Mở màn chiếu ↗</button><button class="btn ghost" data-action="rules-home">Xem luật</button></div><div class="hero-foot"><div class="hero-stat"><b>15</b><span>Đội điều tra</span></div><div class="hero-stat"><b>1</b><span>Cuộc gọi / câu</span></div><div class="hero-stat"><b>10</b><span>Điểm tối đa</span></div><div class="hero-stat"><b>0</b><span>Điểm âm</span></div></div></div>${hotelScene()}</div></section><section class="section-grid"><div class="feature"><span class="feature-num">01</span><b>Một tín hiệu thật</b><p>Tín hiệu giả chỉ là bối cảnh. Nút “BẮT MÁY” mở đúng một lần cho mỗi câu.</p></div><div class="feature"><span class="feature-num">02</span><b>Trả lời trực tiếp</b><p>Đội thắng nhìn màn chiếu và nói với MC. MC ghi nhận quyền trên máy điều khiển.</p></div><div class="feature"><span class="feature-num">03</span><b>BXH không phá hòa</b><p>Tổng điểm được tính từ kết quả hiện hành. Bằng điểm vẫn đồng hạng.</p></div></section>`;
     }
 
     function hotelScene() {
@@ -536,16 +544,15 @@
     function host() {
       if (state.phase === 'finished') return finishedPage(true);
       const q = currentQuestion();
-      return `${pageHeading('Bảng điều khiển MC', 'Quản lý phiên, duyệt đội, mở tín hiệu và chấm câu trả lời. Đáp án/rubric chỉ xuất hiện tại đây.', 'MC / HOST')}<div class="layout-3"><aside class="stack">${hostSessionCard()}${hostTeamList()}</aside><section class="stack"><div class="card host-preview">${stageMarkup(true)}</div>${hostAnswerPanel(q)}</section><aside class="stack">${hostActionCard()}${hostHistoryCard()}</aside></div>`;
+      return `${pageHeading('Bảng điều khiển MC', 'Quản lý phiên, duyệt đội, mở tín hiệu và chấm câu trả lời. Đáp án/rubric chỉ xuất hiện tại đây.', 'MC / HOST')}<div class="layout-3"><aside class="stack">${hostSessionCard()}${hostTeamList()}</aside><section class="stack"><div class="card host-preview">${stageMarkup(true)}</div>${hostAnswerPanel(q)}</section><aside class="stack">${hostActionCard()}<details class="card pad"><summary>Lịch sử & sửa điểm</summary>${hostHistoryCard()}</details></aside></div>`;
     }
 
     function hostSessionCard() {
-      const ready = state.teams.filter(t => t.approved && t.online).length;
-      return `<section class="card"><div class="panel-head"><h3>Phiên hiện tại</h3><span class="pill"><i class="dot ${ready ? 'mint':'red'}"></i>${ready}/15 online</span></div><div class="panel-body"><div class="form-row"><label>Tên sự kiện</label><input class="input" data-session-title value="${esc(state.title)}"></div><div class="code-box"><div><div class="eyebrow">Mã tham gia</div><b>${state.joinCode}</b></div><button class="btn sm ghost" data-action="copy-code">Sao chép</button></div><div class="subtle" style="margin-top:9px">Mã QR chung dẫn vào phiên. Mã đội do MC cấp sau khi duyệt.</div><div class="divider"></div><div class="control-list"><button class="btn sm" data-action="approve-all">✓ Duyệt 15 đội demo</button><button class="btn sm" data-action="toggle-sound">${state.soundEnabled ? '◉ Âm thanh sân khấu: BẬT' : '○ Bật âm thanh sân khấu'}</button><button class="btn sm" data-action="run-intro">▶ Chạy lời mở đầu</button><button class="btn sm ghost" data-action="reset-demo">↺ Khởi tạo lại demo</button></div></div></section>`;
+      return `<section class="card pad"><h3>Điều hành trên một máy</h3><p class="subtle">MC ghi nhận đội giành quyền. Màn chiếu mở cùng trình duyệt; chưa hỗ trợ điện thoại từ xa.</p><div class="control-list"><button class="btn gold" data-action="open-stage">Mở màn chiếu ↗</button><button class="btn" data-action="toggle-sound">${state.soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}</button><details><summary>Cài đặt phiên</summary><input class="input" data-session-title value="${esc(state.title)}"><button class="btn" data-action="run-intro">Phát lời mở đầu</button><button class="btn" data-action="reset-demo">Chơi lại từ đầu</button></details></div></section>`;
     }
 
     function hostTeamList() {
-      return `<section class="card"><div class="panel-head"><h3>15 đội điều tra</h3><span class="eyebrow">Duyệt / kết nối</span></div><div class="panel-body"><div class="team-status-list">${state.teams.map(t => `<div class="team-row ${state.winnerTeamId === t.id ? 'active':''}"><span class="num">${String(t.number).padStart(2,'0')}</span><div><b>${esc(t.name)}</b><small><i class="dot ${t.online && t.approved ? 'mint' : 'red'}"></i>${t.online && t.approved ? 'Đã duyệt · online' : t.approved ? 'Đã duyệt · offline' : 'Chờ duyệt'}</small></div><span class="row-points">${scoreFor(t.id)}đ</span></div>`).join('')}</div></div></section>`;
+      return `<section class="card"><div class="panel-head"><h3>15 đội điều tra</h3><span class="eyebrow">Duyệt / kết nối</span></div><div class="panel-body"><div class="team-status-list">${state.teams.map(t => `<div class="team-row ${state.winnerTeamId === t.id ? 'active':''}"><span class="num">${String(t.number).padStart(2,'0')}</span><div><b>${esc(t.name)}</b><small><i class="dot ${t.online && t.approved ? 'mint' : 'red'}"></i>${t.online && t.approved ? 'Sẵn sàng' : t.approved ? 'Đã duyệt · offline' : 'Chờ duyệt'}</small></div><span class="row-points">${scoreFor(t.id)}đ</span></div>`).join('')}</div></div></section>`;
     }
 
     function hostActionCard() {
@@ -560,10 +567,10 @@
       else if (state.phase === 'winner-locked') action = { title:`Đội ${String(state.winnerTeamId).padStart(2,'0')} đã kết nối`, desc:'Khóa quyền đã ghi nhận. Mở đề sau animation ống nghe.', label:'Hiện câu hỏi', action:'show-question', style:'primary' };
       else if (state.phase === 'preview') action = { title:state.noWinner ? 'Câu không có winner' : `Đội ${String(state.winnerTeamId).padStart(2,'0')} đang chuẩn bị`, desc:state.noWinner ? 'Không có điểm. Mở lời giải mẫu để cùng ôn tập.' : `Thời gian trả lời: ${q.duration} giây · tối đa 10 điểm.`, label:state.noWinner ? 'Mở lời giải / kết thúc câu' : 'Bắt đầu đồng hồ trả lời', action:state.noWinner ? 'resolve-no-winner' : 'start-answering', style:state.noWinner ? 'gold':'primary' };
       else if (state.phase === 'answering') action = { title:'Đội đang trả lời', desc:`Đồng hồ còn <strong data-live="deadline">${showTime()}</strong>. Nhấn ghi nhận ngay khi đội chốt bằng lời.`, label:'Ghi nhận câu trả lời', action:'record-answer', style:'primary' };
-      else if (state.phase === 'recorded') action = { title:'Câu trả lời đã khóa', desc:'Kiểm tra bản nhập/rubric. Điểm chưa cộng cho tới khi xác nhận chấm.', label:'Chấm và công bố', action:'grade-answer', style:'gold' };
+      else if (state.phase === 'recorded') action = { title:'Câu trả lời đã khóa', desc:'Nhập đủ lời đáp của đội, kiểm tra tiêu chí rồi xác nhận chấm.', label:'Chấm và công bố', action:'grade-answer', style:'gold' };
       else if (state.phase === 'resolved') action = { title:'Kết quả đã chốt', desc:'Giải thích đáp án, sau đó chuyển sang câu tiếp theo hoặc mở BXH.', label:state.currentIndex >= 14 ? 'Kết thúc phiên' : 'Sang câu tiếp theo', action:state.currentIndex >= 14 ? 'finish-game':'next-question', style:'primary' };
       else if (state.phase === 'no-winner') action = { title:'Không có kết nối hợp lệ', desc:'Mở đề và lời giải ngắn để ôn tập, không cộng điểm.', label:'Mở câu hỏi', action:'show-question', style:'gold' };
-      return `<section class="card"><div class="panel-head"><h3>Hành động chính</h3><span class="eyebrow">Enter</span></div><div class="panel-body"><div class="action-main"><b>${action.title}</b><p>${action.desc}</p><button class="btn ${action.style}" data-action="${action.action}" data-primary="true">${action.label}</button></div>${['armed','waiting','buzz-open','answering'].includes(state.phase) ? `<div class="phase-progress"><i data-progress></i></div><div class="countdown" data-live="deadline">${showTime()}</div>` : ''}</div></section>${state.phase === 'resolved' ? `<section class="card"><div class="panel-head"><h3>Điều khiển nhanh</h3></div><div class="panel-body"><div class="host-control-grid"><button class="btn sm" data-action="show-scoreboard">BXH</button><button class="btn sm" data-action="void-round">Hủy câu</button></div></div></section>` : ''}`;
+      return `<section class="card"><div class="panel-head"><h3>Hành động chính</h3><span class="eyebrow">Enter</span></div><div class="panel-body"><div class="action-main"><b>${action.title}</b><p>${action.desc}</p><button class="btn ${action.style}" data-action="${action.action}" data-primary="true">${action.label}</button></div>${state.phase === 'buzz-open' ? `<div class="winner-picker">${state.teams.map(t=>`<button class="btn" data-action="host-winner" data-team="${t.id}">${String(t.id).padStart(2,'0')}</button>`).join('')}</div><small>Chọn đội vừa giành quyền</small>` : ''}${['armed','waiting','buzz-open','answering'].includes(state.phase) ? `<div class="phase-progress"><i data-progress></i></div><div class="countdown" data-live="deadline">${showTime()}</div>` : ''}</div></section>${state.phase === 'resolved' ? `<section class="card"><div class="panel-head"><h3>Điều khiển nhanh</h3></div><div class="panel-body"><div class="host-control-grid"><button class="btn sm" data-action="show-scoreboard">BXH</button><button class="btn sm" data-action="void-round">Hủy câu</button></div></div></section>` : ''}`;
     }
 
     function hostHistoryCard() {
@@ -573,12 +580,13 @@
 
     function hostAnswerPanel(q) {
       const canAnswer = ['preview','answering','recorded','resolved'].includes(state.phase) && !state.noWinner;
+      if (!canAnswer) return ''; 
       return `<section class="card"><div class="panel-head"><h3>Nhập & chấm câu trả lời</h3><span class="pill">${esc(q.type)} · ${q.duration}s · 10đ</span></div><div class="panel-body">${canAnswer ? answerControls(q) : `<div class="empty-state" style="min-height:170px;padding:14px"><div><div class="eyebrow">Chưa mở vùng chấm</div><p class="subtle">Khi một đội bắt máy thành công, câu hỏi và vùng chấm sẽ xuất hiện ở đây.</p></div></div>`}</div></section>`;
     }
 
     function stagePage() {
       if (state.phase === 'finished') return finishedPage(false);
-      return `${pageHeading('Màn hình sân khấu', 'Cửa sổ này dành cho máy chiếu. Không hiển thị đáp án/rubric MC.', 'SÂN KHẤU / STAGE')}<div class="layout-2"><section class="stack"><div class="card" style="padding:10px">${stageMarkup(false)}</div></section><aside class="stack">${stageControlCard()}${stageRulesCard()}</aside></div>`;
+      return `<div class="stage-toolbar"><button class="btn sm" data-action="stage-sound">${state.soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}</button><button class="btn sm" data-action="show-scoreboard">Bảng điểm</button></div>${stageMarkup(false)}`;
     }
     function stageControlCard() {
       const sound = state.soundEnabled;
@@ -591,12 +599,12 @@
     function stageMarkup(compact=false) {
       const q = currentQuestion(); const winner = team(state.winnerTeamId); const chapter = chapterIndex();
       let content = '';
-      if (state.phase === 'lobby') content = `<div class="stage-center"><div class="stage-kicker">TẤT CẢ ĐƯỜNG DÂY ĐANG CHỜ</div><div class="signal-copy gold">Mời 15 đội<br>vào sảnh</div><div class="subtle">Mã phiên <b class="gold mono">${state.joinCode}</b> · Mở QR tại bảng điều khiển MC</div>${SVG.key}</div>`;
+      if (state.phase === 'lobby') content = `<div class="stage-center"><div class="stage-kicker">TẤT CẢ ĐƯỜNG DÂY ĐANG CHỜ</div><div class="signal-copy gold">Mời 15 đội<br>vào sảnh</div><div class="subtle">15 đội · 15 hồ sơ · tối đa 10 điểm mỗi câu</div>${SVG.key}</div>`;
       else if (state.phase === 'rules') content = `<div class="stage-center"><div class="stage-kicker">LUẬT CỦA KHÁCH SẠN</div><div class="signal-copy gold">Chờ 404 →<br>Bắt máy → Trả lời</div><div class="subtle">Một đợt giành quyền mỗi câu · không đấu phụ · không thưởng tốc độ trả lời</div></div>`;
-      else if (state.phase === 'practice') content = `<div class="stage-center"><div class="stage-kicker">LƯỢT THỬ · KHÔNG TÍNH ĐIỂM</div><div class="signal-copy">Hãy thử bắt<br>một cuộc gọi</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">Điện thoại chỉ dùng để giành quyền. Câu trả lời luôn nói trực tiếp với MC.</div></div>`;
+      else if (state.phase === 'practice') content = `<div class="stage-center"><div class="stage-kicker">LƯỢT THỬ · KHÔNG TÍNH ĐIỂM</div><div class="signal-copy">Hãy thử bắt<br>một cuộc gọi</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">MC ghi nhận quyền trên máy điều khiển. Câu trả lời luôn nói trực tiếp với MC.</div></div>`;
       else if (state.phase === 'ready') content = `<div class="stage-center"><div class="stage-kicker">${esc(q.cue)}</div><div class="signal-copy gold">Câu ${String(state.currentIndex+1).padStart(2,'0')}<br>đang được nạp</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">Các đội chuẩn bị · tín hiệu thật chưa mở</div></div>`;
-      else if (state.phase === 'armed' || state.phase === 'waiting') content = `<div class="stage-center"><div class="stage-kicker">${state.phase === 'armed' ? 'ĐẾM NGƯỢC TÍN HIỆU' : 'TÍN HIỆU CÓ THỂ LÀ GIẢ'}</div><div class="signal-copy ${state.phase === 'waiting' ? 'red':''}">${state.phase === 'armed' ? '3 · 2 · 1' : esc(state.signalName)}</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">${state.phase === 'waiting' ? 'Chưa được bắt máy — chỉ nghe cuộc gọi từ phòng 404.' : 'Điện thoại ở các đội vẫn đang khóa.'}</div></div>`;
-      else if (state.phase === 'buzz-open') content = `<div class="stage-center"><div class="stage-kicker">TÍN HIỆU THẬT ĐÃ ĐƯỢC XÁC NHẬN</div><div class="signal-copy mint">PHÒNG 404<br>— BẮT MÁY —</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">Một lần chạm hợp lệ · không đo tốc độ tuyệt đối · server nhận trước sẽ thắng</div></div>`;
+      else if (state.phase === 'armed' || state.phase === 'waiting') content = `<div class="stage-center"><div class="stage-kicker">${state.phase === 'armed' ? 'ĐẾM NGƯỢC TÍN HIỆU' : 'TÍN HIỆU CÓ THỂ LÀ GIẢ'}</div><div class="signal-copy ${state.phase === 'waiting' ? 'red':''}">${state.phase === 'armed' ? '3 · 2 · 1' : esc(state.signalName)}</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">${state.phase === 'waiting' ? 'Chưa được bắt máy — chỉ nghe cuộc gọi từ phòng 404.' : 'Chuẩn bị cho tín hiệu 404.'}</div></div>`;
+      else if (state.phase === 'buzz-open') content = `<div class="stage-center"><div class="stage-kicker">TÍN HIỆU THẬT ĐÃ ĐƯỢC XÁC NHẬN</div><div class="signal-copy mint">PHÒNG 404<br>— BẮT MÁY —</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">MC ghi nhận một đội duy nhất trên bảng điều khiển</div></div>`;
       else if (state.phase === 'winner-locked') content = `<div class="stage-center"><div class="stage-kicker">ĐƯỜNG DÂY ĐÃ KHÓA</div><div class="winner-card"><div class="eyebrow">ĐỘI ĐÃ KẾT NỐI</div><b>Đội ${String(winner?.number || 0).padStart(2,'0')} · ${esc(winner?.name || '—')}</b><div class="subtle">Đội bạn được trả lời · các đội khác theo dõi câu hỏi</div></div><div class="stage-phone">${SVG.phone()}</div></div>`;
       else if (['preview','answering','recorded','resolved','no-winner'].includes(state.phase)) content = questionPublic(q, compact);
       else if (state.phase === 'scoreboard') content = `<div class="stage-center"><div class="signal-copy gold">BẢNG XẾP HẠNG<br>HỒ SƠ 404</div><div class="subtle">Đồng điểm vẫn đồng hạng · không bốc thăm phá hòa</div></div>`;
@@ -610,10 +618,10 @@
       if (q.type === 'A' || q.type === 'G') body = `<div class="public-options">${q.options.map((option,i) => `<div class="public-option"><span class="option-key">${String.fromCharCode(65+i)}</span><span>${esc(option)}</span></div>`).join('')}</div>`;
       else if (q.type === 'B') body = `<div class="stack">${q.statements.map((s,i) => `<div class="public-option"><span class="option-key">${i+1}</span><span>${esc(s)}</span></div>`).join('')}</div>`;
       else if (q.type === 'C') body = `<div class="stack">${q.items.map((item,i) => `<div class="public-option"><span class="option-key">${i+1}</span><span>${esc(item)}</span></div>`).join('')}</div><div class="subtle" style="margin-top:10px">Nói thứ tự bằng số, ví dụ: 2 – 3 – 1.</div>`;
-      else if (q.type === 'D') body = `<div class="public-options">${q.labels.map((label,i) => `<div class="public-option"><span class="option-key">${i+1}</span><span>${esc(label)}</span></div>`).join('')}</div><div class="subtle" style="margin-top:10px">Ghép với mô tả tương ứng ở phía MC.</div>`;
+      else if (q.type === 'D') body = `<div class="public-options">${q.labels.map((label,i) => `<div class="public-option"><span class="option-key">${i+1}</span><span>${esc(label)}</span></div>`).join('')}</div><div class="subtle" style="margin-top:10px">${q.matches.map((m,i)=>`<div class="public-option"><b>${String.fromCharCode(65+i)}</b> ${esc(m)}</div>`).join('')}</div>`;
       else if (q.type === 'E' || q.type === 'H') body = `<div class="evidence-box">Câu trả lời mở · đội nói trực tiếp với MC. MC đánh dấu từng tiêu chí đạt sau khi bấm ghi nhận.</div>`;
       else if (q.type === 'F') body = `<div class="evidence-box">Đội nói một từ hoặc cụm từ ngắn. MC nhập lại sau khi đội chốt.</div>`;
-      return `<div class="question-panel"><div class="question-top"><div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center"><span class="question-type">${esc(q.typeName)} · ${q.duration}s</span><span class="pill"><i class="dot gold"></i>BẢN THỬ</span></div><span class="eyebrow">TỐI ĐA 10 ĐIỂM</span></div><h2>${esc(q.prompt)}</h2>${q.evidence ? `<div class="evidence-box" style="margin-bottom:14px"><b class="gold">BẰNG CHỨNG</b><br>${esc(q.evidence).replace(/\n/g,'<br>')}</div>` : ''}${body}<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-top:17px"><span class="subtle">${winner ? `Đội ${String(winner.number).padStart(2,'0')} · ${esc(winner.name)} ${state.phase === 'answering' ? 'đang trả lời' : 'giữ quyền'}` : 'Không có đội giữ quyền · câu dùng để ôn tập'}</span>${reveal && state.lastResult ? `<strong class="${state.lastResult.points ? 'mint':'red'}">+${state.lastResult.points} điểm</strong>` : ''}</div></div>`;
+      return `<div class="question-panel"><div class="question-top"><div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center"><span class="question-type">${esc(q.typeName)} · ${q.duration}s</span><span class="pill"><i class="dot gold"></i>BẢN THỬ</span></div><span class="eyebrow">TỐI ĐA 10 ĐIỂM</span></div><h2>${esc(q.prompt)}</h2>${q.evidence ? `<div class="evidence-box" style="margin-bottom:14px"><b class="gold">BẰNG CHỨNG</b><br>${esc(q.evidence).replace(/\n/g,'<br>')}</div>` : ''}${body}${reveal ? `<div class="solution"><b>LỜI GIẢI</b><p>${esc(q.explanation)}</p></div>` : ''}<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-top:17px"><span class="subtle">${winner ? `Đội ${String(winner.number).padStart(2,'0')} · ${esc(winner.name)} ${state.phase === 'answering' ? 'đang trả lời' : 'giữ quyền'}` : 'Không có đội giữ quyền · câu dùng để ôn tập'}</span>${reveal && state.lastResult ? `<strong class="${state.lastResult.points ? 'mint':'red'}">+${state.lastResult.points} điểm</strong>` : ''}</div></div>`;
     }
 
     function scoreStrip() {
@@ -637,11 +645,11 @@
     }
 
     function rulesPage() {
-      return `<section class="card pad" style="max-width:940px;margin:0 auto"><div class="eyebrow">LUẬT CHÍNH THỨC</div><h1 style="font:clamp(38px,6vw,72px) var(--serif);line-height:.95;margin:13px 0 17px">Chỉ một cuộc gọi<br>được xác nhận.</h1><p class="subtle">Mỗi câu có đúng một đợt giành quyền. Bấm sớm chỉ mất quyền ở câu đó; sai hoặc hết giờ không chuyển lượt. Mỗi câu tối đa 10 điểm. Đồng điểm vẫn đồng hạng.</p><div class="section-grid"><div class="feature"><span class="feature-num">01 · CHỜ 404</span><b>Không bấm khi chưa có tín hiệu thật</b><p>Tín hiệu giả có chữ và biểu tượng riêng. Bấm trong giai đoạn chờ sẽ khóa đội ở câu hiện tại.</p></div><div class="feature"><span class="feature-num">02 · BẮT MÁY</span><b>Một lần chạm hợp lệ</b><p>Server nhận và khóa winner nguyên tử. Không đấu phụ, không cộng thưởng tốc độ.</p></div><div class="feature"><span class="feature-num">03 · TRẢ LỜI</span><b>Nói trực tiếp với MC</b><p>Điện thoại chỉ để bắt máy. MC nhập câu trả lời hoặc đánh dấu rubric trên bảng điều khiển.</p></div></div><div class="divider"></div><div class="card-title"><div><div class="eyebrow">SỰ CỐ</div><h2 style="font-size:20px">Không có winner vẫn kết thúc có kiểm soát</h2></div></div><p class="subtle">Nếu không ai bấm hoặc tất cả bấm sớm, câu hỏi/lời giải vẫn mở để cùng ôn tập, nhận 0 điểm và sang câu mới. Mất mạng không phát lại lượt bấm cũ; tải lại không reset điểm.</p><div class="hero-actions"><button class="btn gold" data-action="home">Quay lại sảnh</button><button class="btn primary" data-action="create-room">Vào bảng MC</button></div></section>`;
+      return `<section class="card pad" style="max-width:940px;margin:0 auto"><div class="eyebrow">LUẬT CHÍNH THỨC</div><h1 style="font:clamp(38px,6vw,72px) var(--serif);line-height:.95;margin:13px 0 17px">Chỉ một cuộc gọi<br>được xác nhận.</h1><p class="subtle">Mỗi câu có đúng một đợt giành quyền. Bấm sớm chỉ mất quyền ở câu đó; sai hoặc hết giờ không chuyển lượt. Mỗi câu tối đa 10 điểm. Đồng điểm vẫn đồng hạng.</p><div class="section-grid"><div class="feature"><span class="feature-num">01 · CHỜ 404</span><b>Không bấm khi chưa có tín hiệu thật</b><p>Tín hiệu giả có chữ và biểu tượng riêng. Bấm trong giai đoạn chờ sẽ khóa đội ở câu hiện tại.</p></div><div class="feature"><span class="feature-num">02 · BẮT MÁY</span><b>Một lần chạm hợp lệ</b><p>MC chọn đội giành quyền theo hoạt động trực tiếp. Chỉ khóa một đội, không đấu phụ.</p></div><div class="feature"><span class="feature-num">03 · TRẢ LỜI</span><b>Nói trực tiếp với MC</b><p>Các đội chơi trực tiếp tại lớp. MC nhập câu trả lời hoặc đánh dấu rubric trên bảng điều khiển.</p></div></div><div class="divider"></div><div class="card-title"><div><div class="eyebrow">SỰ CỐ</div><h2 style="font-size:20px">Không có winner vẫn kết thúc có kiểm soát</h2></div></div><p class="subtle">Nếu không ai bấm hoặc tất cả bấm sớm, câu hỏi/lời giải vẫn mở để cùng ôn tập, nhận 0 điểm và sang câu mới. Mất mạng không phát lại lượt bấm cũ; tải lại không reset điểm.</p><div class="hero-actions"><button class="btn gold" data-action="home">Quay lại sảnh</button><button class="btn primary" data-action="create-room">Vào bảng MC</button></div></section>`;
     }
 
     function answerControls(q) {
-      const locked = state.phase === 'recorded' || state.phase === 'resolved'; const d = state.draft;
+      const locked = state.phase === 'resolved'; const d = state.draft;
       let body = '';
       if (q.type === 'A' || q.type === 'G') body = `<div class="choice-grid">${q.options.map((o,i) => `<button class="choice-btn ${d.selected === String.fromCharCode(65+i) ? 'selected':''}" data-action="pick-option" data-value="${String.fromCharCode(65+i)}" ${locked?'disabled':''}><b>${String.fromCharCode(65+i)}.</b> ${esc(o)}</button>`).join('')}</div>`;
       else if (q.type === 'B') body = `<div class="stack">${q.statements.map((s,i) => `<div class="toggle-line"><span>${i+1}. ${esc(s)}</span><span class="toggle-buttons">${[true,false].map(v => `<button class="mini-toggle ${d.statements[i] === v ? 'selected':''}" data-action="toggle-statement" data-index="${i}" data-value="${v}" ${locked?'disabled':''}>${v?'Đúng':'Sai'}</button>`).join('')}</span></div>`).join('')}</div>`;
@@ -650,7 +658,7 @@
       else if (q.type === 'E' || q.type === 'H') body = `<div class="answer-help">${q.type === 'H' ? 'Đánh dấu hai tiêu chí đạt theo câu trả lời trực tiếp.' : 'Đội phải chỉ ra lỗi và nêu cách sửa. Mỗi tiêu chí đạt 5 điểm.'}</div><div class="criteria">${q.criteria.map((c,i) => `<label class="criterion-line"><span>${i+1}. ${esc(c)}</span><input type="checkbox" data-criterion-index="${i}" ${d.criteria.includes(i) ? 'checked':''} ${locked?'disabled':''}></label>`).join('')}</div>`;
       else if (q.type === 'F') body = `<div class="form-row"><label>Nhập đúng cụm từ đội vừa nói</label><input class="input" data-answer-input value="${esc(d.text)}" placeholder="Ví dụ: chưa xác minh" ${locked?'disabled':''}></div>`;
       const response = draftSummary(q);
-      return `<div class="answer-controls">${body}<div class="draft-response"><b>Bản nhập hiện tại:</b><br>${response}</div>${state.phase === 'recorded' ? '<div class="answer-help">Câu trả lời đã khóa. Điểm sẽ được ghi một lần khi MC xác nhận.</div>' : ''}</div>`;
+      return `<div class="answer-controls">${body}<div class="draft-response"><b>Bản nhập hiện tại:</b><br>${response}</div>${state.phase === 'recorded' ? '<div class="answer-help">Đã dừng đồng hồ. MC kiểm tra bản nhập rồi xác nhận chấm một lần.</div>' : ''}</div>`;
     }
     function draftSummary(q) {
       const d=state.draft;
@@ -681,6 +689,8 @@
 
     function handleClick(e) {
       const el = e.currentTarget; const action = el.dataset.action; const id = Number(el.dataset.team || selectedTeamId); const q = currentQuestion();
+      if (action === 'open-stage') { window.open(location.href.split('#')[0]+'#/stage', '_blank'); return; }
+      if (action === 'host-winner') { if(state.phase !== 'buzz-open') return; mutate(s=>{s.teams.forEach(t=>{t.approved=true;t.online=true;});}); return teamBuzz(id); }
       if (action === 'home') return navigate('#/');
       if (action === 'rules-home') { currentRole='home'; renderRulesInHome(); return; }
       if (action === 'create-room') return navigate('#/host');
@@ -707,6 +717,8 @@
       if (action === 'next-question') return beginRound(state.currentIndex + 1);
       if (action === 'finish-game') return finishGame();
       if (action === 'void-round') return voidRound();
+      if (action === 'show-scoreboard' && state.deadline) return toast('Đợi kết thúc lượt hiện tại');
+      if (action === 'show-scoreboard' && state.phase === 'scoreboard') return;
       if (action === 'show-scoreboard') return mutate(s => { s.previousPhase=s.phase; s.phase='scoreboard'; }, 'Mở bảng xếp hạng');
       if (action === 'close-scoreboard') return mutate(s => { s.phase=s.previousPhase || 'resolved'; s.previousPhase=null; }, 'Đóng bảng xếp hạng');
       if (action === 'download-csv') return exportCSV();
@@ -724,7 +736,7 @@
     }
     function beginRound(index) {
       if (index >= questions.length) return finishGame();
-      mutate(s => { s.currentIndex=index; s.phase='ready'; s.winnerTeamId=null; s.earlyTeams=[]; s.deadline=null; s.noWinner=false; s.draft=emptyDraft(); s.signalName=['BÓNG NGƯỜI ĐI NGANG','TIẾNG GÕ KHÔNG NGƯỜI','ĐƯỜNG DÂY LỖI'][index % 3]; }, `Nạp câu ${String(index+1).padStart(2,'0')} · ${questions[index].typeName}`);
+      mutate(s => { s.currentIndex=index; s.phase='ready'; s.winnerTeamId=null; s.earlyTeams=[]; s.deadline=null; s.noWinner=false; s.lastResult=null; s.timedOut=false; s.draft=emptyDraft(); s.signalName=['BÓNG NGƯỜI ĐI NGANG','TIẾNG GÕ KHÔNG NGƯỜI','ĐƯỜNG DÂY LỖI'][index % 3]; }, `Nạp câu ${String(index+1).padStart(2,'0')} · ${questions[index].typeName}`);
     }
     function armRound() { cue('countdown'); mutate(s => { s.phase='armed'; s.deadline=Date.now()+3000; }, 'Phát đếm ngược 3–2–1'); }
     function openWaiting() { mutate(s => { s.phase='waiting'; s.deadline=Date.now()+5000; }, 'Mở giai đoạn chờ tín hiệu'); cue('fake'); }
@@ -734,7 +746,7 @@
     function startAnswering() { if (!state.winnerTeamId) return; cue('question'); mutate(s => { s.phase='answering'; s.deadline=Date.now()+currentQuestion().duration*1000; }, 'Bắt đầu đồng hồ trả lời'); }
     function recordAnswer() { cue('record'); mutate(s => { s.phase='recorded'; s.deadline=null; s.recordedAt=Date.now(); }, 'Khóa câu trả lời đội vừa chốt'); }
     function gradeAnswer() {
-      if (!state.winnerTeamId) return;
+      if (!state.winnerTeamId || state.phase !== 'recorded') return;
       const q=currentQuestion(), d=state.draft; let points=0; let parts=[];
       if (q.type === 'A' || q.type === 'G') { const ok=d.selected===q.correct; points=ok?10:0; parts=[{label:'Đáp án',points:points,max:10,ok}]; }
       if (q.type === 'B') { q.correct.forEach((correct,i)=>{ const ok=d.statements[i]===correct; const p=ok?5:0; points+=p; parts.push({label:`Nhận định ${i+1}`,points:p,max:5,ok}); }); }
@@ -748,7 +760,7 @@
     }
     function normalize(text) { return String(text || '').normalize('NFC').trim().toLocaleLowerCase('vi-VN').replace(/\s+/g,' '); }
     function finishGame() { cue('outro'); mutate(s => { s.phase='finished'; s.deadline=null; s.winnerTeamId=null; }, 'Khóa phiên · mở cửa khách sạn'); }
-    function voidRound() { mutate(s => { s.phase='resolved'; s.noWinner=true; s.deadline=null; s.results=s.results.filter(r=>r.questionId!==currentQuestion().id); }, `Hủy câu ${String(state.currentIndex+1).padStart(2,'0')} do sự cố kỹ thuật`); }
+    function voidRound() { mutate(s => { s.phase='resolved'; s.noWinner=true; s.deadline=null; s.results=s.results.filter(r=>r.questionId!==currentQuestion().id); s.lastResult=null; s.teams.forEach(t=>{t.answered=s.results.filter(r=>r.teamId===t.id).length;t.full=s.results.filter(r=>r.teamId===t.id&&r.points===10).length;}); }, `Hủy câu ${String(state.currentIndex+1).padStart(2,'0')} do sự cố kỹ thuật`); }
     function adjustScore() {
       const amount=Number(document.querySelector('[data-adjustment]')?.value); const reason=document.querySelector('[data-adjustment-reason]')?.value.trim();
       if(!Number.isFinite(amount)||!reason) return toast('Chưa lưu điều chỉnh','Nhập số điểm chênh lệch và lý do.');
@@ -760,7 +772,7 @@
       if(state.phase === 'waiting') return mutate(s => { if(!s.earlyTeams.includes(id)) s.earlyTeams.push(id); const x=s.teams.find(t=>t.id===id); if(x)x.early=true; }, `Đội ${String(id).padStart(2,'0')} bấm sớm · khóa câu hiện tại`);
       if(state.phase !== 'buzz-open') return;
       if(state.earlyTeams.includes(id) || state.winnerTeamId) return;
-      cue('pickup'); mutate(s => { if(s.winnerTeamId) return; s.winnerTeamId=id; s.phase='winner-locked'; s.deadline=null; const x=s.teams.find(t=>t.id===id); if(x){x.holds++;x.early=false;} }, `Đội ${String(id).padStart(2,'0')} đã bắt máy · winner nguyên tử`);
+      cue('pickup'); mutate(s => { if(s.winnerTeamId) return; s.winnerTeamId=id; s.phase='winner-locked'; s.deadline=null; const x=s.teams.find(t=>t.id===id); if(x){x.holds++;x.early=false;} }, `Đội ${String(id).padStart(2,'0')} đã bắt máy · đã khóa quyền`);
     }
 
     function tick() {
@@ -802,3 +814,4 @@
   </script>
 </body>
 </html>
+
