@@ -1,441 +1,15 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#10131b">
-  <title>Cuộc gọi từ phòng 404</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
-
-    :root {
-      --bg: #10131b;
-      --bg-deep: #090b11;
-      --panel: #202634;
-      --panel-2: #283042;
-      --panel-soft: #171c27;
-      --shadow-purple: #403454;
-      --red: #ed6a73;
-      --red-soft: #ed6a7322;
-      --mint: #72e0c3;
-      --mint-soft: #72e0c31c;
-      --gold: #f0c779;
-      --gold-soft: #f0c7791d;
-      --text: #f5f1e8;
-      --muted: #bac2d2;
-      --dim: #7f899c;
-      --line: #ffffff18;
-      --line-bright: #ffffff2c;
-      --radius: 18px;
-      --serif: Georgia, 'Times New Roman', serif;
-    }
-
-    * { box-sizing: border-box; }
-    html { min-width: 320px; background: var(--bg-deep); }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: var(--text);
-      background:
-        radial-gradient(circle at 50% -10%, #40345444, transparent 42%),
-        radial-gradient(circle at 8% 36%, #72e0c30c, transparent 25%),
-        linear-gradient(140deg, var(--bg-deep), var(--bg) 45%, #121827);
-      font-family: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      overflow-x: hidden;
-    }
-    body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::after {
-      animation-duration: .001ms !important;
-      animation-iteration-count: 1 !important;
-      scroll-behavior: auto !important;
-      transition-duration: .001ms !important;
-    }
-    button, input, select { font: inherit; }
-    button { cursor: pointer; }
-    button:focus-visible, input:focus-visible, select:focus-visible {
-      outline: 3px solid var(--mint);
-      outline-offset: 2px;
-    }
-    ::selection { background: var(--gold); color: var(--bg-deep); }
-
-    .noise, .grain, .fog { pointer-events: none; position: fixed; inset: 0; z-index: 0; }
-    .noise { opacity: .06; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); }
-    .grain { opacity: .07; background: repeating-linear-gradient(0deg, transparent 0 3px, #ffffff03 3px 4px); mix-blend-mode: screen; }
-    .fog { top: auto; height: 22vh; background: linear-gradient(0deg, #bac2d20e, transparent); filter: blur(18px); animation: fog-drift 18s ease-in-out infinite alternate; }
-    @keyframes fog-drift { from { transform: translateX(-3%); opacity: .5; } to { transform: translateX(3%); opacity: .8; } }
-
-    .app-shell { position: relative; z-index: 1; min-height: 100vh; }
-    .wrap { width: min(1500px, calc(100% - 36px)); margin: 0 auto; }
-    .topbar {
-      min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 18px;
-      border-bottom: 1px solid var(--line); background: #0c1019cc; backdrop-filter: blur(14px); padding: 15px 30px;
-      position: sticky; top: 0; z-index: 10;
-    }
-    .brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
-    .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--gold); color: var(--gold); border-radius: 12px; font-family: var(--serif); font-size: 20px; box-shadow: 0 0 26px #f0c7791c; }
-    .brand-copy { min-width: 0; }
-    .brand-copy b { display: block; font-size: 13px; letter-spacing: .16em; white-space: nowrap; }
-    .brand-copy span { display: block; color: var(--dim); font-size: 11px; margin-top: 2px; letter-spacing: .03em; }
-    .top-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; }
-    .eyebrow { color: var(--gold); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; }
-    .pill { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; border: 1px solid var(--line); background: #ffffff08; padding: 7px 10px; color: var(--muted); font-size: 11px; }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); box-shadow: 0 0 8px currentColor; }
-    .dot.mint { background: var(--mint); color: var(--mint); }
-    .dot.red { background: var(--red); color: var(--red); }
-    .dot.gold { background: var(--gold); color: var(--gold); }
-
-    .page { padding: 34px 0 70px; }
-    .card {
-      background: linear-gradient(145deg, #202634eF, #161b27F4);
-      border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 24px 70px #0000002b; overflow: hidden;
-    }
-    .card.pad { padding: 22px; }
-    .card-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-    .card-title h2, .card-title h3 { margin: 3px 0 0; line-height: 1.16; }
-    .card-title h2 { font-size: clamp(22px, 2.2vw, 33px); }
-    .card-title h3 { font-size: 17px; }
-    .subtle { color: var(--muted); font-size: 13px; line-height: 1.6; }
-    .muted { color: var(--muted); }
-    .dim { color: var(--dim); }
-    .red { color: var(--red); }
-    .mint { color: var(--mint); }
-    .gold { color: var(--gold); }
-    .mono { font-family: 'DM Mono', monospace; }
-    .serif { font-family: var(--serif); }
-
-    .btn {
-      border: 1px solid var(--line-bright); border-radius: 12px; padding: 11px 15px; color: var(--text); background: #ffffff0a; font-weight: 800; font-size: 12px;
-      transition: transform .18s ease, filter .18s ease, border-color .18s ease, background .18s ease; display: inline-flex; gap: 8px; align-items: center; justify-content: center;
-    }
-    .btn:hover { transform: translateY(-2px); filter: brightness(1.1); border-color: #ffffff55; }
-    .btn.primary { color: #0d241f; background: var(--mint); border-color: var(--mint); }
-    .btn.gold { color: #3b2b0c; background: var(--gold); border-color: var(--gold); }
-    .btn.danger { color: #fff3f3; background: var(--red); border-color: var(--red); }
-    .btn.ghost { background: transparent; }
-    .btn.sm { padding: 8px 10px; font-size: 11px; }
-    .btn:disabled, .btn.disabled { cursor: not-allowed; opacity: .42; transform: none; filter: none; }
-
-    /* Landing */
-    .landing { min-height: calc(100vh - 72px); display: grid; place-items: center; padding: 44px 0; }
-    .landing-grid { width: 100%; display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(390px, .98fr); gap: 30px; align-items: center; }
-    .hero-copy { padding: 28px 0; }
-    .hero-copy .eyebrow { font-size: 11px; }
-    .hero-title { font-family: var(--serif); font-size: clamp(54px, 7vw, 104px); line-height: .93; font-weight: 700; margin: 20px 0 22px; letter-spacing: -.05em; max-width: 760px; }
-    .hero-title em { color: var(--gold); font-style: normal; }
-    .hero-lede { font-size: clamp(15px, 1.6vw, 19px); line-height: 1.65; color: var(--muted); max-width: 620px; }
-    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
-    .hero-foot { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 32px; }
-    .hero-stat { border-left: 1px solid var(--gold); padding-left: 10px; min-width: 105px; }
-    .hero-stat b { display: block; font-family: var(--serif); color: var(--gold); font-size: 21px; }
-    .hero-stat span { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; }
-
-    .hotel-scene { min-height: 570px; position: relative; border: 1px solid var(--line); border-radius: 25px; overflow: hidden; background: linear-gradient(170deg, #2d2d46 0%, #202338 44%, #11151e 100%); box-shadow: 0 35px 110px #0008; isolation: isolate; }
-    .hotel-scene::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 70% 31%, #f0c77927 0 4%, transparent 27%), linear-gradient(105deg, transparent 20%, #090b11aa 70%); z-index: -1; }
-    .window { position: absolute; left: 8%; top: 10%; width: 37%; height: 45%; border: 12px solid #171822; border-bottom-width: 18px; background: radial-gradient(circle at 45% 43%, #c6d7e8 0 2%, transparent 3%), radial-gradient(circle at 60% 35%, #c6d7e8 0 1.5%, transparent 2%), linear-gradient(160deg, #2d4668, #101828 70%); box-shadow: inset 0 0 38px #000, 0 0 0 2px #f0c77922; }
-    .window::before, .window::after { content: ''; position: absolute; background: #171822; }
-    .window::before { top: 0; bottom: 0; width: 6px; left: 50%; transform: translateX(-50%); }
-    .window::after { left: 0; right: 0; height: 6px; top: 50%; transform: translateY(-50%); }
-    .curtain { position: absolute; top: 4%; height: 58%; width: 15%; background: linear-gradient(90deg, #403454, #171827); filter: drop-shadow(12px 8px 8px #0007); }
-    .curtain.left { left: 2%; clip-path: polygon(0 0, 100% 4%, 86% 100%, 0 92%); }
-    .curtain.right { left: 37%; clip-path: polygon(0 4%, 100% 0, 100% 92%, 14% 100%); }
-    .ceiling-light { position: absolute; left: 50%; top: 3%; width: 28px; height: 98px; transform: translateX(-50%); border-radius: 0 0 25px 25px; background: #0a0c12; }
-    .ceiling-light::after { content: ''; position: absolute; left: 50%; bottom: -17px; width: 58px; height: 34px; transform: translateX(-50%); border-radius: 50%; background: #f0c7799c; box-shadow: 0 0 50px 20px #f0c77940; }
-    .wall-sign { position: absolute; right: 10%; top: 14%; width: 34%; padding: 16px 14px; border: 1px solid #f0c77955; background: #10131bb8; color: var(--gold); text-align: center; font-family: var(--serif); letter-spacing: .13em; box-shadow: inset 0 0 20px #0008, 0 10px 20px #0005; }
-    .wall-sign b { display: block; font-size: clamp(19px, 2.6vw, 29px); }
-    .wall-sign span { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: .23em; color: var(--muted); }
-    .desk { position: absolute; left: 8%; right: -3%; bottom: 14%; height: 19%; background: linear-gradient(180deg, #4d3d36, #1f1717); transform: perspective(420px) rotateX(10deg); border-top: 4px solid #f0c77928; box-shadow: 0 28px 38px #0009; }
-    .desk::after { content: ''; position: absolute; left: 8%; right: 0; bottom: -150px; height: 160px; background: repeating-linear-gradient(90deg, #20191b 0 12%, #312224 12% 24%); }
-    .key-rack { position: absolute; left: 16%; bottom: 25%; width: 31%; height: 19%; border: 6px solid #8c6940; background: #302a27; box-shadow: 0 10px 18px #0007; transform: perspective(400px) rotateX(16deg); }
-    .key-rack::before { content: 'ROOM KEYS'; position: absolute; inset: 9px; border: 1px solid #f0c77944; color: #f0c77988; text-align: center; padding-top: 11px; font: 10px 'DM Mono'; letter-spacing: .18em; }
-    .keys { position: absolute; inset: 28px 14px 12px; display: flex; justify-content: space-around; align-items: flex-end; }
-    .keys i { width: 5px; height: 58px; background: #f0c779; display: block; border-radius: 4px; position: relative; opacity: .9; }
-    .keys i::before { content: ''; position: absolute; width: 18px; height: 18px; border: 3px solid #f0c779; border-radius: 50%; top: -10px; left: 50%; transform: translateX(-50%); }
-    .rotary { position: absolute; right: 16%; bottom: 23%; width: 40%; max-width: 245px; filter: drop-shadow(0 20px 18px #0009); animation: phone-float 5s ease-in-out infinite; }
-    @keyframes phone-float { 50% { transform: translateY(-8px) rotate(1deg); } }
-    .scene-fog { position: absolute; left: -10%; right: -10%; bottom: 5%; height: 20%; background: radial-gradient(ellipse, #bac2d218, transparent 68%); filter: blur(17px); }
-    .ghost-shadow { position: absolute; right: 3%; top: 40%; width: 18%; height: 32%; border-radius: 50% 50% 20% 20%; background: #090b1188; filter: blur(4px); opacity: .55; animation: ghost-walk 8s ease-in-out infinite; }
-    .ghost-shadow::before, .ghost-shadow::after { content: ''; position: absolute; top: 28%; width: 10px; height: 10px; border-radius: 50%; background: #f0c77988; box-shadow: 0 0 15px #f0c779; }
-    .ghost-shadow::before { left: 32%; } .ghost-shadow::after { right: 32%; }
-    @keyframes ghost-walk { 50% { transform: translateX(-24px); opacity: .28; } }
-
-    .section-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 26px; }
-    .feature { padding: 17px; border: 1px solid var(--line); border-radius: 15px; background: #ffffff06; }
-    .feature-num { color: var(--gold); font: 13px 'DM Mono'; }
-    .feature b { display: block; margin-top: 10px; font-size: 13px; }
-    .feature p { color: var(--muted); font-size: 12px; line-height: 1.55; margin: 7px 0 0; }
-
-    /* Shared game surfaces */
-    .page-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 20px; }
-    .page-heading h1 { margin: 7px 0 0; font-family: var(--serif); font-size: clamp(32px, 4vw, 57px); line-height: 1; }
-    .page-heading p { max-width: 560px; margin: 0; }
-    .layout-3 { display: grid; grid-template-columns: 245px minmax(0, 1fr) 290px; gap: 14px; align-items: start; }
-    .layout-2 { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 14px; align-items: start; }
-    .stack { display: grid; gap: 14px; }
-    .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
-    .panel-head h3 { margin: 0; font-size: 14px; }
-    .panel-body { padding: 17px; }
-    .form-row { display: grid; gap: 7px; margin-bottom: 14px; }
-    .form-row label { color: var(--muted); font-size: 11px; font-weight: 700; }
-    .input, .select { width: 100%; padding: 11px 12px; color: var(--text); background: #0d1119; border: 1px solid var(--line-bright); border-radius: 10px; }
-    .input::placeholder { color: var(--dim); }
-    .code-box { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid #f0c77945; background: var(--gold-soft); }
-    .code-box b { color: var(--gold); font: 22px 'DM Mono'; letter-spacing: .13em; }
-    .divider { height: 1px; background: var(--line); margin: 15px 0; }
-    .control-list { display: grid; gap: 8px; }
-    .control-list .btn { width: 100%; justify-content: flex-start; }
-    .status-box { border-radius: 12px; padding: 11px 12px; border: 1px solid var(--line); background: #ffffff06; display: flex; align-items: center; gap: 9px; font-size: 11px; }
-    .status-box b { display: block; font-size: 12px; }
-    .status-box span { color: var(--muted); }
-
-    /* Illustrations */
-    .phone-svg { width: 100%; height: auto; display: block; }
-    .mini-phone-wrap { display: grid; place-items: center; min-height: 240px; padding: 22px; background: radial-gradient(circle, #f0c77912, transparent 60%); }
-    .mini-phone { width: min(100%, 250px); }
-    .keys-art { position: relative; height: 160px; border: 1px solid #f0c77933; background: linear-gradient(135deg, #2a2525, #14151b); border-radius: 12px; overflow: hidden; }
-    .keys-art::before { content: '404'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #f0c77944; font: 70px var(--serif); }
-    .key-line { position: absolute; top: 22px; bottom: 28px; width: 4px; border-radius: 5px; background: var(--gold); box-shadow: 0 0 9px #f0c77955; }
-    .key-line::before { content: ''; position: absolute; top: -9px; left: 50%; width: 18px; height: 18px; transform: translateX(-50%); border: 3px solid var(--gold); border-radius: 50%; }
-    .key-line:nth-child(1) { left: 16%; height: 90px; } .key-line:nth-child(2) { left: 31%; height: 116px; } .key-line:nth-child(3) { left: 50%; height: 76px; } .key-line:nth-child(4) { left: 68%; height: 130px; } .key-line:nth-child(5) { left: 84%; height: 100px; }
-
-    /* Lobby */
-    .lobby-grid { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 14px; }
-    .qr-card { display: grid; gap: 15px; align-content: start; }
-    .qr { width: 190px; aspect-ratio: 1; margin: 0 auto; padding: 12px; background: #f5f1e8; display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; border-radius: 6px; }
-    .qr i { background: #10131b; border-radius: 1px; }
-    .qr i:nth-child(3n+2) { background: #403454; }
-    .qr i:nth-child(5n+1) { background: #10131b; }
-    .lobby-tools { display: grid; gap: 8px; }
-    .team-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px; }
-    .team-card { min-width: 0; padding: 12px; border-radius: 13px; border: 1px solid var(--line); background: #ffffff06; position: relative; }
-    .team-card.approved { border-color: #72e0c344; }
-    .team-card.offline { opacity: .68; }
-    .team-avatar { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid #f0c77955; border-radius: 10px; color: var(--gold); background: #f0c7790e; font-weight: 900; font-family: var(--serif); }
-    .team-card b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 9px; font-size: 12px; }
-    .team-card small { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 10px; margin-top: 5px; }
-    .tiny-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dim); }
-    .approved .tiny-dot { background: var(--mint); }
-    .team-card .team-edit { position: absolute; top: 8px; right: 8px; color: var(--dim); border: 0; background: transparent; font-size: 12px; }
-
-    /* Stage */
-    .stage-screen { position: relative; min-height: 650px; border: 1px solid #f0c77933; border-radius: 20px; overflow: hidden; background: linear-gradient(160deg, #2c2a40, #151925 60%, #0c1016); box-shadow: 0 30px 80px #0008; }
-    .stage-screen.chapter-1 { background: linear-gradient(160deg, #342d3d, #151a27 58%, #0d1118); }
-    .stage-screen.chapter-2 { background: linear-gradient(160deg, #26384a, #151b2a 58%, #0c1118); }
-    .stage-screen.chapter-3 { background: linear-gradient(160deg, #403448, #161825 58%, #0c1118); }
-    .stage-screen::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 74% 23%, #f0c7791c, transparent 28%), linear-gradient(100deg, #0000 40%, #0007); pointer-events: none; }
-    .stage-top { position: relative; z-index: 1; display: flex; justify-content: space-between; gap: 12px; padding: 18px 20px; }
-    .stage-top h2 { margin: 5px 0 0; font-size: clamp(18px, 2.4vw, 30px); }
-    .stage-top .round-no { font: 12px 'DM Mono'; color: var(--muted); }
-    .stage-scene-art { position: absolute; inset: 0; opacity: .55; pointer-events: none; }
-    .stage-scene-art::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 35%; background: linear-gradient(0deg, #090b11, transparent); }
-    .scene-door { position: absolute; right: 8%; top: 22%; width: 27%; height: 54%; border: 8px solid #16131c; border-radius: 8px 8px 0 0; background: linear-gradient(90deg, #493850, #151822); box-shadow: -28px 20px 34px #0008; }
-    .scene-door::before { content: '404'; position: absolute; inset: 22% 14%; border: 2px solid #f0c77977; display: grid; place-items: center; color: #f0c779; font: clamp(35px, 6vw, 76px) var(--serif); background: #090b1145; }
-    .scene-door::after { content: ''; position: absolute; right: 12%; top: 52%; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 14px var(--gold); }
-    .scene-file { position: absolute; left: 11%; bottom: 20%; width: 42%; height: 28%; background: #362e2d; border: 5px solid #9a744b; transform: perspective(500px) rotateX(16deg) rotateZ(-4deg); box-shadow: 0 18px 23px #0009; }
-    .scene-file::before { content: 'NIGHT LOG / ARCHIVE'; position: absolute; inset: 17%; border: 1px solid #f0c77955; color: #f0c77988; padding: 12px; font: 10px 'DM Mono'; letter-spacing: .12em; }
-    .stage-ambient { position: absolute; left: 0; right: 0; bottom: 0; height: 20%; background: radial-gradient(ellipse at 34% 40%, #bac2d20e, transparent 58%); filter: blur(15px); }
-    .stage-content { position: relative; z-index: 2; display: grid; place-items: center; min-height: 515px; padding: 34px 8%; text-align: center; }
-    .stage-center { width: min(950px, 100%); }
-    .signal-copy { font-family: var(--serif); font-size: clamp(27px, 5vw, 65px); line-height: 1.02; letter-spacing: -.03em; margin: 12px auto; }
-    .signal-copy.mint { text-shadow: 0 0 30px #72e0c366; }
-    .signal-copy.red { text-shadow: 0 0 30px #ed6a7355; }
-    .signal-copy.gold { text-shadow: 0 0 30px #f0c77955; }
-    .stage-kicker { color: var(--muted); font-size: 12px; letter-spacing: .06em; }
-    .stage-phone { width: min(260px, 55vw); margin: 20px auto; animation: stage-phone 4s ease-in-out infinite; }
-    @keyframes stage-phone { 50% { transform: rotate(-2deg) translateY(-8px); } }
-    .winner-card { padding: 20px 27px; border: 1px solid #72e0c366; background: #72e0c312; border-radius: 16px; margin: 18px auto; width: fit-content; max-width: 100%; }
-    .winner-card b { display: block; color: var(--mint); font: clamp(29px, 5vw, 70px) var(--serif); overflow-wrap: anywhere; }
-    .question-panel { text-align: left; width: min(930px, 100%); margin: auto; padding: clamp(18px, 3vw, 32px); background: #10131beF; border: 1px solid #ffffff22; border-radius: 18px; box-shadow: 0 20px 55px #0007; }
-    .question-panel .question-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; }
-    .question-type { padding: 7px 10px; color: var(--gold); background: var(--gold-soft); border: 1px solid #f0c77945; border-radius: 99px; font: 10px 'DM Mono'; text-transform: uppercase; }
-    .question-panel h2 { margin: 18px 0; font-size: clamp(22px, 3.3vw, 43px); line-height: 1.22; }
-    .public-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-    .public-option { min-height: 58px; display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #ffffff07; font-size: clamp(13px, 1.3vw, 19px); }
-    .option-key { width: 28px; height: 28px; flex: 0 0 28px; display: grid; place-items: center; color: var(--gold); border: 1px solid #f0c77966; border-radius: 8px; font-weight: 900; }
-    .evidence-box { padding: 15px; border-left: 3px solid var(--gold); background: #f0c7790d; color: var(--muted); line-height: 1.6; font-size: 14px; }
-    .stage-bottom { position: relative; z-index: 4; padding: 13px; border-top: 1px solid var(--line); background: #090b11aa; }
-    .score-strip { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 7px; }
-    .score-strip .score-chip:nth-child(n+9) { grid-row: 2; }
-    .score-chip { min-width: 0; padding: 8px 9px; border: 1px solid var(--line); border-radius: 10px; background: #ffffff06; }
-    .score-chip.active { border-color: var(--mint); background: #72e0c31c; box-shadow: 0 0 18px #72e0c31a; }
-    .score-chip .chip-line { display: flex; justify-content: space-between; gap: 5px; align-items: center; }
-    .score-chip b { font: 10px 'DM Mono'; color: var(--gold); }
-    .score-chip strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 4px; font-size: 10px; }
-    .score-chip small { color: var(--muted); font-size: 10px; }
-
-    .stage-controls { display: grid; gap: 9px; }
-    .action-main { padding: 15px; border-radius: 13px; background: var(--mint-soft); border: 1px solid #72e0c344; }
-    .action-main b { display: block; margin-bottom: 3px; }
-    .action-main p { color: var(--muted); font-size: 11px; line-height: 1.5; margin: 0 0 11px; }
-    .phase-progress { height: 7px; border-radius: 99px; background: #ffffff0d; overflow: hidden; margin-top: 8px; }
-    .phase-progress i { display: block; height: 100%; background: var(--mint); width: 0; transition: width .25s linear; }
-    .countdown { font: 44px 'DM Mono'; color: var(--gold); text-align: center; margin: 12px 0; }
-    .log-list { max-height: 240px; overflow: auto; display: grid; gap: 7px; }
-    .log-item { padding: 8px 9px; border: 1px solid var(--line); border-radius: 9px; color: var(--muted); font-size: 10px; line-height: 1.4; }
-    .log-item time { color: var(--dim); font-family: 'DM Mono'; display: block; margin-bottom: 3px; }
-
-    /* Host */
-    .host-preview { min-height: 420px; background: #090b11; border-radius: 14px; overflow: hidden; }
-    .host-preview .stage-screen { min-height: 420px; border: 0; border-radius: 0; box-shadow: none; }
-    .host-preview .stage-content { min-height: 325px; padding: 22px 5%; }
-    .host-preview .stage-phone { width: min(160px, 34vw); margin: 8px auto; }
-    .host-preview .signal-copy { font-size: clamp(23px, 3.5vw, 42px); }
-    .host-preview .question-panel { padding: 17px; }
-    .host-preview .question-panel h2 { font-size: clamp(16px, 2.2vw, 26px); margin: 11px 0; }
-    .host-preview .public-option { min-height: 38px; font-size: 12px; padding: 8px; }
-    .host-preview .score-strip { display: none; }
-    .host-control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-    .host-control-grid .btn { width: 100%; }
-    .team-status-list { display: grid; gap: 6px; max-height: 480px; overflow: auto; }
-    .team-row { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: center; gap: 8px; padding: 8px; border-radius: 10px; background: #ffffff06; border: 1px solid var(--line); }
-    .team-row.active { border-color: var(--mint); background: var(--mint-soft); }
-    .team-row .num { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: var(--gold-soft); color: var(--gold); font: 11px 'DM Mono'; }
-    .team-row b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
-    .team-row small { color: var(--muted); font-size: 9px; }
-    .team-row .row-points { color: var(--gold); font: 11px 'DM Mono'; }
-
-    /* Answer controls */
-    .answer-controls { display: grid; gap: 12px; }
-    .answer-help { padding: 10px 12px; border-radius: 10px; background: #f0c7790d; border: 1px solid #f0c7792e; color: var(--muted); font-size: 11px; line-height: 1.5; }
-    .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .choice-btn { text-align: left; color: var(--text); background: #ffffff07; border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 11px; }
-    .choice-btn:hover { border-color: #ffffff55; }
-    .choice-btn.selected { border-color: var(--mint); background: var(--mint-soft); }
-    .toggle-line, .criterion-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px; border-radius: 10px; background: #ffffff06; border: 1px solid var(--line); font-size: 11px; }
-    .toggle-buttons { display: flex; gap: 5px; flex: 0 0 auto; }
-    .mini-toggle { min-width: 42px; border: 1px solid var(--line-bright); border-radius: 8px; padding: 7px; color: var(--muted); background: #ffffff08; font: 11px 'DM Mono'; }
-    .mini-toggle.selected { background: var(--gold); color: #251b08; border-color: var(--gold); }
-    .order-list, .pair-list { display: grid; gap: 7px; }
-    .order-btn { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; align-items: center; text-align: left; color: var(--text); background: #ffffff07; border: 1px solid var(--line); border-radius: 9px; padding: 9px; font-size: 11px; }
-    .order-btn.selected { border-color: var(--mint); background: var(--mint-soft); }
-    .order-pos { width: 24px; height: 24px; display: grid; place-items: center; color: var(--gold); border: 1px solid #f0c77955; border-radius: 7px; font: 10px 'DM Mono'; }
-    .pair-row { display: grid; grid-template-columns: 1fr 90px; gap: 7px; align-items: center; font-size: 11px; }
-    .pair-row select { padding: 8px; color: var(--text); border-radius: 8px; border: 1px solid var(--line-bright); background: #0d1119; font-size: 11px; }
-    .criteria { display: grid; gap: 7px; }
-    .criterion-line input { accent-color: var(--mint); width: 16px; height: 16px; }
-    .draft-response { padding: 12px; border-radius: 10px; background: #00000020; border: 1px dashed #ffffff2b; color: var(--muted); font-size: 11px; line-height: 1.5; }
-    .draft-response b { color: var(--text); }
-
-    /* Team phone */
-    .team-view { max-width: 740px; margin: 0 auto; }
-    .team-selector { display: flex; gap: 7px; flex-wrap: wrap; margin: 13px 0; }
-    .team-select-chip { color: var(--muted); border: 1px solid var(--line); border-radius: 999px; background: #ffffff06; padding: 7px 10px; font-size: 10px; }
-    .team-select-chip.active { color: var(--mint); border-color: var(--mint); background: var(--mint-soft); }
-    .phone-shell { width: min(100%, 430px); margin: 25px auto; padding: 11px; border: 1px solid #ffffff25; border-radius: 37px; background: #080b11; box-shadow: 0 24px 80px #0008; }
-    .phone-screen { min-height: 690px; display: flex; flex-direction: column; border-radius: 29px; overflow: hidden; border: 1px solid #ffffff1c; background: linear-gradient(170deg, #202b37, #10151d 60%, #171826); }
-    .phone-notch { width: 130px; height: 22px; margin: 0 auto; background: #080b11; border-radius: 0 0 16px 16px; }
-    .phone-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 20px 23px 12px; }
-    .phone-head h2 { margin: 3px 0 0; font-size: 22px; }
-    .phone-status { margin: 0 23px; padding: 10px 12px; border-radius: 12px; background: #ffffff08; border: 1px solid var(--line); font-size: 11px; color: var(--muted); }
-    .phone-status b { color: var(--text); display: block; margin-bottom: 3px; }
-    .phone-stage { flex: 1; display: grid; align-content: center; gap: 22px; padding: 30px 23px; text-align: center; }
-    .phone-signal { font: 29px var(--serif); line-height: 1.1; }
-    .buzz-button { width: min(74vw, 270px); aspect-ratio: 1; margin: 0 auto; border-radius: 50%; border: 13px solid #d65d67; background: radial-gradient(circle at 34% 24%, #ffabb0, #ed6a73 42%, #a63d52); color: white; box-shadow: inset 0 -11px 0 #8c2f44, 0 0 0 10px #ed6a7314, 0 18px 40px #0009; font: 900 23px var(--serif); transition: transform .12s ease, filter .12s ease; }
-    .buzz-button:not(:disabled):hover { transform: scale(1.03); filter: brightness(1.08); }
-    .buzz-button:active { transform: scale(.97); }
-    .buzz-button.ready { background: radial-gradient(circle at 34% 24%, #b1ffe7, #72e0c3 42%, #258d7a); border-color: #5bc9ae; box-shadow: inset 0 -11px 0 #227362, 0 0 0 10px #72e0c314, 0 18px 40px #0009; color: #09231e; }
-    .buzz-button.wait { background: radial-gradient(circle at 34% 24%, #ff9da3, #ed6a73 42%, #a63d52); }
-    .buzz-button:disabled { cursor: not-allowed; opacity: .52; }
-    .phone-score { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 23px 23px; }
-    .phone-stat { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: #ffffff07; }
-    .phone-stat small { color: var(--muted); display: block; font-size: 10px; }
-    .phone-stat b { display: block; margin-top: 4px; color: var(--gold); font: 22px 'DM Mono'; }
-    .connection { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px; color: var(--muted); font-size: 10px; }
-
-    /* Scoreboard */
-    .scoreboard { position: fixed; inset: 0; z-index: 40; padding: 30px; display: grid; place-items: center; background: #090b11ed; backdrop-filter: blur(18px); }
-    .scoreboard-inner { width: min(1180px, 100%); max-height: calc(100vh - 60px); overflow: auto; padding: 28px; border-radius: 23px; border: 1px solid #f0c7794d; background: linear-gradient(145deg, #292c3d, #141821); box-shadow: 0 35px 110px #000b; }
-    .scoreboard-title { display: flex; justify-content: space-between; gap: 15px; align-items: end; margin-bottom: 20px; }
-    .scoreboard-title h2 { margin: 6px 0 0; font: clamp(35px, 5vw, 72px) var(--serif); line-height: .9; }
-    .rank-table { display: grid; gap: 7px; }
-    .rank-row { display: grid; grid-template-columns: 55px minmax(0, 1fr) 100px 85px 130px; gap: 10px; align-items: center; padding: 13px 15px; border-radius: 12px; border: 1px solid var(--line); background: #ffffff06; }
-    .rank-row.top { border-color: #f0c77966; background: var(--gold-soft); }
-    .rank-no { color: var(--gold); font: 24px var(--serif); }
-    .rank-row strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .rank-row small { color: var(--muted); font-size: 10px; }
-    .rank-points { color: var(--gold); font: 19px 'DM Mono'; }
-    .rank-cells { color: var(--muted); font-size: 11px; }
-    .podium-note { padding: 12px; border-radius: 10px; margin-top: 14px; color: var(--muted); background: #72e0c30d; border: 1px solid #72e0c32b; font-size: 11px; }
-
-    /* Empty / finish */
-    .empty-state { min-height: 350px; display: grid; place-items: center; text-align: center; padding: 30px; }
-    .empty-state h2 { font: 42px var(--serif); margin: 15px 0 8px; }
-    .finish-art { height: 190px; position: relative; border-radius: 16px; background: radial-gradient(circle at 50% 60%, #f0c77955, transparent 35%), linear-gradient(160deg, #473e58, #15212b); overflow: hidden; }
-    .finish-door { position: absolute; left: 50%; bottom: 0; width: 160px; height: 155px; transform: translateX(-50%); border: 7px solid #17151e; background: linear-gradient(90deg, #3d3347, #c4a87555); box-shadow: 0 0 42px #f0c77988; }
-    .finish-door::before { content: '404'; position: absolute; inset: 22%; display: grid; place-items: center; color: #f0c779; font: 44px var(--serif); border: 1px solid #f0c77977; }
-    .finish-door::after { content: ''; position: absolute; top: 53%; right: 15px; width: 9px; height: 9px; background: var(--gold); border-radius: 50%; box-shadow: 0 0 16px var(--gold); }
-    .finish-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 17px; }
-
-    /* Toast */
-    .toast-region { position: fixed; right: 18px; bottom: 18px; z-index: 60; display: grid; gap: 8px; width: min(360px, calc(100% - 36px)); }
-    .toast { padding: 13px 14px; border-radius: 12px; border: 1px solid var(--line-bright); background: #202634f5; box-shadow: 0 15px 35px #0008; font-size: 12px; animation: toast-in .25s ease; }
-    .toast b { display: block; color: var(--gold); margin-bottom: 3px; }
-    @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }
-
-    @media (max-width: 1180px) {
-      .layout-3 { grid-template-columns: 220px minmax(0, 1fr); }
-      .layout-3 > aside:last-child { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; align-items: start; }
-      .layout-3 > aside:last-child .card:last-child { grid-column: 1 / -1; }
-    }
-    @media (max-width: 900px) {
-      .topbar { padding: 13px 18px; }
-      .hero-title { font-size: clamp(52px, 12vw, 80px); }
-      .landing-grid, .lobby-grid, .layout-2 { grid-template-columns: 1fr; }
-      .hotel-scene { min-height: 490px; }
-      .lobby-grid .qr-card { grid-row: 2; }
-      .layout-3 { grid-template-columns: 1fr; }
-      .layout-3 > aside:last-child { grid-column: auto; grid-template-columns: 1fr; }
-      .stage-screen { min-height: 600px; }
-    }
-    @media (max-width: 620px) {
-      .wrap { width: min(100% - 24px, 1500px); }
-      .brand-copy span { display: none; }
-      .top-actions .pill { display: none; }
-      .page { padding-top: 22px; }
-      .section-grid { grid-template-columns: 1fr; }
-      .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .score-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      .score-strip .score-chip:nth-child(n+9) { grid-row: auto; }
-      .public-options, .choice-grid { grid-template-columns: 1fr; }
-      .rank-row { grid-template-columns: 42px minmax(0, 1fr) 75px; }
-      .rank-row > :nth-child(4), .rank-row > :nth-child(5) { display: none; }
-      .scoreboard { padding: 12px; }
-      .scoreboard-inner { max-height: calc(100vh - 24px); padding: 18px; }
-      .scoreboard-title { align-items: start; }
-      .hotel-scene { min-height: 390px; }
-      .window { top: 11%; height: 37%; }
-      .desk { bottom: 12%; }
-      .rotary { bottom: 19%; right: 8%; }
-      .key-rack { bottom: 22%; left: 8%; }
-      .wall-sign { top: 11%; right: 8%; }
-    }
-
-    /* Inline decorative phone */
-    .phone-illustration { width: 100%; height: auto; }
-  
-/* Visual stage and compact MC workspace */
-.hero-copy .hero-lede{max-width:390px;font-size:18px}.landing-grid{grid-template-columns:.85fr 1.15fr}.hotel-scene{min-height:570px}.section-grid .feature p{display:none}.feature{display:flex;gap:18px;align-items:center}.hero-foot .hero-stat:last-child{display:none}
-.layout-3{grid-template-columns:210px minmax(0,1fr) 250px}.page-heading p{display:none}.page-heading{margin-bottom:16px}.team-row small{display:none}.team-row{padding:9px 0}.host-preview .stage-content{padding:25px 5%;min-height:440px}.host-preview .signal-copy{font-size:36px}.host-preview .stage-phone{width:280px}.host-preview .stage-top h2{display:none}.winner-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:16px}.winner-picker .btn{font:700 22px monospace;padding:13px}.winner-picker .btn:hover{background:var(--mint);color:#10131b}summary{cursor:pointer;color:var(--gold);padding:8px 0}.stage-toolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px}
-body[data-role="stage"] .topbar{display:none}body[data-role="stage"] .page{padding-top:12px;max-width:1800px}body[data-role="stage"] .stage-screen{min-height:calc(100vh - 90px)}.stage-scene-art{opacity:.85;background:repeating-linear-gradient(90deg,transparent 0 19%,#f0c77910 20%,transparent 20.2%),linear-gradient(0deg,#05070c 0%,transparent 60%)}.stage-center .signal-copy{max-width:800px}.stage-center .subtle{font-size:15px;max-width:580px;margin:12px auto}.stage-phone{width:min(360px,60vw);filter:drop-shadow(0 15px 35px #000)}.stage-content{padding:25px 6%}.stage-center>svg{width:140px;height:140px}.signal-copy{font-size:clamp(32px,4vw,60px)}body[data-phase="buzz-open"] .stage-phone{animation:ringing .22s infinite alternate}body[data-phase="buzz-open"] .stage-screen{box-shadow:inset 0 0 90px #72e0c330}.question-panel{background:#111722ed;border:1px solid #f0c77933;border-radius:20px;padding:24px;width:100%;text-align:left}.question-panel h2{font-size:clamp(22px,2.5vw,36px)}.public-option{background:#253040;border:1px solid #f0c77933;min-height:62px}.solution{border-left:4px solid var(--mint);background:#72e0c315;padding:14px 20px;margin-top:18px}.solution p{margin-bottom:0}.score-chip{background:#141b27dd}.score-chip small:last-child{font-size:20px;color:var(--gold)}.stage-scene-art .scene-door{box-shadow:0 0 70px #ed6a7320,inset 3px 0 20px #000}.stage-scene-art .scene-file{opacity:.5}.stage-kicker{background:#10131b99;display:inline-block;padding:8px 14px;border-radius:30px}@keyframes ringing{to{transform:rotate(5deg) translateY(-5px)}}
-@media(max-width:1050px){.layout-3{grid-template-columns:1fr}.layout-3>aside:first-child{order:3}.landing-grid{grid-template-columns:1fr}.hotel-scene{min-height:420px}.winner-picker{grid-template-columns:repeat(5,1fr)}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-
-</style>
-</head>
-<body>
-  <div class="noise"></div><div class="grain"></div><div class="fog"></div>
-  <div id="app" class="app-shell"></div>
-  <div id="toastRegion" class="toast-region" aria-live="polite"></div>
-
-  <script>
-    'use strict';
-
-    const STORE_KEY = 'room404-game-v1';
-    const CHANNEL_NAME = 'room404-live-v1';
-    const INTRO_TEXT = 'Chào mừng đến khách sạn 404. Mười lăm đội đã bước vào, nhưng cửa chính vừa bị khóa. Điện thoại ở quầy lễ tân vẫn đổ chuông. Hãy nhớ: chỉ bắt máy khi màn hình xác nhận cuộc gọi từ phòng 404. Bắt đúng và nhanh nhất, đội bạn nhận câu hỏi. Mỗi đáp án đúng giúp các bạn tiến gần sự thật.';
-    const phases = ['lobby','rules','practice','ready','armed','waiting','buzz-open','winner-locked','preview','answering','recorded','resolved','no-winner','scoreboard','finished'];
-    const phaseLabels = { lobby:'Sảnh chờ', rules:'Luật chơi', practice:'Lượt thử', ready:'Sẵn sàng', armed:'Chuẩn bị', waiting:'Chờ tín hiệu', 'buzz-open':'Bắt máy', 'winner-locked':'Đã kết nối', preview:'Xem câu hỏi', answering:'Đang trả lời', recorded:'Đã ghi nhận', resolved:'Đã giải quyết', 'no-winner':'Không có kết nối', scoreboard:'Bảng xếp hạng', finished:'Kết thúc' };
-    const chapterLabels = ['I · Nhận tín hiệu', 'II · Lần theo dấu vết', 'III · Mở hồ sơ 404'];
-    const teamNames = ['Mực Tím','Bóng Đèn','Mắt Mèo','Chìa Khóa','Gió Hành Lang','Đèn Đỏ','Kẻ Gõ Cửa','Hồ Sơ Mật','Tiếng Rè','Đồng Hồ Câm','Bậc Thang','Bóng Dài','Người Trực Đêm','Gương Mờ','Căn Phòng Cuối'];
-
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#070a10"><title>Cuộc gọi từ phòng 404</title><style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=DM+Mono:wght@500&display=swap');
+:root{--ink:#f6f1e6;--muted:#aeb6c6;--gold:#f3c978;--mint:#72e3c4;--red:#ff727c;--panel:#111722e8;--line:#ffffff1a}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#070a10;color:var(--ink);font-family:'Be Vietnam Pro',sans-serif}button,input,select{font:inherit}button{color:inherit}.hidden{display:none!important}body:before{content:"";position:fixed;inset:0;background:linear-gradient(90deg,#06090fe8,#070a1080 55%,#070a1030),url('assets/room404-hotel.webp') center/cover no-repeat;z-index:-3}body:after{content:"";position:fixed;inset:0;background:radial-gradient(circle at 78% 35%,transparent,#0007 72%);z-index:-2;pointer-events:none}.host{display:grid;grid-template-rows:auto 1fr auto;min-height:100vh}.top{height:68px;padding:0 26px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:#080b12dc;backdrop-filter:blur(16px)}.brand{display:flex;align-items:center;gap:13px}.mark{width:42px;height:42px;border:1px solid #f3c97866;display:grid;place-items:center;color:var(--gold);font:800 15px 'DM Mono';transform:rotate(-3deg)}.brand b{display:block;letter-spacing:.08em;font-size:13px}.brand small{color:var(--muted)}.actions{display:flex;gap:8px;align-items:center}.btn{border:1px solid var(--line);background:#171d29e8;border-radius:11px;padding:10px 14px;font-weight:700;cursor:pointer;transition:.18s}.btn:hover{transform:translateY(-1px);border-color:#f3c97888;background:#202737}.btn.gold{background:var(--gold);color:#15100a}.btn.mint{background:var(--mint);color:#07130f}.btn.red{border-color:#ff727c88;color:#ffbbc0}.btn:disabled{opacity:.4;cursor:not-allowed}.kbd{border:1px solid #ffffff26;background:#ffffff0b;border-radius:6px;padding:2px 6px;font:11px 'DM Mono';color:var(--muted)}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 286px;gap:17px;padding:17px 23px;min-height:0}.scene{position:relative;min-height:620px;border:1px solid #f3c97835;border-radius:22px;overflow:hidden;background:linear-gradient(90deg,#070a10e8,#070a1070 58%,#070a1028),url('assets/room404-hotel.webp') center/cover no-repeat;box-shadow:0 30px 80px #000b}.scene:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#06090fe8,transparent 36%);pointer-events:none}.scene-head{position:relative;z-index:2;display:flex;justify-content:space-between;padding:23px 27px}.eyebrow{font:11px 'DM Mono';letter-spacing:.16em;color:var(--gold);text-transform:uppercase}.round{font:700 13px 'DM Mono';color:var(--muted)}.scene-body{position:relative;z-index:2;min-height:500px;display:grid;align-items:center;padding:30px clamp(28px,5vw,76px)}.hero{max-width:650px}.hero h1{font-family:Georgia,serif;font-size:clamp(48px,7vw,94px);line-height:.91;letter-spacing:-.045em;margin:12px 0 20px}.hero h1 em{font-style:normal;color:var(--gold);text-shadow:0 0 38px #f3c97833}.hero p{max-width:470px;color:var(--muted);font-size:17px;line-height:1.7}.big{font-family:Georgia,serif;font-size:clamp(44px,6vw,86px);line-height:.95;margin:14px 0;text-shadow:0 0 35px #f3c97844}.big.mint{color:var(--mint);text-shadow:0 0 45px #72e3c477}.big.red{color:var(--red)}.phone{width:180px;height:110px;margin-top:18px}.phone:before{content:"☎";font:100px Georgia;color:var(--gold);filter:drop-shadow(0 10px 18px #000)}.claim .phone{animation:ring .18s infinite alternate}.claim .scene{box-shadow:0 0 0 1px #72e3c477,0 0 70px #72e3c422}.count{font:800 clamp(92px,12vw,180px) 'DM Mono';color:var(--gold);line-height:.8;text-shadow:0 0 60px #f3c97877}
+.question{width:min(980px,100%);background:#0b1019eb;border:1px solid #f3c97844;border-radius:20px;padding:24px 26px;box-shadow:0 24px 60px #0008;backdrop-filter:blur(10px)}.q-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}.question h2{font-size:clamp(24px,3vw,38px);line-height:1.25;margin:16px 0 20px}.options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.option{display:flex;align-items:center;gap:12px;min-height:62px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#202838df}.option i{font-style:normal;width:34px;height:34px;border:1px solid #f3c97877;border-radius:9px;display:grid;place-items:center;color:var(--gold);font:800 14px 'DM Mono';flex:0 0 auto}.evidence{padding:13px 16px;border-left:3px solid var(--gold);background:#f3c9780c;line-height:1.65;margin-bottom:14px}.solution{margin-top:16px;padding:14px 17px;border-radius:12px;background:#72e3c415;border:1px solid #72e3c444}.solution b{color:var(--mint)}.result{display:inline-flex;gap:9px;align-items:center;margin-top:15px;padding:9px 14px;border-radius:99px;background:#0007;font-weight:800}.result strong{font:800 21px 'DM Mono';color:var(--gold)}
+.side{display:flex;flex-direction:column;gap:11px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;backdrop-filter:blur(15px)}.panel-title{padding:13px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}.panel-title b{font-size:13px}.score-list{padding:7px;max-height:calc(100vh - 245px);overflow:auto}.score-row{display:grid;grid-template-columns:27px 1fr auto;gap:8px;align-items:center;padding:7px;border-radius:9px}.score-row.active{background:#f3c97815}.score-row .rank{font:800 12px 'DM Mono';color:var(--gold)}.score-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}.score-row strong{font:800 14px 'DM Mono'}.progress{padding:14px}.bar{height:7px;background:#ffffff10;border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--mint));transition:.4s}.progress small{display:flex;justify-content:space-between;margin-top:8px;color:var(--muted)}
+.dock{min-height:94px;border-top:1px solid var(--line);background:#080b12ef;backdrop-filter:blur(18px);padding:13px 24px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:17px}.dock b{display:block;font-size:15px}.dock span{color:var(--muted);font-size:12px}.timer{font:800 33px 'DM Mono';color:var(--gold);min-width:68px;text-align:center}.timer.danger{color:var(--red)}.team-picker{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:22px;max-width:620px}.team-btn{padding:13px 8px;background:#151c29df;border:1px solid #ffffff25;border-radius:11px;cursor:pointer;font:800 21px 'DM Mono'}.team-btn:hover{background:var(--mint);color:#07130f}.editor{margin-top:14px}.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.choice{padding:11px;text-align:left;border:1px solid var(--line);background:#151c29;border-radius:9px;cursor:pointer}.choice.selected{border-color:var(--gold);background:#f3c97818}.toggle-row,.criterion{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px;border-bottom:1px solid var(--line)}.tiny{padding:6px 9px}.input,select{width:100%;background:#0a0e15;color:var(--ink);border:1px solid #ffffff25;border-radius:9px;padding:10px}.order-grid{display:grid;gap:7px}.order-item{display:grid;grid-template-columns:32px 1fr;gap:8px;text-align:left}.order-item .pos{color:var(--gold)}
+.modal{position:fixed;inset:0;z-index:50;background:#03050add;display:grid;place-items:center;padding:20px;backdrop-filter:blur(15px)}.modal-card{width:min(850px,100%);max-height:88vh;overflow:auto;background:#111722;border:1px solid #f3c97855;border-radius:22px;padding:26px;box-shadow:0 30px 100px #000}.modal-head{display:flex;justify-content:space-between;align-items:center}.rules-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:21px 0}.rule{padding:17px;border:1px solid var(--line);border-radius:13px;background:#ffffff05}.rule strong{font:800 34px 'DM Mono';color:var(--gold);display:block;margin-bottom:12px}.rule b{display:block}.rule p{font-size:13px;color:var(--muted);line-height:1.6}.shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.shortcuts div{display:flex;justify-content:space-between;padding:9px 11px;background:#ffffff05;border-radius:9px;color:var(--muted)}.board{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.board-row{padding:13px;border:1px solid var(--line);border-radius:11px;background:#ffffff06;display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:9px}.board-row.top{border-color:#f3c97855}.board-row strong:last-child{color:var(--gold);font:800 19px 'DM Mono'}
+.stage{min-height:100vh;padding:10px}.stage .scene{min-height:calc(100vh - 20px)}.stage .scene-body{min-height:calc(100vh - 105px)}.stage .question{width:min(1150px,100%)}.score-strip{position:absolute;z-index:3;left:18px;right:18px;bottom:13px;display:grid;grid-template-columns:repeat(15,1fr);gap:4px}.chip{background:#080c13e8;border:1px solid #ffffff15;border-radius:7px;text-align:center;padding:5px 2px}.chip b{font:800 12px 'DM Mono';display:block}.chip small{color:var(--gold);font:10px 'DM Mono'}.stage-tools{position:fixed;right:18px;top:18px;z-index:20;opacity:.12}.stage-tools:hover{opacity:1}.toast{position:fixed;right:20px;bottom:105px;z-index:80;background:#171e2b;border:1px solid #f3c97855;border-radius:11px;padding:11px 15px;box-shadow:0 15px 50px #000;animation:toast .25s}@keyframes ring{to{transform:rotate(5deg) translateY(-4px)}}@keyframes toast{from{transform:translateY(10px);opacity:0}}
+@media(max-width:1000px){.main{grid-template-columns:1fr}.side{display:none}.options,.choice-grid{grid-template-columns:1fr}.brand small,.desktop{display:none}.rules-grid,.board{grid-template-columns:1fr}.team-picker{grid-template-columns:repeat(3,1fr)}}@media(max-width:600px){.main{padding:7px}.scene-body{padding:20px}.hero h1{font-size:51px}.dock{grid-template-columns:1fr;padding:11px 14px}.question{padding:16px}.stage{padding:0}.stage .scene{border-radius:0;min-height:100vh}.score-strip{display:none}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style></head><body><div id="app"></div><div id="overlay"></div><div id="toast"></div><script>
+const KEY='room404-v3',CHANNEL='room404-live-v3';
     const questions = [
       { id:'D01', type:'A', typeName:'Chìa khóa đúng', duration:20, prompt:'Sau bước Ghi nhận, nhóm điều tra phải làm gì?', options:['Kết luận ngay.','Đối chiếu một nguồn độc lập.','Xóa hồ sơ gốc.','Chọn lời kể gây chú ý nhất.'], correct:'B', explanation:'Quy trình yêu cầu đối chiếu với một nguồn độc lập trước khi kết luận.', cue:'Tờ giấy đầu tiên trong hồ sơ đang tự lật.' },
       { id:'D02', type:'B', typeName:'Hai dòng camera', duration:25, prompt:'Đánh giá hai nhận định sau về nguyên tắc Ghi nhận.', statements:['“Tôi nghe thấy ba tiếng gõ cửa” là ghi nhận trực tiếp.','Khi hai nguồn mâu thuẫn, nên bỏ ngay nguồn khác với dự đoán ban đầu.'], correct:[true,false], explanation:'Nhận định đầu mô tả điều nghe trực tiếp. Khi mâu thuẫn, phải giữ cả hai nguồn và đánh dấu chưa xác minh.', cue:'Camera hành lang vừa bật sáng.' },
@@ -454,364 +28,106 @@ body[data-role="stage"] .topbar{display:none}body[data-role="stage"] .page{paddi
       { id:'D15', type:'H', typeName:'Mở hồ sơ 404', duration:40, prompt:'Đề xuất một cách xử lý khi nhân chứng và camera cho thông tin khác nhau, rồi giải thích.', criteria:['Đưa ra hành động phù hợp: giữ nguồn, đánh dấu chưa xác minh, hoặc đối chiếu thêm.','Giải thích được vì sao chưa thể biến suy đoán thành sự thật.'], explanation:'Câu trả lời vận dụng cần có hành động kiểm chứng và lý do dựa trên giới hạn của dữ liệu.', cue:'Ổ khóa cuối cùng đang chờ người giải mã.' }
     ];
 
-    const SVG = {
-      phone: (cls='phone-svg') => `<svg class="${cls}" viewBox="0 0 280 220" role="img" aria-label="Điện thoại cổ phòng 404"><defs><linearGradient id="phoneBody" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#73523c"/><stop offset=".5" stop-color="#3b2b29"/><stop offset="1" stop-color="#17131a"/></linearGradient><linearGradient id="phoneTop" x1="0" x2="1"><stop stop-color="#a57950"/><stop offset="1" stop-color="#45302c"/></linearGradient></defs><ellipse cx="140" cy="197" rx="100" ry="13" fill="#0008"/><rect x="48" y="89" width="184" height="92" rx="24" fill="url(#phoneBody)" stroke="#f0c77955" stroke-width="3"/><path d="M39 83C43 42 78 33 113 55L135 70L165 57C203 37 238 46 242 83C230 93 212 99 193 102L167 84L140 105L112 84L86 102C66 99 48 93 39 83Z" fill="url(#phoneTop)" stroke="#f0c77977" stroke-width="3"/><path d="M61 79C69 56 88 55 108 70L120 78L106 87L84 79L71 89Z" fill="#291d23"/><path d="M219 79C211 56 192 55 172 70L160 78L174 87L196 79L209 89Z" fill="#291d23"/><circle cx="116" cy="130" r="8" fill="#d1a36c"/><circle cx="140" cy="127" r="8" fill="#d1a36c"/><circle cx="164" cy="130" r="8" fill="#d1a36c"/><circle cx="103" cy="153" r="6" fill="#a87b54"/><circle cx="127" cy="151" r="6" fill="#a87b54"/><circle cx="151" cy="151" r="6" fill="#a87b54"/><circle cx="175" cy="153" r="6" fill="#a87b54"/><path d="M97 178H184" stroke="#f0c77933" stroke-width="3" stroke-linecap="round"/><path d="M36 80C43 48 77 31 106 48C122 57 129 72 137 77C148 67 158 56 175 48C206 33 239 49 245 80" fill="none" stroke="#ed6a7388" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 8"/></svg>`,
-      key: `<svg viewBox="0 0 180 180" aria-hidden="true"><circle cx="90" cy="78" r="54" fill="#f0c77912" stroke="#f0c77988" stroke-width="2"/><circle cx="90" cy="78" r="31" fill="none" stroke="#f0c779" stroke-width="8"/><path d="M90 109V156M90 131H110M90 143H104" stroke="#f0c779" stroke-width="8" stroke-linecap="round"/><path d="M47 32L39 22M133 32L141 22" stroke="#72e0c3" stroke-width="4" stroke-linecap="round"/></svg>`
-    };
-
-    function makeTeams() {
-      return teamNames.map((name, i) => ({ id: i + 1, number: i + 1, name, avatar: ['M','B','M','K','G','Đ','K','H','R','Đ','B','B','N','G','C'][i], online: true, approved: true, early: false, holds: 0, answered: 0, full: 0 }));
-    }
-    function initialState() {
-      return { version: 1, sessionId: 'session-404-demo', title: 'Cuộc gọi từ phòng 404', joinCode: '404404', phase: 'lobby', currentIndex: 0, winnerTeamId: null, earlyTeams: [], deadline: null, signalName: 'ĐƯỜNG DÂY ĐANG IM LẶNG', soundEnabled: false, reducedMotion: false, teams: makeTeams(), results: [], adjustments: [], audit: [{ type:'session', text:'Tạo phiên demo 15 đội', at: Date.now() }], draft: emptyDraft(), noWinner: false, introPlayed: false };
-    }
-    function emptyDraft() { return { selected: null, statements: [null, null], order: [], pairs: {}, criteria: [], text: '' }; }
-    let state = loadState();
-    let currentRole = getRole();
-    let selectedTeamId = Number(new URLSearchParams(location.hash.split('?')[1] || '').get('team')) || 1;
-    let tickTimer = null;
-    let channel = null;
-    let activeAudio = [];
-
-    try { channel = new BroadcastChannel(CHANNEL_NAME); channel.onmessage = e => receiveState(e.data); } catch (_) { channel = null; }
-    window.addEventListener('storage', e => { if (e.key === STORE_KEY && e.newValue) receiveState(JSON.parse(e.newValue)); });
-    window.addEventListener('hashchange', () => { currentRole = getRole(); selectedTeamId = getSelectedTeam(); render(); });
-    window.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && state.phase === 'scoreboard') { mutate(s => { s.phase = s.previousPhase || 'resolved'; s.previousPhase = null; }); }
-      if (e.key === 'Enter' && currentRole === 'host' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) {
-        const primary = document.querySelector('[data-primary="true"]'); if (primary && !primary.disabled) primary.click();
-      }
-    });
-
-    function loadState() {
-      try { const saved = JSON.parse(localStorage.getItem(STORE_KEY)); return saved && saved.teams && saved.teams.length === 15 ? saved : initialState(); } catch (_) { return initialState(); }
-    }
-    function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); if (channel) channel.postMessage(state); }
-    function receiveState(next) {
-      if (!next || next.version < state.version) return;
-      const previous = state;
-      state = next; saveLocalOnly(); render(); updateLiveBits();
-      playTransitionCue(previous, next);
-    }
-    function saveLocalOnly() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-    function mutate(fn, message = '') {
-      const next = structuredClone(state); fn(next); next.version = (state.version || 0) + 1; if (message) next.audit = [{ type:'action', text: message, at: Date.now() }, ...(next.audit || [])].slice(0, 80); state = next; saveState(); render(); toast(message || 'Đã cập nhật trạng thái.');
-    }
-    function mutateSilent(fn) { const next = structuredClone(state); fn(next); next.version = (state.version || 0) + 1; state = next; saveState(); render(); }
-    function getRole() { const route = (location.hash.split('?')[0] || '#/').replace('#/',''); return ['host','stage','team'].includes(route) ? route : 'home'; }
-    function getSelectedTeam() { return Number(new URLSearchParams(location.hash.split('?')[1] || '').get('team')) || selectedTeamId || 1; }
-    function navigate(route) { location.hash = route; }
-    function team(id) { return state.teams.find(t => t.id === Number(id)); }
-    function currentQuestion() { return questions[state.currentIndex] || questions[0]; }
-    function chapterIndex() { return Math.min(2, Math.floor(state.currentIndex / 5)); }
-    function scoreFor(id) { const resultPoints = state.results.filter(r => r.teamId === id).reduce((sum, r) => sum + r.points, 0); const adjustment = state.adjustments.filter(a => a.teamId === id).reduce((sum, a) => sum + a.amount, 0); return resultPoints + adjustment; }
-    function rankings() {
-      const sorted = state.teams.map(t => ({ ...t, score: scoreFor(t.id) })).sort((a,b) => b.score - a.score || a.number - b.number);
-      let previous = null; let rank = 0;
-      return sorted.map((t, i) => { if (previous === null || t.score < previous) rank = i + 1; previous = t.score; return { ...t, rank }; });
-    }
-    function resultForRound() { return state.results.find(r => r.questionId === currentQuestion().id && r.teamId === state.winnerTeamId); }
-    function fmtTime(ms) { return `${Math.max(0, Math.ceil(ms / 1000))}s`; }
-    function esc(value) { return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
-    function phaseText() { return phaseLabels[state.phase] || state.phase; }
-    function scoreRank(id) { return rankings().find(r => r.id === Number(id))?.rank || 1; }
-    function showTime() { return state.deadline ? fmtTime(state.deadline - Date.now()) : ''; }
-
-    function render() {
-      document.body.classList.toggle('reduced-motion', !!state.reducedMotion); document.body.dataset.role=currentRole; document.body.dataset.phase=state.phase;
-      const app = document.getElementById('app');
-      app.innerHTML = `${topbar()}<main class="page wrap">${currentRole === 'home' ? landing() : currentRole === 'host' ? host() : currentRole === 'stage' ? stagePage() : teamPage()}</main>${state.phase === 'scoreboard' ? scoreboardOverlay() : ''}`;
-      bind();
-      updateLiveBits();
-      if (!tickTimer) tickTimer = setInterval(tick, 250);
-    }
-
-    function topbar() {
-      if (currentRole === 'home') return `<header class="topbar"><div class="brand"><div class="brand-mark">404</div><div class="brand-copy"><b>CUỘC GỌI TỪ PHÒNG 404</b><span>15 đội · 1 cuộc gọi · 1 quyền trả lời</span></div></div><div class="top-actions"><span class="pill"><i class="dot mint"></i>15 HỒ SƠ</span><button class="btn sm ghost" data-action="rules-home">Xem luật</button></div></header>`;
-      return `<header class="topbar"><button class="brand" data-action="home" style="border:0;background:transparent;color:inherit;padding:0;text-align:left"><div class="brand-mark">404</div><div class="brand-copy"><b>CUỘC GỌI TỪ PHÒNG 404</b><span>${esc(phaseText())} · ${state.currentIndex + 1}/15 · ${esc(chapterLabels[chapterIndex()])}</span></div></button><div class="top-actions"><span class="pill"><i class="dot ${state.phase === 'finished' ? 'gold' : 'mint'}"></i>${esc(phaseText())}</span>${currentRole === 'host' ? `<button class="btn sm ghost" data-action="toggle-motion">${state.reducedMotion ? 'Bật chuyển động' : 'Giảm chuyển động'}</button>` : ''}<button class="btn sm ghost" data-action="rules-home">Luật</button></div></header>`;
-    }
-
-    function landing() {
-      return `<section class="landing"><div class="landing-grid"><div class="hero-copy"><div class="eyebrow">Đêm trực · Hồ sơ chưa xác minh · 23:04</div><h1 class="hero-title">Cuộc gọi từ<br><em>phòng 404</em></h1><p class="hero-lede">15 đội điều tra. Một đường dây bí ẩn. Ai sẽ mở được hồ sơ cuối cùng?</p><div class="hero-actions"><button class="btn gold" data-action="create-room">Bắt đầu đêm trực →</button><button class="btn primary" data-action="open-stage">Mở màn chiếu ↗</button><button class="btn ghost" data-action="rules-home">Xem luật</button></div><div class="hero-foot"><div class="hero-stat"><b>15</b><span>Đội điều tra</span></div><div class="hero-stat"><b>1</b><span>Cuộc gọi / câu</span></div><div class="hero-stat"><b>10</b><span>Điểm tối đa</span></div><div class="hero-stat"><b>0</b><span>Điểm âm</span></div></div></div>${hotelScene()}</div></section><section class="section-grid"><div class="feature"><span class="feature-num">01</span><b>Một tín hiệu thật</b><p>Tín hiệu giả chỉ là bối cảnh. Nút “BẮT MÁY” mở đúng một lần cho mỗi câu.</p></div><div class="feature"><span class="feature-num">02</span><b>Trả lời trực tiếp</b><p>Đội thắng nhìn màn chiếu và nói với MC. MC ghi nhận quyền trên máy điều khiển.</p></div><div class="feature"><span class="feature-num">03</span><b>BXH không phá hòa</b><p>Tổng điểm được tính từ kết quả hiện hành. Bằng điểm vẫn đồng hạng.</p></div></section>`;
-    }
-
-    function hotelScene() {
-      return `<div class="hotel-scene" aria-label="Minh họa sảnh khách sạn ma ám"><div class="window"></div><div class="curtain left"></div><div class="curtain right"></div><div class="ceiling-light"></div><div class="wall-sign"><b>HOTEL 404</b><span>EST. 19— / NIGHT DESK</span></div><div class="key-rack"><div class="keys"><i></i><i></i><i></i><i></i><i></i></div></div><div class="desk"></div><div class="ghost-shadow"></div><div class="scene-fog"></div><div class="rotary">${SVG.phone('phone-illustration')}</div></div>`;
-    }
-
-    function pageHeading(title, desc, kicker='PHÒNG ĐIỀU KHIỂN') { return `<div class="page-heading"><div><div class="eyebrow">${esc(kicker)}</div><h1>${esc(title)}</h1></div><p class="subtle">${esc(desc)}</p></div>`; }
-
-    function host() {
-      if (state.phase === 'finished') return finishedPage(true);
-      const q = currentQuestion();
-      return `${pageHeading('Bảng điều khiển MC', 'Quản lý phiên, duyệt đội, mở tín hiệu và chấm câu trả lời. Đáp án/rubric chỉ xuất hiện tại đây.', 'MC / HOST')}<div class="layout-3"><aside class="stack">${hostSessionCard()}${hostTeamList()}</aside><section class="stack"><div class="card host-preview">${stageMarkup(true)}</div>${hostAnswerPanel(q)}</section><aside class="stack">${hostActionCard()}<details class="card pad"><summary>Lịch sử & sửa điểm</summary>${hostHistoryCard()}</details></aside></div>`;
-    }
-
-    function hostSessionCard() {
-      return `<section class="card pad"><h3>Điều hành trên một máy</h3><p class="subtle">MC ghi nhận đội giành quyền. Màn chiếu mở cùng trình duyệt; chưa hỗ trợ điện thoại từ xa.</p><div class="control-list"><button class="btn gold" data-action="open-stage">Mở màn chiếu ↗</button><button class="btn" data-action="toggle-sound">${state.soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}</button><details><summary>Cài đặt phiên</summary><input class="input" data-session-title value="${esc(state.title)}"><button class="btn" data-action="run-intro">Phát lời mở đầu</button><button class="btn" data-action="reset-demo">Chơi lại từ đầu</button></details></div></section>`;
-    }
-
-    function hostTeamList() {
-      return `<section class="card"><div class="panel-head"><h3>15 đội điều tra</h3><span class="eyebrow">Duyệt / kết nối</span></div><div class="panel-body"><div class="team-status-list">${state.teams.map(t => `<div class="team-row ${state.winnerTeamId === t.id ? 'active':''}"><span class="num">${String(t.number).padStart(2,'0')}</span><div><b>${esc(t.name)}</b><small><i class="dot ${t.online && t.approved ? 'mint' : 'red'}"></i>${t.online && t.approved ? 'Sẵn sàng' : t.approved ? 'Đã duyệt · offline' : 'Chờ duyệt'}</small></div><span class="row-points">${scoreFor(t.id)}đ</span></div>`).join('')}</div></div></section>`;
-    }
-
-    function hostActionCard() {
-      const q = currentQuestion();
-      let action = { title:'Đang ở sảnh chờ', desc:'Duyệt đội và bắt đầu phần luật trước khi vào câu 01.', label:'Bắt đầu phần luật', action:'go-rules', style:'gold' };
-      if (state.phase === 'rules') action = { title:'Kiểm tra luật', desc:'Cho các đội xem ba bước: chờ 404 → bắt máy → trả lời trực tiếp.', label:'Chạy lượt thử', action:'go-practice', style:'primary' };
-      else if (state.phase === 'practice') action = { title:'Lượt thử không tính điểm', desc:'Dùng nút đội chơi để thử. Khi xong, chuyển sang câu 01.', label:'Bắt đầu chương I', action:'start-game', style:'gold' };
-      else if (state.phase === 'ready') action = { title:`Câu ${String(state.currentIndex+1).padStart(2,'0')} sẵn sàng`, desc:'Kiểm tra bộ câu, sau đó phát đếm ngược 3–2–1.', label:'Phát tín hiệu', action:'arm-round', style:'gold' };
-      else if (state.phase === 'armed') action = { title:'Đang đếm ngược', desc:'Hệ thống tự mở giai đoạn chờ tín hiệu khi đếm xong.', label:'Bỏ qua đếm ngược', action:'skip-armed', style:'gold' };
-      else if (state.phase === 'waiting') action = { title:'Có thể có tín hiệu giả', desc:'Các đội chưa được bấm. Tín hiệu thật sẽ mở sau khoảng chờ.', label:'Mở tín hiệu thật ngay', action:'open-buzz', style:'primary' };
-      else if (state.phase === 'buzz-open') action = { title:'Cửa nhận quyền đang mở', desc:`Còn <strong data-live="deadline">${showTime()}</strong>. Hệ thống sẽ tự đóng nếu không có đội bắt máy.`, label:'Đóng quyền / không có winner', action:'close-buzz', style:'danger' };
-      else if (state.phase === 'winner-locked') action = { title:`Đội ${String(state.winnerTeamId).padStart(2,'0')} đã kết nối`, desc:'Khóa quyền đã ghi nhận. Mở đề sau animation ống nghe.', label:'Hiện câu hỏi', action:'show-question', style:'primary' };
-      else if (state.phase === 'preview') action = { title:state.noWinner ? 'Câu không có winner' : `Đội ${String(state.winnerTeamId).padStart(2,'0')} đang chuẩn bị`, desc:state.noWinner ? 'Không có điểm. Mở lời giải mẫu để cùng ôn tập.' : `Thời gian trả lời: ${q.duration} giây · tối đa 10 điểm.`, label:state.noWinner ? 'Mở lời giải / kết thúc câu' : 'Bắt đầu đồng hồ trả lời', action:state.noWinner ? 'resolve-no-winner' : 'start-answering', style:state.noWinner ? 'gold':'primary' };
-      else if (state.phase === 'answering') action = { title:'Đội đang trả lời', desc:`Đồng hồ còn <strong data-live="deadline">${showTime()}</strong>. Nhấn ghi nhận ngay khi đội chốt bằng lời.`, label:'Ghi nhận câu trả lời', action:'record-answer', style:'primary' };
-      else if (state.phase === 'recorded') action = { title:'Câu trả lời đã khóa', desc:'Nhập đủ lời đáp của đội, kiểm tra tiêu chí rồi xác nhận chấm.', label:'Chấm và công bố', action:'grade-answer', style:'gold' };
-      else if (state.phase === 'resolved') action = { title:'Kết quả đã chốt', desc:'Giải thích đáp án, sau đó chuyển sang câu tiếp theo hoặc mở BXH.', label:state.currentIndex >= 14 ? 'Kết thúc phiên' : 'Sang câu tiếp theo', action:state.currentIndex >= 14 ? 'finish-game':'next-question', style:'primary' };
-      else if (state.phase === 'no-winner') action = { title:'Không có kết nối hợp lệ', desc:'Mở đề và lời giải ngắn để ôn tập, không cộng điểm.', label:'Mở câu hỏi', action:'show-question', style:'gold' };
-      return `<section class="card"><div class="panel-head"><h3>Hành động chính</h3><span class="eyebrow">Enter</span></div><div class="panel-body"><div class="action-main"><b>${action.title}</b><p>${action.desc}</p><button class="btn ${action.style}" data-action="${action.action}" data-primary="true">${action.label}</button></div>${state.phase === 'buzz-open' ? `<div class="winner-picker">${state.teams.map(t=>`<button class="btn" data-action="host-winner" data-team="${t.id}">${String(t.id).padStart(2,'0')}</button>`).join('')}</div><small>Chọn đội vừa giành quyền</small>` : ''}${['armed','waiting','buzz-open','answering'].includes(state.phase) ? `<div class="phase-progress"><i data-progress></i></div><div class="countdown" data-live="deadline">${showTime()}</div>` : ''}</div></section>${state.phase === 'resolved' ? `<section class="card"><div class="panel-head"><h3>Điều khiển nhanh</h3></div><div class="panel-body"><div class="host-control-grid"><button class="btn sm" data-action="show-scoreboard">BXH</button><button class="btn sm" data-action="void-round">Hủy câu</button></div></div></section>` : ''}`;
-    }
-
-    function hostHistoryCard() {
-      const recent = state.audit.slice(0, 6);
-      return `<section class="card"><div class="panel-head"><h3>Lịch sử thao tác</h3><span class="eyebrow">audit</span></div><div class="panel-body"><div class="log-list">${recent.length ? recent.map(log => `<div class="log-item"><time>${new Date(log.at).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</time>${esc(log.text)}</div>`).join('') : '<div class="subtle">Chưa có thao tác.</div>'}</div>${state.phase === 'resolved' && state.winnerTeamId ? `<div class="divider"></div><div class="form-row"><label>Sửa điểm chênh lệch</label><input class="input" type="number" data-adjustment placeholder="Ví dụ: 2 hoặc -2"></div><div class="form-row"><label>Lý do bắt buộc</label><input class="input" data-adjustment-reason placeholder="Nhập lý do điều chỉnh"></div><button class="btn sm ghost" data-action="adjust-score">Lưu bản điều chỉnh</button>` : ''}</div></section>`;
-    }
-
-    function hostAnswerPanel(q) {
-      const canAnswer = ['preview','answering','recorded','resolved'].includes(state.phase) && !state.noWinner;
-      if (!canAnswer) return ''; 
-      return `<section class="card"><div class="panel-head"><h3>Nhập & chấm câu trả lời</h3><span class="pill">${esc(q.type)} · ${q.duration}s · 10đ</span></div><div class="panel-body">${canAnswer ? answerControls(q) : `<div class="empty-state" style="min-height:170px;padding:14px"><div><div class="eyebrow">Chưa mở vùng chấm</div><p class="subtle">Khi một đội bắt máy thành công, câu hỏi và vùng chấm sẽ xuất hiện ở đây.</p></div></div>`}</div></section>`;
-    }
-
-    function stagePage() {
-      if (state.phase === 'finished') return finishedPage(false);
-      return `<div class="stage-toolbar"><button class="btn sm" data-action="stage-sound">${state.soundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh'}</button><button class="btn sm" data-action="show-scoreboard">Bảng điểm</button></div>${stageMarkup(false)}`;
-    }
-    function stageControlCard() {
-      const sound = state.soundEnabled;
-      return `<section class="card"><div class="panel-head"><h3>Trạng thái sân khấu</h3><span class="pill"><i class="dot ${sound ? 'mint':'red'}"></i>${sound ? 'âm thanh bật':'âm thanh tắt'}</span></div><div class="panel-body"><div class="status-box"><i class="dot mint"></i><div><b>Đồng bộ phiên</b><span>Live snapshot · v${state.version}</span></div></div><div class="divider"></div><button class="btn ${sound ? 'ghost':'primary'}" data-action="stage-sound" style="width:100%">${sound ? 'Tắt âm thanh sân khấu' : 'Bật âm thanh sân khấu'}</button><button class="btn ghost" data-action="show-scoreboard" style="width:100%;margin-top:8px">Mở bảng xếp hạng</button><div class="subtle" style="margin-top:12px">Âm thanh chỉ phát tại cửa sổ sân khấu. Tín hiệu quan trọng luôn có chữ tương đương.</div></div></section>`;
-    }
-    function stageRulesCard() {
-      return `<section class="card"><div class="panel-head"><h3>Ba hồi câu chuyện</h3></div><div class="panel-body"><div class="control-list"><div class="status-box"><span class="gold mono">I</span><div><b>Nhận tín hiệu</b><span>Câu 01–05 · quầy lễ tân</span></div></div><div class="status-box"><span class="mint mono">II</span><div><b>Lần theo dấu vết</b><span>Câu 06–10 · hành lang</span></div></div><div class="status-box"><span class="red mono">III</span><div><b>Mở hồ sơ 404</b><span>Câu 11–15 · cửa phòng</span></div></div></div></div></section>`;
-    }
-
-    function stageMarkup(compact=false) {
-      const q = currentQuestion(); const winner = team(state.winnerTeamId); const chapter = chapterIndex();
-      let content = '';
-      if (state.phase === 'lobby') content = `<div class="stage-center"><div class="stage-kicker">TẤT CẢ ĐƯỜNG DÂY ĐANG CHỜ</div><div class="signal-copy gold">Mời 15 đội<br>vào sảnh</div><div class="subtle">15 đội · 15 hồ sơ · tối đa 10 điểm mỗi câu</div>${SVG.key}</div>`;
-      else if (state.phase === 'rules') content = `<div class="stage-center"><div class="stage-kicker">LUẬT CỦA KHÁCH SẠN</div><div class="signal-copy gold">Chờ 404 →<br>Bắt máy → Trả lời</div><div class="subtle">Một đợt giành quyền mỗi câu · không đấu phụ · không thưởng tốc độ trả lời</div></div>`;
-      else if (state.phase === 'practice') content = `<div class="stage-center"><div class="stage-kicker">LƯỢT THỬ · KHÔNG TÍNH ĐIỂM</div><div class="signal-copy">Hãy thử bắt<br>một cuộc gọi</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">MC ghi nhận quyền trên máy điều khiển. Câu trả lời luôn nói trực tiếp với MC.</div></div>`;
-      else if (state.phase === 'ready') content = `<div class="stage-center"><div class="stage-kicker">${esc(q.cue)}</div><div class="signal-copy gold">Câu ${String(state.currentIndex+1).padStart(2,'0')}<br>đang được nạp</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">Các đội chuẩn bị · tín hiệu thật chưa mở</div></div>`;
-      else if (state.phase === 'armed' || state.phase === 'waiting') content = `<div class="stage-center"><div class="stage-kicker">${state.phase === 'armed' ? 'ĐẾM NGƯỢC TÍN HIỆU' : 'TÍN HIỆU CÓ THỂ LÀ GIẢ'}</div><div class="signal-copy ${state.phase === 'waiting' ? 'red':''}">${state.phase === 'armed' ? '3 · 2 · 1' : esc(state.signalName)}</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">${state.phase === 'waiting' ? 'Chưa được bắt máy — chỉ nghe cuộc gọi từ phòng 404.' : 'Chuẩn bị cho tín hiệu 404.'}</div></div>`;
-      else if (state.phase === 'buzz-open') content = `<div class="stage-center"><div class="stage-kicker">TÍN HIỆU THẬT ĐÃ ĐƯỢC XÁC NHẬN</div><div class="signal-copy mint">PHÒNG 404<br>— BẮT MÁY —</div><div class="stage-phone">${SVG.phone()}</div><div class="subtle">MC ghi nhận một đội duy nhất trên bảng điều khiển</div></div>`;
-      else if (state.phase === 'winner-locked') content = `<div class="stage-center"><div class="stage-kicker">ĐƯỜNG DÂY ĐÃ KHÓA</div><div class="winner-card"><div class="eyebrow">ĐỘI ĐÃ KẾT NỐI</div><b>Đội ${String(winner?.number || 0).padStart(2,'0')} · ${esc(winner?.name || '—')}</b><div class="subtle">Đội bạn được trả lời · các đội khác theo dõi câu hỏi</div></div><div class="stage-phone">${SVG.phone()}</div></div>`;
-      else if (['preview','answering','recorded','resolved','no-winner'].includes(state.phase)) content = questionPublic(q, compact);
-      else if (state.phase === 'scoreboard') content = `<div class="stage-center"><div class="signal-copy gold">BẢNG XẾP HẠNG<br>HỒ SƠ 404</div><div class="subtle">Đồng điểm vẫn đồng hạng · không bốc thăm phá hòa</div></div>`;
-      else if (state.phase === 'finished') content = `<div class="stage-center"><div class="signal-copy gold">HỒ SƠ 404<br>ĐÃ ĐƯỢC MỞ</div><div class="subtle">Cửa chính đang mở khóa.</div></div>`;
-      return `<div class="stage-screen chapter-${chapter+1}"><div class="stage-scene-art"><div class="scene-door"></div><div class="scene-file"></div><div class="stage-ambient"></div></div><div class="stage-top"><div><div class="eyebrow">${esc(chapterLabels[chapter])}</div><h2>Cuộc gọi từ phòng 404</h2></div><div style="text-align:right"><div class="round-no">CÂU ${String(state.currentIndex+1).padStart(2,'0')} / 15</div><span class="pill">${esc(phaseText())}</span></div></div><div class="stage-content">${content}</div>${!compact && !['lobby','rules','practice','finished'].includes(state.phase) ? `<div class="stage-bottom">${scoreStrip()}</div>` : ''}</div>`;
-    }
-
-    function questionPublic(q, compact=false) {
-      const winner = team(state.winnerTeamId); const reveal = state.phase === 'resolved';
-      let body = '';
-      if (q.type === 'A' || q.type === 'G') body = `<div class="public-options">${q.options.map((option,i) => `<div class="public-option"><span class="option-key">${String.fromCharCode(65+i)}</span><span>${esc(option)}</span></div>`).join('')}</div>`;
-      else if (q.type === 'B') body = `<div class="stack">${q.statements.map((s,i) => `<div class="public-option"><span class="option-key">${i+1}</span><span>${esc(s)}</span></div>`).join('')}</div>`;
-      else if (q.type === 'C') body = `<div class="stack">${q.items.map((item,i) => `<div class="public-option"><span class="option-key">${i+1}</span><span>${esc(item)}</span></div>`).join('')}</div><div class="subtle" style="margin-top:10px">Nói thứ tự bằng số, ví dụ: 2 – 3 – 1.</div>`;
-      else if (q.type === 'D') body = `<div class="public-options">${q.labels.map((label,i) => `<div class="public-option"><span class="option-key">${i+1}</span><span>${esc(label)}</span></div>`).join('')}</div><div class="subtle" style="margin-top:10px">${q.matches.map((m,i)=>`<div class="public-option"><b>${String.fromCharCode(65+i)}</b> ${esc(m)}</div>`).join('')}</div>`;
-      else if (q.type === 'E' || q.type === 'H') body = `<div class="evidence-box">Câu trả lời mở · đội nói trực tiếp với MC. MC đánh dấu từng tiêu chí đạt sau khi bấm ghi nhận.</div>`;
-      else if (q.type === 'F') body = `<div class="evidence-box">Đội nói một từ hoặc cụm từ ngắn. MC nhập lại sau khi đội chốt.</div>`;
-      return `<div class="question-panel"><div class="question-top"><div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center"><span class="question-type">${esc(q.typeName)} · ${q.duration}s</span><span class="pill"><i class="dot gold"></i>BẢN THỬ</span></div><span class="eyebrow">TỐI ĐA 10 ĐIỂM</span></div><h2>${esc(q.prompt)}</h2>${q.evidence ? `<div class="evidence-box" style="margin-bottom:14px"><b class="gold">BẰNG CHỨNG</b><br>${esc(q.evidence).replace(/\n/g,'<br>')}</div>` : ''}${body}${reveal ? `<div class="solution"><b>LỜI GIẢI</b><p>${esc(q.explanation)}</p></div>` : ''}<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-top:17px"><span class="subtle">${winner ? `Đội ${String(winner.number).padStart(2,'0')} · ${esc(winner.name)} ${state.phase === 'answering' ? 'đang trả lời' : 'giữ quyền'}` : 'Không có đội giữ quyền · câu dùng để ôn tập'}</span>${reveal && state.lastResult ? `<strong class="${state.lastResult.points ? 'mint':'red'}">+${state.lastResult.points} điểm</strong>` : ''}</div></div>`;
-    }
-
-    function scoreStrip() {
-      return `<div class="score-strip">${rankings().map(t => `<div class="score-chip ${t.id === state.winnerTeamId ? 'active':''}"><div class="chip-line"><b>${String(t.number).padStart(2,'0')}</b><small>#${t.rank}</small></div><strong title="${esc(t.name)}">${esc(t.name)}</strong><small>${t.score} điểm</small></div>`).join('')}</div>`;
-    }
-
-    function teamPage() {
-      const t = team(selectedTeamId) || state.teams[0]; selectedTeamId = t.id;
-      return `${pageHeading('Điện thoại đội chơi', 'Mỗi đội dùng một thiết bị để bắt máy. Câu trả lời luôn thực hiện trực tiếp với MC.', 'ĐỘI CHƠI / TEAM')}<div class="team-view"><div class="card pad"><div class="eyebrow">Chọn thiết bị demo</div><div class="team-selector">${state.teams.map(x => `<button class="team-select-chip ${x.id === t.id ? 'active':''}" data-action="select-team" data-team="${x.id}">Đội ${String(x.number).padStart(2,'0')}</button>`).join('')}</div><div class="subtle">Trong buổi thật, mỗi thiết bị nhận mã đội riêng sau khi MC duyệt.</div></div>${teamPhone(t)}</div>`;
-    }
-    function teamPhone(t) {
-      const isCurrent = state.winnerTeamId === t.id; const early = state.earlyTeams.includes(t.id); let statusTitle = 'Chờ cuộc gọi từ phòng 404'; let statusText = 'Giữ màn hình này mở. Chỉ bấm khi nút chuyển sang BẮT MÁY.'; let button = {label:'CHỜ PHÒNG 404', cls:'', disabled:true};
-      if (state.phase === 'rules') { statusTitle='Đọc kỹ luật'; statusText='Chờ 404 → bắt máy → trả lời trực tiếp.'; }
-      else if (state.phase === 'practice') { statusTitle='Lượt thử không tính điểm'; statusText='Bấm để kiểm tra trạng thái thiết bị.'; button={label:'THỬ BẮT MÁY',cls:'ready',disabled:false}; }
-      else if (state.phase === 'waiting') { statusTitle=early ? 'BẤM SỚM — CHỜ CÂU SAU' : 'Chưa được nghe'; statusText=early ? 'Đội bạn bị khóa ở câu này và sẽ trở lại ở câu sau.' : 'Tín hiệu hiện tại có thể là giả. Đợi dòng PHÒNG 404 — BẮT MÁY.'; button={label:early?'BẤM SỚM':'CHỜ TÍN HIỆU',cls:'wait',disabled:early}; }
-      else if (state.phase === 'buzz-open') { statusTitle='PHÒNG 404 — BẮT MÁY'; statusText='Một lần chạm duy nhất. Server nhận trước sẽ xác nhận đội thắng.'; button={label:'BẮT MÁY',cls:'ready',disabled:early}; }
-      else if (state.phase === 'winner-locked' || state.phase === 'preview' || state.phase === 'answering' || state.phase === 'recorded') { statusTitle=isCurrent ? 'ĐỘI BẠN ĐÃ KẾT NỐI' : `ĐỘI ${String(state.winnerTeamId).padStart(2,'0')} ĐÃ BẮT MÁY`; statusText=isCurrent ? 'Nhìn màn hình lớn để nhận câu hỏi. Trả lời trực tiếp với MC.' : 'Theo dõi câu hỏi trên màn hình lớn.'; button={label:isCurrent?'ĐÃ KẾT NỐI':'ĐÃ CÓ ĐỘI BẮT MÁY',cls:isCurrent?'ready':'',disabled:true}; }
-      else if (state.phase === 'resolved') { statusTitle='Câu đã giải quyết'; statusText='Câu tiếp theo sắp bắt đầu.'; }
-      else if (state.phase === 'finished') { statusTitle='Hồ sơ đã mở'; statusText='Cảm ơn đội điều tra.'; }
-      return `<div class="phone-shell"><div class="phone-screen"><div class="phone-notch"></div><div class="phone-head"><div><div class="eyebrow">ĐIỆN THOẠI ĐỘI</div><h2>Đội ${String(t.number).padStart(2,'0')}</h2><div class="subtle">${esc(t.name)}</div></div><div style="text-align:right"><div class="eyebrow">HẠNG</div><strong class="gold" style="font:24px 'DM Mono'">#${scoreRank(t.id)}</strong></div></div><div class="phone-status"><b>${statusTitle}</b>${statusText}</div><div class="phone-stage"><div class="phone-signal ${state.phase === 'buzz-open' ? 'mint' : early ? 'red' : ''}">${state.phase === 'buzz-open' ? 'Đường dây thật<br>đã mở' : state.phase === 'practice' ? 'Sẵn sàng thử' : state.phase === 'finished' ? 'Cửa chính<br>đang mở' : 'Đang nghe...'}</div><button class="buzz-button ${button.cls}" data-action="team-buzz" data-team="${t.id}" ${button.disabled ? 'disabled':''}>${button.label}</button><div class="subtle">${state.phase === 'buzz-open' ? `Còn <b class="gold" data-live="deadline">${showTime()}</b>` : 'Không có popup che nút · không gửi lại lượt offline'}</div></div><div class="phone-score"><div class="phone-stat"><small>TỔNG ĐIỂM</small><b>${scoreFor(t.id)}</b></div><div class="phone-stat"><small>GIỮ QUYỀN</small><b>${t.holds}</b></div></div><div class="connection"><i class="dot ${t.online ? 'mint':'red'}"></i>${t.online ? 'Đã kết nối với phiên' : 'Mất kết nối · nút tạm khóa'}</div></div></div>`;
-    }
-
-    function rulesPage() {
-      return `<section class="card pad" style="max-width:940px;margin:0 auto"><div class="eyebrow">LUẬT CHÍNH THỨC</div><h1 style="font:clamp(38px,6vw,72px) var(--serif);line-height:.95;margin:13px 0 17px">Chỉ một cuộc gọi<br>được xác nhận.</h1><p class="subtle">Mỗi câu có đúng một đợt giành quyền. Bấm sớm chỉ mất quyền ở câu đó; sai hoặc hết giờ không chuyển lượt. Mỗi câu tối đa 10 điểm. Đồng điểm vẫn đồng hạng.</p><div class="section-grid"><div class="feature"><span class="feature-num">01 · CHỜ 404</span><b>Không bấm khi chưa có tín hiệu thật</b><p>Tín hiệu giả có chữ và biểu tượng riêng. Bấm trong giai đoạn chờ sẽ khóa đội ở câu hiện tại.</p></div><div class="feature"><span class="feature-num">02 · BẮT MÁY</span><b>Một lần chạm hợp lệ</b><p>MC chọn đội giành quyền theo hoạt động trực tiếp. Chỉ khóa một đội, không đấu phụ.</p></div><div class="feature"><span class="feature-num">03 · TRẢ LỜI</span><b>Nói trực tiếp với MC</b><p>Các đội chơi trực tiếp tại lớp. MC nhập câu trả lời hoặc đánh dấu rubric trên bảng điều khiển.</p></div></div><div class="divider"></div><div class="card-title"><div><div class="eyebrow">SỰ CỐ</div><h2 style="font-size:20px">Không có winner vẫn kết thúc có kiểm soát</h2></div></div><p class="subtle">Nếu không ai bấm hoặc tất cả bấm sớm, câu hỏi/lời giải vẫn mở để cùng ôn tập, nhận 0 điểm và sang câu mới. Mất mạng không phát lại lượt bấm cũ; tải lại không reset điểm.</p><div class="hero-actions"><button class="btn gold" data-action="home">Quay lại sảnh</button><button class="btn primary" data-action="create-room">Vào bảng MC</button></div></section>`;
-    }
-
-    function answerControls(q) {
-      const locked = state.phase === 'resolved'; const d = state.draft;
-      let body = '';
-      if (q.type === 'A' || q.type === 'G') body = `<div class="choice-grid">${q.options.map((o,i) => `<button class="choice-btn ${d.selected === String.fromCharCode(65+i) ? 'selected':''}" data-action="pick-option" data-value="${String.fromCharCode(65+i)}" ${locked?'disabled':''}><b>${String.fromCharCode(65+i)}.</b> ${esc(o)}</button>`).join('')}</div>`;
-      else if (q.type === 'B') body = `<div class="stack">${q.statements.map((s,i) => `<div class="toggle-line"><span>${i+1}. ${esc(s)}</span><span class="toggle-buttons">${[true,false].map(v => `<button class="mini-toggle ${d.statements[i] === v ? 'selected':''}" data-action="toggle-statement" data-index="${i}" data-value="${v}" ${locked?'disabled':''}>${v?'Đúng':'Sai'}</button>`).join('')}</span></div>`).join('')}</div>`;
-      else if (q.type === 'C') body = `<div class="answer-help">Bấm từng thẻ theo thứ tự đội vừa nói. Số thứ tự sẽ hiện ở bên phải.</div><div class="order-list">${q.items.map((item,i) => { const pos=d.order.indexOf(i); return `<button class="order-btn ${pos >= 0 ? 'selected':''}" data-action="toggle-order" data-index="${i}" ${locked?'disabled':''}><span class="order-pos">${pos >= 0 ? pos + 1 : '—'}</span><span>${esc(item)}</span><small class="dim">${pos >= 0 ? 'đã chọn':'chưa chọn'}</small></button>`; }).join('')}</div>`;
-      else if (q.type === 'D') body = `<div class="answer-help">Chọn mô tả A–E cho từng thuật ngữ. Không dùng kéo thả để tránh sai trên màn hình cảm ứng.</div><div class="pair-list">${q.labels.map((label,i) => `<label class="pair-row"><span>${i+1}. ${esc(label)}</span><select data-pair-index="${i}" ${locked?'disabled':''}><option value="">— chọn —</option>${['A','B','C','D','E'].map(x => `<option value="${x}" ${d.pairs[i] === x ? 'selected':''}>${x}</option>`).join('')}</select></label>`).join('')}</div>`;
-      else if (q.type === 'E' || q.type === 'H') body = `<div class="answer-help">${q.type === 'H' ? 'Đánh dấu hai tiêu chí đạt theo câu trả lời trực tiếp.' : 'Đội phải chỉ ra lỗi và nêu cách sửa. Mỗi tiêu chí đạt 5 điểm.'}</div><div class="criteria">${q.criteria.map((c,i) => `<label class="criterion-line"><span>${i+1}. ${esc(c)}</span><input type="checkbox" data-criterion-index="${i}" ${d.criteria.includes(i) ? 'checked':''} ${locked?'disabled':''}></label>`).join('')}</div>`;
-      else if (q.type === 'F') body = `<div class="form-row"><label>Nhập đúng cụm từ đội vừa nói</label><input class="input" data-answer-input value="${esc(d.text)}" placeholder="Ví dụ: chưa xác minh" ${locked?'disabled':''}></div>`;
-      const response = draftSummary(q);
-      return `<div class="answer-controls">${body}<div class="draft-response"><b>Bản nhập hiện tại:</b><br>${response}</div>${state.phase === 'recorded' ? '<div class="answer-help">Đã dừng đồng hồ. MC kiểm tra bản nhập rồi xác nhận chấm một lần.</div>' : ''}</div>`;
-    }
-    function draftSummary(q) {
-      const d=state.draft;
-      if (q.type === 'A' || q.type === 'G') return d.selected ? `${d.selected}. ${esc(q.options['ABCD'.indexOf(d.selected)] || '')}` : 'Chưa chọn';
-      if (q.type === 'B') return d.statements.map((v,i)=>`${i+1}: ${v === null ? '—' : v ? 'Đúng':'Sai'}`).join(' · ');
-      if (q.type === 'C') return d.order.length ? d.order.map(i=>i+1).join(' – ') : 'Chưa xếp';
-      if (q.type === 'D') return q.labels.map((_,i)=>`${i+1}${d.pairs[i] || '—'}`).join(' · ');
-      if (q.type === 'E' || q.type === 'H') return d.criteria.length ? `Đạt tiêu chí: ${d.criteria.map(i=>i+1).join(', ')}` : 'Chưa đánh dấu tiêu chí';
-      return d.text ? esc(d.text) : 'Chưa nhập';
-    }
-
-    function scoreboardOverlay() {
-      const ranks = rankings();
-      return `<div class="scoreboard"><div class="scoreboard-inner"><div class="scoreboard-title"><div><div class="eyebrow">HỒ SƠ 404 · BẢNG KẾT QUẢ</div><h2>Ai đang nghe<br>được sự thật?</h2></div><button class="btn ghost" data-action="close-scoreboard">Đóng ×</button></div><div class="rank-table">${ranks.map((t,i)=>`<div class="rank-row ${i < 3 ? 'top':''}"><span class="rank-no">${t.rank}</span><div><strong>Đội ${String(t.number).padStart(2,'0')} · ${esc(t.name)}</strong><br><small>${t.holds} lần giữ quyền · ${t.full} câu trọn điểm</small></div><span class="rank-points">${t.score}đ</span><span class="rank-cells">${t.answered} câu</span><span class="rank-cells">${t.online && t.approved ? '● online':'○ offline'}</span></div>`).join('')}</div><div class="podium-note">Đồng điểm được đồng hạng theo kiểu 1, 2, 2, 4. Vị trí ổn định theo số đội chỉ để bố trí; không dùng để phá hòa.</div><div class="finish-actions"><button class="btn gold" data-action="download-csv">Tải CSV</button><button class="btn ghost" data-action="download-json">Tải JSON</button></div></div></div>`;
-    }
-
-    function finishedPage(isHost) {
-      return `${pageHeading('Hồ sơ 404 đã mở', 'Phiên đã khóa. Kết quả hiện tại lấy từ cùng một nguồn chấm và các điều chỉnh có lịch sử.', 'KẾT THÚC / FINAL')}<section class="card pad"><div class="finish-art"><div class="finish-door"></div></div><div class="empty-state" style="min-height:260px"><div><div class="eyebrow">THE FRONT DOOR IS OPEN</div><h2>Không còn cuộc gọi nào.</h2><p class="subtle">Đây là kết quả của 15 đội. Bằng điểm vẫn đồng hạng; không có câu phụ phá hòa.</p><div class="finish-actions">${isHost ? '<button class="btn gold" data-action="show-scoreboard">Mở bảng kết quả</button><button class="btn ghost" data-action="download-csv">Xuất CSV</button><button class="btn ghost" data-action="download-json">Xuất JSON</button>' : '<button class="btn ghost" data-action="show-scoreboard">Xem BXH</button>'}</div></div></div></section>`;
-    }
-
-    function bind() {
-      document.querySelectorAll('[data-action]').forEach(el => el.addEventListener('click', handleClick));
-      document.querySelectorAll('[data-session-title]').forEach(el => el.addEventListener('input', e => { state.title = e.target.value; saveLocalOnly(); }));
-      document.querySelectorAll('[data-answer-input]').forEach(el => el.addEventListener('input', e => { state.draft.text = e.target.value; saveLocalOnly(); }));
-      document.querySelectorAll('[data-pair-index]').forEach(el => el.addEventListener('change', e => { state.draft.pairs[e.target.dataset.pairIndex] = e.target.value; saveState(); render(); }));
-      document.querySelectorAll('[data-criterion-index]').forEach(el => el.addEventListener('change', e => { const i=Number(e.target.dataset.criterionIndex); if(e.target.checked&&!state.draft.criteria.includes(i)) state.draft.criteria.push(i); if(!e.target.checked) state.draft.criteria=state.draft.criteria.filter(x=>x!==i); saveState(); render(); }));
-    }
-
-    function handleClick(e) {
-      const el = e.currentTarget; const action = el.dataset.action; const id = Number(el.dataset.team || selectedTeamId); const q = currentQuestion();
-      if (action === 'open-stage') { window.open(location.href.split('#')[0]+'#/stage', '_blank'); return; }
-      if (action === 'host-winner') { if(state.phase !== 'buzz-open') return; mutate(s=>{s.teams.forEach(t=>{t.approved=true;t.online=true;});}); return teamBuzz(id); }
-      if (action === 'home') return navigate('#/');
-      if (action === 'rules-home') { currentRole='home'; renderRulesInHome(); return; }
-      if (action === 'create-room') return navigate('#/host');
-      if (action === 'join-room') return navigate(`#/team?team=${selectedTeamId}`);
-      if (action === 'toggle-motion') return mutate(s => { s.reducedMotion = !s.reducedMotion; }, state.reducedMotion ? 'Bật lại chuyển động' : 'Bật chế độ giảm chuyển động');
-      if (action === 'toggle-sound' || action === 'stage-sound') { if (!state.soundEnabled) initAudio(); return mutate(s => { s.soundEnabled = !s.soundEnabled; }, state.soundEnabled ? 'Tắt âm thanh sân khấu' : 'Bật âm thanh sân khấu'); }
-      if (action === 'run-intro') { initAudio(); if (currentRole === 'host' && 'speechSynthesis' in window && !state.introPlayed) { window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(INTRO_TEXT); utterance.lang='vi-VN'; utterance.rate=.92; window.speechSynthesis.speak(utterance); } return mutate(s => { s.introPlayed=true; }, 'Chạy lời mở đầu · âm thanh chỉ ở cửa sổ sân khấu'); }
-      if (action === 'copy-code') { navigator.clipboard?.writeText(state.joinCode); return toast('Đã sao chép', 'Mã phiên 404404 đã nằm trong clipboard.'); }
-      if (action === 'reset-demo') { if (!window.confirm('Khởi tạo lại demo sẽ xóa điểm và lịch sử trong trình duyệt này. Tiếp tục?')) return; state=initialState(); saveState(); render(); return toast('Đã khởi tạo lại', 'Phiên demo quay về sảnh chờ.'); }
-      if (action === 'approve-all') return mutate(s => { s.teams.forEach(t => { t.approved=true; t.online=true; }); }, 'Duyệt 15 đội demo');
-      if (action === 'go-rules') return mutate(s => { s.phase='rules'; }, 'Mở màn luật chơi');
-      if (action === 'go-practice') return mutate(s => { s.phase='practice'; }, 'Mở lượt thử không điểm');
-      if (action === 'start-game') return beginRound(0);
-      if (action === 'start-round') return beginRound(state.currentIndex);
-      if (action === 'arm-round') return armRound();
-      if (action === 'skip-armed') return openWaiting();
-      if (action === 'open-buzz') return openBuzz();
-      if (action === 'close-buzz') return noWinner();
-      if (action === 'show-question') return showQuestion();
-      if (action === 'start-answering') return startAnswering();
-      if (action === 'record-answer') return recordAnswer();
-      if (action === 'grade-answer') return gradeAnswer();
-      if (action === 'resolve-no-winner') return mutate(s => { s.phase='resolved'; s.noWinner=true; s.deadline=null; }, 'Đóng câu không có winner · 0 điểm');
-      if (action === 'next-question') return beginRound(state.currentIndex + 1);
-      if (action === 'finish-game') return finishGame();
-      if (action === 'void-round') return voidRound();
-      if (action === 'show-scoreboard' && state.deadline) return toast('Đợi kết thúc lượt hiện tại');
-      if (action === 'show-scoreboard' && state.phase === 'scoreboard') return;
-      if (action === 'show-scoreboard') return mutate(s => { s.previousPhase=s.phase; s.phase='scoreboard'; }, 'Mở bảng xếp hạng');
-      if (action === 'close-scoreboard') return mutate(s => { s.phase=s.previousPhase || 'resolved'; s.previousPhase=null; }, 'Đóng bảng xếp hạng');
-      if (action === 'download-csv') return exportCSV();
-      if (action === 'download-json') return exportJSON();
-      if (action === 'select-team') { selectedTeamId=id; return navigate(`#/team?team=${id}`); }
-      if (action === 'team-buzz') return teamBuzz(id);
-      if (action === 'pick-option') return mutate(s => { s.draft.selected=el.dataset.value; }, `MC chọn đáp án ${el.dataset.value}`);
-      if (action === 'toggle-statement') return mutate(s => { s.draft.statements[Number(el.dataset.index)] = el.dataset.value === 'true'; }, `MC ghi nhận nhận định ${Number(el.dataset.index)+1}`);
-      if (action === 'toggle-order') return mutate(s => { const i=Number(el.dataset.index); const pos=s.draft.order.indexOf(i); if(pos>=0)s.draft.order.splice(pos,1); else s.draft.order.push(i); }, 'MC cập nhật thứ tự thẻ');
-      if (action === 'adjust-score') return adjustScore();
-    }
-
-    function renderRulesInHome() {
-      document.getElementById('app').innerHTML = `${topbar()}<main class="page wrap">${rulesPage()}</main>`; bind();
-    }
-    function beginRound(index) {
-      if (index >= questions.length) return finishGame();
-      mutate(s => { s.currentIndex=index; s.phase='ready'; s.winnerTeamId=null; s.earlyTeams=[]; s.deadline=null; s.noWinner=false; s.lastResult=null; s.timedOut=false; s.draft=emptyDraft(); s.signalName=['BÓNG NGƯỜI ĐI NGANG','TIẾNG GÕ KHÔNG NGƯỜI','ĐƯỜNG DÂY LỖI'][index % 3]; }, `Nạp câu ${String(index+1).padStart(2,'0')} · ${questions[index].typeName}`);
-    }
-    function armRound() { cue('countdown'); mutate(s => { s.phase='armed'; s.deadline=Date.now()+3000; }, 'Phát đếm ngược 3–2–1'); }
-    function openWaiting() { mutate(s => { s.phase='waiting'; s.deadline=Date.now()+5000; }, 'Mở giai đoạn chờ tín hiệu'); cue('fake'); }
-    function openBuzz() { cue('ring'); mutate(s => { s.phase='buzz-open'; s.deadline=Date.now()+8000; }, 'Xác nhận tín hiệu thật · mở quyền bắt máy'); }
-    function noWinner() { cue('timeout'); mutate(s => { s.phase='no-winner'; s.deadline=null; s.winnerTeamId=null; s.noWinner=true; }, 'Đóng quyền · không có kết nối hợp lệ'); }
-    function showQuestion() { cue('pickup'); mutate(s => { s.phase='preview'; s.deadline=null; }, state.noWinner ? 'Mở câu ôn tập không điểm' : `Mở đề cho đội ${String(state.winnerTeamId).padStart(2,'0')}`); }
-    function startAnswering() { if (!state.winnerTeamId) return; cue('question'); mutate(s => { s.phase='answering'; s.deadline=Date.now()+currentQuestion().duration*1000; }, 'Bắt đầu đồng hồ trả lời'); }
-    function recordAnswer() { cue('record'); mutate(s => { s.phase='recorded'; s.deadline=null; s.recordedAt=Date.now(); }, 'Khóa câu trả lời đội vừa chốt'); }
-    function gradeAnswer() {
-      if (!state.winnerTeamId || state.phase !== 'recorded') return;
-      const q=currentQuestion(), d=state.draft; let points=0; let parts=[];
-      if (q.type === 'A' || q.type === 'G') { const ok=d.selected===q.correct; points=ok?10:0; parts=[{label:'Đáp án',points:points,max:10,ok}]; }
-      if (q.type === 'B') { q.correct.forEach((correct,i)=>{ const ok=d.statements[i]===correct; const p=ok?5:0; points+=p; parts.push({label:`Nhận định ${i+1}`,points:p,max:5,ok}); }); }
-      if (q.type === 'C') { const ok=JSON.stringify(d.order)===JSON.stringify(q.correctOrder); points=ok?10:0; parts=[{label:'Thứ tự',points,max:10,ok}]; }
-      if (q.type === 'D') { q.correctPairs.forEach((correct,i)=>{ const ok=d.pairs[i]===correct; const p=ok?2:0; points+=p; parts.push({label:`Cặp ${i+1}`,points:p,max:2,ok}); }); }
-      if (q.type === 'E' || q.type === 'H') { q.criteria.forEach((_,i)=>{ const ok=d.criteria.includes(i); const p=ok?5:0; points+=p; parts.push({label:`Tiêu chí ${i+1}`,points:p,max:5,ok}); }); }
-      if (q.type === 'F') { const normalized=normalize(d.text); const ok=q.accepted.some(a=>normalize(a)===normalized); points=ok?10:0; parts=[{label:'Cụm từ',points,max:10,ok}]; }
-      const existing=state.results.findIndex(r=>r.questionId===q.id);
-      const result={ id:`${q.id}-${state.winnerTeamId}`, questionId:q.id, questionNumber:state.currentIndex+1, teamId:state.winnerTeamId, points, max:10, parts, response:structuredClone(d), at:Date.now(), revision:existing>=0 ? state.results[existing].revision+1 : 1 };
-      mutate(s => { if(existing>=0) s.results[existing]=result; else s.results.push(result); s.phase='resolved'; s.deadline=null; s.lastResult=result; const t=s.teams.find(x=>x.id===s.winnerTeamId); if(t){t.answered++; if(points===10)t.full++;} }, `Chốt câu ${String(state.currentIndex+1).padStart(2,'0')} · ${points}/10 điểm`); cue(points >= 10 ? 'correct' : points > 0 ? 'partial' : 'wrong');
-    }
-    function normalize(text) { return String(text || '').normalize('NFC').trim().toLocaleLowerCase('vi-VN').replace(/\s+/g,' '); }
-    function finishGame() { cue('outro'); mutate(s => { s.phase='finished'; s.deadline=null; s.winnerTeamId=null; }, 'Khóa phiên · mở cửa khách sạn'); }
-    function voidRound() { mutate(s => { s.phase='resolved'; s.noWinner=true; s.deadline=null; s.results=s.results.filter(r=>r.questionId!==currentQuestion().id); s.lastResult=null; s.teams.forEach(t=>{t.answered=s.results.filter(r=>r.teamId===t.id).length;t.full=s.results.filter(r=>r.teamId===t.id&&r.points===10).length;}); }, `Hủy câu ${String(state.currentIndex+1).padStart(2,'0')} do sự cố kỹ thuật`); }
-    function adjustScore() {
-      const amount=Number(document.querySelector('[data-adjustment]')?.value); const reason=document.querySelector('[data-adjustment-reason]')?.value.trim();
-      if(!Number.isFinite(amount)||!reason) return toast('Chưa lưu điều chỉnh','Nhập số điểm chênh lệch và lý do.');
-      mutate(s => { s.adjustments.push({id:`adj-${Date.now()}`,teamId:s.winnerTeamId,amount,reason,questionId:currentQuestion().id,at:Date.now()}); }, `Điều chỉnh ${amount > 0 ? '+' : ''}${amount} điểm · ${reason}`);
-    }
-    function teamBuzz(id) {
-      const t=team(id); if(!t || !t.approved || !t.online) return toast('Thiết bị chưa sẵn sàng','Đội này chưa được MC duyệt hoặc đang offline.');
-      if(state.phase === 'practice') { cue('pickup'); return toast('Lượt thử thành công',`Đội ${String(id).padStart(2,'0')} đã thử nút. Không tính vào thống kê.`); }
-      if(state.phase === 'waiting') return mutate(s => { if(!s.earlyTeams.includes(id)) s.earlyTeams.push(id); const x=s.teams.find(t=>t.id===id); if(x)x.early=true; }, `Đội ${String(id).padStart(2,'0')} bấm sớm · khóa câu hiện tại`);
-      if(state.phase !== 'buzz-open') return;
-      if(state.earlyTeams.includes(id) || state.winnerTeamId) return;
-      cue('pickup'); mutate(s => { if(s.winnerTeamId) return; s.winnerTeamId=id; s.phase='winner-locked'; s.deadline=null; const x=s.teams.find(t=>t.id===id); if(x){x.holds++;x.early=false;} }, `Đội ${String(id).padStart(2,'0')} đã bắt máy · đã khóa quyền`);
-    }
-
-    function tick() {
-      if(!state.deadline) { updateLiveBits(); return; }
-      if(Date.now() < state.deadline) { updateLiveBits(); return; }
-      if(currentRole !== 'host') { updateLiveBits(); return; }
-      if(state.phase === 'armed') return openWaiting();
-      if(state.phase === 'waiting') return openBuzz();
-      if(state.phase === 'buzz-open') return noWinner();
-      if(state.phase === 'answering') return mutate(s => { s.phase='recorded'; s.deadline=null; s.timedOut=true; }, 'Hết giờ · chuyển sang kiểm tra câu trả lời');
-    }
-    function updateLiveBits() {
-      document.querySelectorAll('[data-live="deadline"]').forEach(el => el.textContent=showTime());
-      document.querySelectorAll('[data-progress]').forEach(el => { const duration=state.phase==='answering' ? currentQuestion().duration*1000 : state.phase==='buzz-open' ? 8000 : state.phase==='waiting' ? 5000 : 3000; const remaining=state.deadline ? Math.max(0,state.deadline-Date.now()) : 0; el.style.width=`${Math.max(0,Math.min(100,(1-remaining/duration)*100))}%`; });
-    }
-
-    function initAudio() { try { if(!window.__audioCtx) window.__audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(window.__audioCtx.state==='suspended')window.__audioCtx.resume(); } catch (_) {} }
-    function cue(kind) {
-      if(currentRole !== 'stage' || !state.soundEnabled) return;
-      initAudio(); const ctx=window.__audioCtx; if(!ctx)return; activeAudio.forEach(n=>{try{n.stop()}catch(_){}}); activeAudio=[];
-      const now=ctx.currentTime; const notes={ring:[440,550,440,660],pickup:[330,495],correct:[523,659,784],partial:[392,523],wrong:[220,174],timeout:[220,160],countdown:[220,220,220],fake:[170],question:[550],record:[440],outro:[330,440,554]}; const values=notes[kind]||[440];
-      values.forEach((freq,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type=kind==='wrong'?'sine':'triangle';o.frequency.value=freq;g.gain.setValueAtTime(.0001,now+i*.13);g.gain.exponentialRampToValueAtTime(.1,now+i*.13+.02);g.gain.exponentialRampToValueAtTime(.0001,now+i*.13+.12);o.connect(g).connect(ctx.destination);o.start(now+i*.13);o.stop(now+i*.13+.14);activeAudio.push(o);});
-    }
-    function playTransitionCue(previous, next) {
-      if (currentRole !== 'stage' || previous.phase === next.phase) return;
-      const byPhase = { armed:'countdown', waiting:'fake', 'buzz-open':'ring', 'winner-locked':'pickup', preview:'question', answering:'question', recorded:'record', 'no-winner':'timeout', finished:'outro' };
-      if (next.phase === 'resolved' && next.lastResult) return cue(next.lastResult.points >= 10 ? 'correct' : next.lastResult.points > 0 ? 'partial' : 'wrong');
-      if (byPhase[next.phase]) cue(byPhase[next.phase]);
-    }
-
-    function exportCSV() {
-      const rows=[['Đội','Tên đội','Tổng điểm','Hạng','Số lần giữ quyền','Câu trọn điểm','Điểm từng câu'],...rankings().map(t=>[t.number,t.name,t.score,t.rank,t.holds,t.full,state.results.filter(r=>r.teamId===t.id).map(r=>`${r.questionNumber}:${r.points}`).join(' | ')])]; download('room404-results.csv','\uFEFF'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n'),'text/csv;charset=utf-8'); toast('Đã xuất CSV','Bảng điểm lấy từ kết quả hiện hành và lịch sử điều chỉnh.');
-    }
-    function exportJSON() { download('room404-results.json',JSON.stringify({session:{id:state.sessionId,title:state.title,joinCode:state.joinCode,status:state.phase},teams:rankings(),results:state.results,adjustments:state.adjustments,audit:state.audit},null,2),'application/json'); toast('Đã xuất JSON','Tệp kết quả đã sẵn sàng.'); }
-    function download(name, content, type) { const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(url),500); }
-    function toast(title, text='') { const region=document.getElementById('toastRegion'); if(!region)return; const el=document.createElement('div'); el.className='toast'; el.innerHTML=`<b>${esc(title)}</b>${esc(text)}`; region.appendChild(el); setTimeout(()=>el.remove(),3200); }
-
-    render();
-  </script>
-</body>
-</html>
-
+const names=['Mực Tím','Bóng Đèn','Mắt Mèo','Chìa Khóa','Gió Hành Lang','Đèn Đỏ','Kẻ Gõ Cửa','Hồ Sơ Mật','Tiếng Rè','Đồng Hồ Câm','Bậc Thang','Bóng Dài','Người Trực Đêm','Gương Mờ','Phòng Cuối'];
+const labels={setup:'Sảnh khách sạn',ready:'Sẵn sàng',countdown:'Chuẩn bị tín hiệu',claim:'Giành quyền',question:'Đã mở hồ sơ',answering:'Đang trả lời',review:'Kiểm tra câu trả lời',result:'Kết quả',finished:'Kết thúc'};
+const empty=()=>({selected:'',truth:[null,null],order:[],pairs:{},criteria:[],text:''});
+const fresh=()=>({version:1,phase:'setup',index:0,winner:null,deadline:null,results:[],answer:empty(),sound:false,last:null,returnPhase:null});
+let state=load(),role=location.hash==='#stage'?'stage':'host',channel;
+try{channel=new BroadcastChannel(CHANNEL);channel.onmessage=e=>receive(e.data)}catch(_){channel=null}
+addEventListener('storage',e=>{if(e.key===KEY&&e.newValue)receive(JSON.parse(e.newValue))});
+addEventListener('hashchange',()=>{role=location.hash==='#stage'?'stage':'host';render()});
+addEventListener('keydown',e=>{
+  if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))return;
+  if(e.key.toLowerCase()==='r')toggleRules();
+  if(e.key.toLowerCase()==='s')toggleScores();
+  if(e.key.toLowerCase()==='m')toggleSound();
+  if(e.key.toLowerCase()==='f')toggleFullscreen();
+  if(e.key.toLowerCase()==='v'&&role==='host')openStage();
+  if(e.key==='Escape')closeOverlay();
+  if(e.key==='Enter'&&role==='host')document.querySelector('[data-primary]')?.click();
+});
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||fresh()}catch(_){return fresh()}}
+function save(message=''){state.version++;localStorage.setItem(KEY,JSON.stringify(state));channel?.postMessage(state);render();if(message)toast(message)}
+function receive(next){if(!next||next.version<state.version)return;state=next;localStorage.setItem(KEY,JSON.stringify(state));render()}
+function q(){return questions[state.index]}
+function score(id){return state.results.filter(r=>r.teamId===id).reduce((n,r)=>n+r.points,0)}
+function rankings(){return names.map((name,i)=>({id:i+1,name,score:score(i+1)})).sort((a,b)=>b.score-a.score||a.id-b.id).map((t,i,a)=>({...t,rank:i&&t.score===a[i-1].score?a[i-1].rank:i+1}))}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function time(){return state.deadline?Math.max(0,Math.ceil((state.deadline-Date.now())/1000)):0}
+function chapter(){return Math.min(3,Math.floor(state.index/5)+1)}
+function render(){document.body.className=state.phase==='claim'?'claim':'';document.getElementById('app').innerHTML=role==='stage'?stageView():hostView();bind()}
+function top(){return `<header class="top"><div class="brand"><div class="mark">404</div><div><b>CUỘC GỌI TỪ PHÒNG 404</b><small>${labels[state.phase]} · Hồi ${chapter()}</small></div></div><div class="actions"><span class="desktop"><span class="kbd">R</span> Luật &nbsp; <span class="kbd">S</span> BXH</span><button class="btn" data-action="stage">Mở màn chiếu ↗</button><button class="btn" data-action="sound">${state.sound?'Âm thanh: Bật':'Âm thanh: Tắt'}</button></div></header>`}
+function hostView(){return `<div class="host">${top()}<main class="main"><section>${scene(true)}</section><aside class="side">${progressPanel()}${scorePanel()}</aside></main>${dock()}</div>`}
+function stageView(){return `<div class="stage"><div class="stage-tools"><button class="btn" data-action="fullscreen">Toàn màn hình</button></div>${scene(false)}</div>`}
+function scene(host){let body='';const question=q(),winner=state.winner?names[state.winner-1]:'';
+  if(state.phase==='setup')body=`<div class="hero"><div class="eyebrow">Đêm trực · 23:04</div><h1>Cuộc gọi từ<br><em>phòng 404</em></h1><p>15 đội điều tra. Một đường dây bí ẩn. Mỗi câu trả lời đúng sẽ khôi phục một phần hồ sơ.</p></div>`;
+  if(state.phase==='ready')body=`<div class="hero"><div class="eyebrow">${esc(question.cue)}</div><div class="big">Hồ sơ ${String(state.index+1).padStart(2,'0')}<br>đang chờ</div><div class="phone"></div></div>`;
+  if(state.phase==='countdown')body=`<div class="hero"><div class="eyebrow">Tất cả đội chuẩn bị</div><div class="count" data-time>${time()}</div><p>Chỉ chọn đội sau khi tín hiệu 404 xuất hiện.</p></div>`;
+  if(state.phase==='claim')body=`<div class="hero"><div class="eyebrow">Tín hiệu thật</div><div class="big mint">PHÒNG 404<br>— BẮT MÁY —</div><div class="phone"></div>${host?teamPicker():`<p>MC đang xác nhận đội giành quyền.</p>`}</div>`;
+  if(['question','answering','review','result'].includes(state.phase))body=questionView(question,host,winner);
+  if(state.phase==='finished')body=`<div class="hero"><div class="eyebrow">Hồ sơ cuối cùng đã được mở</div><div class="big mint">CỬA CHÍNH<br>ĐÃ MỞ</div><p>Nhấn <span class="kbd">S</span> để xem bảng xếp hạng chung cuộc.</p></div>`;
+  const strip=role==='stage'&&!['setup','finished'].includes(state.phase)?scoreStrip():'';
+  return `<div class="scene"><div class="scene-head"><div class="eyebrow">Hồi ${chapter()} · ${['Nhận tín hiệu','Lần theo dấu vết','Mở hồ sơ 404'][chapter()-1]}</div><div class="round">${state.phase==='setup'?'15 ĐỘI':`CÂU ${String(state.index+1).padStart(2,'0')} / 15`}</div></div><div class="scene-body">${body}</div>${strip}</div>`}
+function questionView(x,host,winner){let body='';
+  if(['A','G'].includes(x.type))body=`<div class="options">${x.options.map((v,i)=>`<div class="option"><i>${'ABCD'[i]}</i><span>${esc(v)}</span></div>`).join('')}</div>`;
+  if(x.type==='B')body=`<div class="options">${x.statements.map((v,i)=>`<div class="option"><i>${i+1}</i><span>${esc(v)}</span></div>`).join('')}</div>`;
+  if(x.type==='C')body=`<div class="options">${x.items.map((v,i)=>`<div class="option"><i>${i+1}</i><span>${esc(v)}</span></div>`).join('')}</div>`;
+  if(x.type==='D')body=`<div class="options">${x.labels.map((v,i)=>`<div class="option"><i>${i+1}</i><span>${esc(v)}</span></div>`).join('')}${x.matches.map((v,i)=>`<div class="option"><i>${'ABCDE'[i]}</i><span>${esc(v)}</span></div>`).join('')}</div>`;
+  if(['E','F','H'].includes(x.type))body=`<div class="evidence">Đội trả lời trực tiếp với MC. MC ghi nhận câu trả lời ở màn điều khiển.</div>`;
+  const reveal=state.phase==='result';
+  return `<div class="question"><div class="q-meta"><span>${esc(x.typeName)} · ${x.duration} giây</span><span>${state.winner?`Đội ${String(state.winner).padStart(2,'0')} · ${esc(winner)}`:'Không có đội giành quyền'}</span></div><h2>${esc(x.prompt)}</h2>${x.evidence?`<div class="evidence">${esc(x.evidence).replace(/\n/g,'<br>')}</div>`:''}${body}${host&&['answering','review'].includes(state.phase)?editor(x):''}${reveal?`<div class="solution"><b>LỜI GIẢI</b><br>${esc(x.explanation)}</div><div class="result">Kết quả <strong>${state.last?.points||0}/10</strong></div>`:''}</div>`}
+function editor(x){const a=state.answer;let html='';
+  if(['A','G'].includes(x.type))html=`<div class="choice-grid">${x.options.map((v,i)=>{const k='ABCD'[i];return `<button class="choice ${a.selected===k?'selected':''}" data-action="pick" data-value="${k}"><b>${k}.</b> ${esc(v)}</button>`}).join('')}</div>`;
+  if(x.type==='B')html=x.statements.map((v,i)=>`<div class="toggle-row"><span>${i+1}. ${esc(v)}</span><span><button class="btn tiny ${a.truth[i]===true?'gold':''}" data-action="truth" data-index="${i}" data-value="true">Đúng</button> <button class="btn tiny ${a.truth[i]===false?'gold':''}" data-action="truth" data-index="${i}" data-value="false">Sai</button></span></div>`).join('');
+  if(x.type==='C')html=`<div class="order-grid">${x.items.map((v,i)=>{const pos=a.order.indexOf(i);return `<button class="choice order-item ${pos>=0?'selected':''}" data-action="order" data-index="${i}"><span class="pos">${pos>=0?pos+1:'—'}</span><span>${esc(v)}</span></button>`}).join('')}</div>`;
+  if(x.type==='D')html=x.labels.map((v,i)=>`<div class="toggle-row"><span>${i+1}. ${esc(v)}</span><select data-pair="${i}"><option value="">—</option>${'ABCDE'.split('').map(k=>`<option ${a.pairs[i]===k?'selected':''}>${k}</option>`).join('')}</select></div>`).join('');
+  if(['E','H'].includes(x.type))html=x.criteria.map((v,i)=>`<label class="criterion"><span>${esc(v)}</span><input type="checkbox" data-criterion="${i}" ${a.criteria.includes(i)?'checked':''}></label>`).join('');
+  if(x.type==='F')html=`<input class="input" data-text value="${esc(a.text)}" placeholder="Nhập từ/cụm từ đội vừa nói">`;
+  return `<div class="editor"><div class="eyebrow">MC ghi nhận câu trả lời</div>${html}</div>`}
+function teamPicker(){return `<div class="team-picker">${names.map((_,i)=>`<button class="team-btn" data-action="winner" data-team="${i+1}">${String(i+1).padStart(2,'0')}</button>`).join('')}</div>`}
+function progressPanel(){return `<section class="panel progress"><div class="eyebrow">Tiến độ hồ sơ</div><div class="bar"><i style="width:${state.phase==='finished'?100:(state.index/15*100)}%"></i></div><small><span>${state.results.length} câu đã chấm</span><span>${Math.round(state.index/15*100)}%</span></small></section>`}
+function scorePanel(){return `<section class="panel"><div class="panel-title"><b>BẢNG ĐIỂM</b><span class="kbd">S</span></div><div class="score-list">${rankings().map(t=>`<div class="score-row ${state.winner===t.id?'active':''}"><span class="rank">#${t.rank}</span><span>${String(t.id).padStart(2,'0')} · ${esc(t.name)}</span><strong>${t.score}</strong></div>`).join('')}</div></section>`}
+function scoreStrip(){return `<div class="score-strip">${rankings().sort((a,b)=>a.id-b.id).map(t=>`<div class="chip"><b>${String(t.id).padStart(2,'0')}</b><small>${t.score}</small></div>`).join('')}</div>`}
+function dock(){let title='',sub='',button='',timer='';
+  if(state.phase==='setup'){title='Sẵn sàng bắt đầu đêm trực?';sub='Mở màn chiếu trước, sau đó bắt đầu câu 01.';button=`<button class="btn gold" data-action="start" data-primary>Bắt đầu trò chơi →</button>`}
+  if(state.phase==='ready'){title=`Câu ${String(state.index+1).padStart(2,'0')} đã sẵn sàng`;sub='Nhấn Enter để phát đếm ngược và mở quyền.';button=`<button class="btn gold" data-action="signal" data-primary>Phát tín hiệu 404</button>`}
+  if(state.phase==='countdown'){title='Đang đếm ngược';sub='Hệ thống sẽ tự mở quyền sau 3 giây.';timer=`<div class="timer" data-time>${time()}</div>`}
+  if(state.phase==='claim'){title='Chọn đội giành quyền';sub='Nhấn số đội ngay trên màn hình. Hết 8 giây sẽ đóng lượt.';timer=`<div class="timer ${time()<=3?'danger':''}" data-time>${time()}</div>`}
+  if(state.phase==='question'){title=`Đội ${String(state.winner).padStart(2,'0')} đã nhận câu hỏi`;sub=`Cho đội đọc đề, rồi bắt đầu ${q().duration} giây trả lời.`;button=`<button class="btn mint" data-action="answer" data-primary>Bắt đầu trả lời</button>`}
+  if(state.phase==='answering'){title='Đội đang trả lời';sub='MC có thể nhập đáp án trong lúc đội nói.';timer=`<div class="timer ${time()<=5?'danger':''}" data-time>${time()}</div>`;button=`<button class="btn gold" data-action="review" data-primary>Dừng thời gian</button>`}
+  if(state.phase==='review'){title='Kiểm tra câu trả lời';sub='Có thể sửa bản nhập trước khi chấm.';button=`<button class="btn gold" data-action="grade" data-primary>Chốt điểm & hiện lời giải</button>`}
+  if(state.phase==='result'){title=`Đã chốt ${state.last?.points||0}/10 điểm`;sub='Điểm đã cộng một lần. Sang câu tiếp theo khi giải thích xong.';button=`<button class="btn mint" data-action="next" data-primary>${state.index===14?'Kết thúc trò chơi':'Câu tiếp theo →'}</button>`}
+  if(state.phase==='finished'){title='Phiên chơi đã khóa';sub='Nhấn S để mở bảng xếp hạng chung cuộc.';button=`<button class="btn red" data-action="reset">Chơi lại</button>`}
+  return `<footer class="dock"><div><b>${title}</b><span>${sub} &nbsp; · &nbsp; <span class="kbd">R</span> Luật &nbsp; <span class="kbd">S</span> BXH</span></div><div class="actions">${timer}${button}</div></footer>`}
+function bind(){document.querySelectorAll('[data-action]').forEach(el=>el.onclick=()=>act(el));document.querySelectorAll('[data-pair]').forEach(el=>el.onchange=()=>{state.answer.pairs[el.dataset.pair]=el.value;save()});document.querySelectorAll('[data-criterion]').forEach(el=>el.onchange=()=>{const i=+el.dataset.criterion;state.answer.criteria=el.checked?[...new Set([...state.answer.criteria,i])]:state.answer.criteria.filter(x=>x!==i);save()});const input=document.querySelector('[data-text]');if(input)input.oninput=()=>{state.answer.text=input.value;localStorage.setItem(KEY,JSON.stringify(state))}}
+function act(el){const a=el.dataset.action;
+  if(a==='stage')return openStage();if(a==='sound')return toggleSound();if(a==='fullscreen')return toggleFullscreen();
+  if(a==='start'){state.phase='ready';state.index=0;state.results=[];state.last=null;state.answer=empty();return save('Đã mở hồ sơ 01')}
+  if(a==='signal'){state.phase='countdown';state.deadline=Date.now()+3000;cue('count');return save()}
+  if(a==='winner'){if(state.phase!=='claim'||state.winner)return;state.winner=+el.dataset.team;state.phase='question';state.deadline=null;cue('pickup');return save(`Đội ${String(state.winner).padStart(2,'0')} giành quyền`)}
+  if(a==='answer'){state.phase='answering';state.deadline=Date.now()+q().duration*1000;cue('start');return save()}
+  if(a==='review'){state.phase='review';state.deadline=null;return save('Đã dừng thời gian')}
+  if(a==='pick'){state.answer.selected=el.dataset.value;return save()}
+  if(a==='truth'){state.answer.truth[+el.dataset.index]=el.dataset.value==='true';return save()}
+  if(a==='order'){const i=+el.dataset.index,p=state.answer.order.indexOf(i);p>=0?state.answer.order.splice(p,1):state.answer.order.push(i);return save()}
+  if(a==='grade')return grade();
+  if(a==='next'){if(state.index===14){state.phase='finished';state.deadline=null;cue('finish')}else{state.index++;state.phase='ready';state.winner=null;state.answer=empty();state.last=null}return save()}
+  if(a==='reset'){if(confirm('Xóa toàn bộ điểm và chơi lại từ đầu?')){state=fresh();save('Đã tạo phiên mới')}}
+}
+function valid(){const x=q(),a=state.answer;if(['A','G'].includes(x.type))return !!a.selected;if(x.type==='B')return a.truth.every(v=>v!==null);if(x.type==='C')return a.order.length===x.items.length;if(x.type==='D')return x.labels.every((_,i)=>a.pairs[i]);if(x.type==='F')return !!a.text.trim();return true}
+function grade(){if(state.phase!=='review')return;if(!valid())return toast('Chưa nhập đủ câu trả lời');const x=q(),a=state.answer;let points=0;if(['A','G'].includes(x.type))points=a.selected===x.correct?10:0;if(x.type==='B')points=x.correct.reduce((n,v,i)=>n+(a.truth[i]===v?5:0),0);if(x.type==='C')points=JSON.stringify(a.order)===JSON.stringify(x.correctOrder)?10:0;if(x.type==='D')points=x.correctPairs.reduce((n,v,i)=>n+(a.pairs[i]===v?2:0),0);if(['E','H'].includes(x.type))points=a.criteria.length*5;if(x.type==='F')points=x.accepted.some(v=>norm(v)===norm(a.text))?10:0;state.results=state.results.filter(r=>r.qid!==x.id);state.results.push({qid:x.id,teamId:state.winner,points});state.last={points};state.phase='result';state.deadline=null;cue(points===10?'good':'bad');save('Điểm đã được chốt')}
+function norm(v){return String(v).normalize('NFC').trim().toLocaleLowerCase('vi-VN').replace(/\s+/g,' ')}
+function tick(){document.querySelectorAll('[data-time]').forEach(el=>el.textContent=time());if(role!=='host'||!state.deadline||Date.now()<state.deadline)return;if(state.phase==='countdown'){state.phase='claim';state.deadline=Date.now()+8000;cue('ring');save()}else if(state.phase==='claim'){state.phase='result';state.deadline=null;state.winner=null;state.last={points:0};save('Không có đội giành quyền')}else if(state.phase==='answering'){state.phase='review';state.deadline=null;save('Hết giờ — kiểm tra câu trả lời')}}
+function rules(){return `<div class="modal" data-close><div class="modal-card"><div class="modal-head"><div><div class="eyebrow">Phím R · Luật chơi</div><h2>Ba bước duy nhất</h2></div><button class="btn" data-action="close">Đóng Esc</button></div><div class="rules-grid"><div class="rule"><strong>01</strong><b>Chờ tín hiệu 404</b><p>Chỉ giành quyền khi màn hình hiện “PHÒNG 404 — BẮT MÁY”.</p></div><div class="rule"><strong>02</strong><b>Một đội trả lời</b><p>MC xác nhận một đội. Sai hoặc hết giờ không chuyển lượt.</p></div><div class="rule"><strong>03</strong><b>Tối đa 10 điểm</b><p>Hệ thống tự cộng điểm sau khi MC chốt. Bằng điểm được đồng hạng.</p></div></div><div class="shortcuts"><div><span>Mở/đóng luật</span><span class="kbd">R</span></div><div><span>Bảng xếp hạng</span><span class="kbd">S</span></div><div><span>Bật/tắt âm thanh</span><span class="kbd">M</span></div><div><span>Toàn màn hình</span><span class="kbd">F</span></div></div></div></div>`}
+function board(){return `<div class="modal"><div class="modal-card"><div class="modal-head"><div><div class="eyebrow">Bảng xếp hạng</div><h2>Hồ sơ 404</h2></div><button class="btn" data-action="close">Đóng Esc</button></div><div class="board">${rankings().map((t,i)=>`<div class="board-row ${i<3?'top':''}"><span class="eyebrow">#${t.rank}</span><span>Đội ${String(t.id).padStart(2,'0')}<br><small>${esc(t.name)}</small></span><strong>${t.score}</strong></div>`).join('')}</div></div></div>`}
+function toggleRules(){const o=document.getElementById('overlay');o.innerHTML=o.innerHTML?'':rules();bindOverlay()}
+function toggleScores(){const o=document.getElementById('overlay');o.innerHTML=o.innerHTML?'':board();bindOverlay()}
+function closeOverlay(){document.getElementById('overlay').innerHTML=''}function bindOverlay(){document.querySelectorAll('[data-action="close"]').forEach(x=>x.onclick=closeOverlay)}
+function openStage(){window.open(location.href.split('#')[0]+'#stage','room404-stage')}
+function toggleFullscreen(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.()}
+function toggleSound(){state.sound=!state.sound;if(state.sound)audio();save(state.sound?'Đã bật âm thanh':'Đã tắt âm thanh')}
+let ctx;function audio(){try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(_){}}
+function cue(kind){if(!state.sound)return;audio();const f={count:430,ring:760,pickup:520,start:620,good:880,bad:180,finish:990}[kind]||440;const o=ctx.createOscillator(),g=ctx.createGain();o.type=kind==='bad'?'sawtooth':'sine';o.frequency.setValueAtTime(f,ctx.currentTime);g.gain.setValueAtTime(.001,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.12,ctx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.35);o.connect(g).connect(ctx.destination);o.start();o.stop(ctx.currentTime+.38)}
+function toast(text){const el=document.getElementById('toast');el.innerHTML=`<div class="toast">${esc(text)}</div>`;setTimeout(()=>el.innerHTML='',2200)}
+setInterval(tick,200);render();
+</script></body></html>
