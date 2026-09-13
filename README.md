@@ -20,7 +20,8 @@ Sau khi chấm, slide kết quả tự hiện rồi tự chuyển sang câu ti�
 ## Thiết kế
 
 - Bố cục 16:9 ưu tiên cho máy chiếu.
-- Minh họa căn phòng, cánh cửa, quỹ đạo và mảnh ghép được dựng bằng SVG/CSS, không cần tải ảnh ngoài.
+- Ảnh nền sân khấu và ảnh hiện vật được tạo riêng cho game trong thư mục assets.
+- Font tiêu đề dùng phong cách gothic, chữ nội dung vẫn giữ độ tương phản để đọc được trên máy chiếu.
 - Sáu câu demo ngắn, có thể đổi trong mảng rounds ở index.html.
 - Điểm tối đa 10/câu; bảng điểm tạm thời và podium cuối game tự cập nhật.
 - Âm thanh chỉ bật sau nút âm thanh trên màn MC.

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#080b18">
   <title>Nghịch lý · Bảo tàng không tồn tại</title>
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+    @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&family=Grenze+Gotisch:wght@400;500;600;700;800&family=UnifrakturCook:wght@700&display=swap");
     :root {
       --bg: #080b18;
       --bg2: #111830;
@@ -22,7 +22,8 @@
       --green: #69e0ad;
       --danger: #ff6d7c;
       --sans: "Be Vietnam Pro", system-ui, sans-serif;
-      --display: "Space Grotesk", "Be Vietnam Pro", system-ui, sans-serif;
+      --display: "Grenze Gotisch", "Be Vietnam Pro", Georgia, serif;
+      --gothic: "UnifrakturCook", "Grenze Gotisch", Georgia, serif;
       --mono: "DM Mono", monospace;
     }
     * { box-sizing: border-box; }
@@ -59,10 +60,10 @@
     .home-note { display: flex; gap: 26px; margin-top: 36px; }
     .home-note b { display: block; color: var(--gold); font: 800 26px var(--display); }
     .home-note span { display: block; margin-top: 3px; color: var(--dim); font-size: 10px; text-transform: uppercase; letter-spacing: .11em; }
-    .museum-card { position: relative; min-height: 570px; overflow: hidden; border: 1px solid var(--line2); border-radius: 32px; background: radial-gradient(circle at 53% 31%, #a27aff36, transparent 27%), linear-gradient(150deg, #20234c, #101528 55%, #080b16); box-shadow: 0 35px 100px #0009; }
+    .museum-card { position: relative; min-height: 570px; overflow: hidden; border: 1px solid var(--line2); border-radius: 32px; background-image: linear-gradient(90deg, #060914b8, #06091418 55%, #06091435), url("assets/paradox-museum-hero.jpg"); background-position: center; background-size: cover; box-shadow: 0 35px 100px #0009; }
     .museum-card::before { content: "MUSEUM 00"; position: absolute; top: 22px; left: 28px; color: #ffffff7a; font: 11px var(--mono); letter-spacing: .2em; }
-    .museum-card::after { content: ""; position: absolute; inset: 16px; border: 1px solid #ffffff14; border-radius: 23px; pointer-events: none; }
-    .museum-word { position: absolute; left: 8%; bottom: 9%; z-index: 2; color: #ffffff28; font: 800 clamp(55px, 10vw, 125px)/.8 var(--display); letter-spacing: -.1em; transform: rotate(-8deg); }
+    .museum-card::after { content: ""; position: absolute; inset: 0; border: 1px solid #ffffff14; border-radius: 23px; pointer-events: none; background: linear-gradient(180deg, transparent 45%, #050711a8); }
+    .museum-card > .home-door, .museum-card > .home-orbit, .museum-card > .home-piece, .museum-card > .museum-word { display: none; }
     .home-orbit { position: absolute; left: 49%; top: 45%; width: 220px; height: 220px; transform: translate(-50%, -50%); border: 1px solid #ffffff58; border-radius: 50%; box-shadow: 0 0 0 22px #ffffff06, 0 0 0 45px #ffffff04; animation: orbit 15s linear infinite; }
     .home-orbit::before, .home-orbit::after { content: ""; position: absolute; width: 12px; height: 12px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 25px var(--cyan); }
     .home-orbit::before { left: 18px; top: 35px; } .home-orbit::after { right: 25px; bottom: 20px; background: var(--gold); box-shadow: 0 0 25px var(--gold); }
@@ -93,6 +94,10 @@
     /* Stage / PPT surface */
     .stage-root { min-height: 100vh; display: flex; flex-direction: column; background: #070a15; }
     .stage-header { position: relative; z-index: 5; min-height: 62px; display: flex; justify-content: space-between; align-items: center; padding: 14px clamp(18px, 4vw, 60px); border-bottom: 1px solid #ffffff1a; background: linear-gradient(180deg, #060914e8, transparent); }
+    .stage-root:not(.stage-compact) .stage-header { position: absolute; inset: 0 0 auto; border-bottom: 0; background: transparent; }
+    .stage-root:not(.stage-compact) .stage-header .brand-copy { display: none; }
+    .stage-root:not(.stage-compact) .stage-header .brand-mark { opacity: .5; }
+    .stage-root:not(.stage-compact) .stage-header .stage-code { opacity: .55; }
     .stage-header .stage-code { color: var(--muted); font: 12px var(--mono); }
     .stage-main { flex: 1; min-height: 0; display: grid; place-items: center; padding: clamp(18px, 4vw, 54px); position: relative; overflow: hidden; }
     .stage-main::before { content: ""; position: absolute; width: 72vw; height: 72vw; max-width: 1000px; max-height: 1000px; border-radius: 50%; background: radial-gradient(circle, #7c69ff20, transparent 63%); filter: blur(4px); }
@@ -103,6 +108,19 @@
     .slide-sub { max-width: 620px; margin: 19px auto 0; color: var(--muted); font-size: clamp(13px, 1.4vw, 18px); line-height: 1.55; }
     .slide-number { position: absolute; left: 0; top: 3px; color: #ffffff4f; font: 11px var(--mono); letter-spacing: .15em; }
     .slide-visual { width: min(710px, 86vw); aspect-ratio: 1.48; position: relative; margin: 20px auto 13px; }
+    .slide-visual.has-image { overflow: hidden; border: 1px solid #ffffff38; border-radius: 26px; box-shadow: 0 24px 50px #0008; background: #090c1a; }
+    .slide-visual.has-image::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #070a151c, #070a157a); }
+    .slide-art-image { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .slide-visual.square-art { width: min(470px, 70vw); aspect-ratio: 1; }
+    .slide-visual.square-art::after { background: linear-gradient(180deg, #070a1510, #070a1590); }
+    .slide-visual.hero-art { width: min(940px, 92vw); aspect-ratio: 16 / 9; margin: 25px auto 15px; }
+    .slide-visual.hero-art::after { background: linear-gradient(180deg, #070a1510 25%, #070a158e 100%); }
+    .question-box.has-art { background-image: linear-gradient(90deg, #111830f7 0 63%, #111830bb 100%), url("assets/paradox-exhibit-shard.jpg"); background-repeat: no-repeat; background-position: center, right center; background-size: 100% 100%, auto 125%; }
+    .question-box.has-art h2, .question-box.has-art .options { max-width: 69%; }
+    .result-slide { position: relative; overflow: hidden; }
+    .result-slide::before { content: ""; position: absolute; inset: 12% 23%; border-radius: 50%; background: url("assets/paradox-exhibit-shard.jpg") center / cover no-repeat; opacity: .18; filter: blur(1px) saturate(.8); }
+    .result-slide > * { position: relative; z-index: 1; }
+    .horror-script { font-family: var(--gothic); letter-spacing: .02em; text-shadow: 2px 0 #ff6b9d27, -2px 0 #69e7ff1c, 0 0 18px #ff6b9d2b; }
     .scene { width: 100%; height: 100%; display: block; filter: drop-shadow(0 25px 32px #0008); }
     .scene-glow { position: absolute; inset: 14% 16%; border-radius: 50%; background: radial-gradient(circle, #69e7ff32, transparent 60%); filter: blur(20px); animation: pulse 3.5s ease-in-out infinite; pointer-events: none; }
     @keyframes pulse { 50% { opacity: .45; transform: scale(1.08); } }
@@ -200,6 +218,8 @@
     .team-piece.selected { border-color: var(--gold); background: #ffd16618; box-shadow: 0 0 30px #ffd16622; }
     .team-piece .piece-icon { width: 72px; height: 72px; }
     .team-wait-art { width: 170px; height: 130px; margin: 0 auto 16px; opacity: .85; }
+    .team-photo { width: 190px; height: 150px; margin: 0 auto 18px; overflow: hidden; border: 1px solid #ffffff2a; border-radius: 22px; box-shadow: 0 17px 38px #0008; }
+    .team-photo img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; }
     .team-message { margin-top: 22px; padding: 13px; border: 1px solid var(--line); border-radius: 14px; background: #ffffff07; color: var(--muted); font-size: 12px; }
     .team-foot { padding: 13px 20px; border-top: 1px solid var(--line); color: var(--dim); text-align: center; font: 10px var(--mono); }
 
@@ -228,6 +248,8 @@
       .slide-puzzle { grid-template-columns: repeat(2, 1fr); max-width: 350px; }
       .stage-piece { min-height: 94px; }
       .options { grid-template-columns: 1fr; }
+      .question-box.has-art { background-size: 100% 100%, auto 48%; background-position: center, center bottom; padding-bottom: 43%; }
+      .question-box.has-art h2, .question-box.has-art .options { max-width: 100%; }
       .score-row { grid-template-columns: 34px minmax(0,1fr) 56px; gap: 7px; }
       .score-name { font-size: 11px; }
       .host-wrap { width: min(100% - 22px, 700px); padding-top: 14px; }
@@ -400,31 +422,31 @@
 
       function hostControls() {
         var p = state.phase;
-        if (p === "cover") return '<button class="btn primary large" data-action="start">▶ Bắt đầu game</button><div class="auto-note">Sau mỗi lần chấm, kết quả tự hiện rồi tự chuyển sang câu tiếp theo.</div>';
-        if (p === "ready") return '<button class="btn gold large" data-action="open">✦ Mở mảnh ghép câu ' + String(state.roundIndex + 1).padStart(2, "0") + '</button><div class="auto-note">Các đội chỉ cần chạm một mảnh trên điện thoại. Đội chọn đúng đầu tiên được khóa tự động.</div>';
-        if (p === "buzz") return '<div class="remote-live"><span class="eyebrow">Hệ thống đang nghe</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">Không cần xác định bằng mắt.</span></div><button class="btn danger" data-action="close">Đóng lượt sớm</button>';
-        if (p === "question") { var who = state.winnerTeam ? "Đội " + String(state.winnerTeam).padStart(2, "0") + " · " + esc(teamName(state.winnerTeam)) : "Đội chưa được xác định"; return '<div class="remote-live"><span class="eyebrow">Đang trả lời</span><b>' + who + '</b><span class="muted">MC nghe câu trả lời trực tiếp.</span></div><div class="remote-duo"><button class="btn green large" data-action="grade" data-points="10">✓ ĐÚNG · 10</button><button class="btn danger large" data-action="grade" data-points="0">× SAI · 0</button></div>'; }
-        if (p === "result") return '<div class="remote-live"><span class="eyebrow">Tự chuyển sau vài giây</span><b>' + (state.lastAward && state.lastAward.noWinner ? "Cả lớp · 0 điểm" : "+" + (state.lastAward ? state.lastAward.points : 0) + " điểm") + '</b><span class="muted">Có thể bấm để chuyển ngay.</span></div><button class="btn primary large" data-action="next">→ Câu tiếp</button>';
+        if (p === "cover") return '<button class="btn primary large" data-action="start">▶ Bắt đầu game</button><div class="auto-note">Chấm xong, slide tự chuyển.</div>';
+        if (p === "ready") return '<button class="btn gold large" data-action="open">✦ Mở mảnh ghép ' + String(state.roundIndex + 1).padStart(2, "0") + '</button><div class="auto-note">Đội chạm 1 trong 4 mảnh.</div>';
+        if (p === "buzz") return '<div class="remote-live"><span class="eyebrow">Đang nghe</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">Đội đúng tự khóa.</span></div><button class="btn danger" data-action="close">Đóng lượt</button>';
+        if (p === "question") { var who = state.winnerTeam ? "Đội " + String(state.winnerTeam).padStart(2, "0") + " · " + esc(teamName(state.winnerTeam)) : "Đội chưa được xác định"; return '<div class="remote-live"><span class="eyebrow">Trả lời</span><b>' + who + '</b><span class="muted">Nghe xong, chọn kết quả.</span></div><div class="remote-duo"><button class="btn green large" data-action="grade" data-points="10">✓ ĐÚNG · 10</button><button class="btn danger large" data-action="grade" data-points="0">× SAI · 0</button></div>'; }
+        if (p === "result") return '<div class="remote-live"><span class="eyebrow">Kết quả</span><b>' + (state.lastAward && state.lastAward.noWinner ? "Cả lớp · 0 điểm" : "+" + (state.lastAward ? state.lastAward.points : 0) + " điểm") + '</b></div><button class="btn primary large" data-action="next">→ Câu tiếp</button>';
         if (p === "scoreboard") return '<button class="btn primary large" data-action="next">→ Quay lại game</button>';
         if (p === "finish") return '<button class="btn gold large" data-action="reset">↻ Chơi lại</button>';
         return "";
       }
       function miniScore() { return scoreList(3).map(function (t, i) { return '<div class="mini-score-row"><span>' + (i + 1) + ". " + esc(t.name) + '</span><b>' + t.score + "đ</b></div>"; }).join(""); }
       function hostView() {
-        return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">∅</span><span class="brand-copy"><b>BẢO TÀNG KHÔNG TỒN TẠI</b><span>CHẾ ĐỘ PPT GAME · MC REMOTE</span></span></a><div class="header-actions"><a class="btn ghost" href="#/stage">Mở sân khấu ↗</a><button class="icon-btn" title="Bật/tắt âm thanh" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Đặt lại" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad"><div class="eyebrow">MỘT NÚT / MỘT SLIDE</div><h1 style="font:800 clamp(28px,4vw,44px)/.95 var(--display);letter-spacing:-.05em;margin:10px 0 7px">MC chỉ cần<br><span style="color:var(--cyan)">bấm tiếp.</span></h1><p class="muted" style="font-size:12px;line-height:1.55;margin:0">Không nhập câu trả lời, không kéo thả, không mở nhiều bảng. Đội trả lời trực tiếp; MC chỉ chọn ĐÚNG hoặc SAI.</p></div><div class="remote-status"><div class="status-tile"><small>TRẠNG THÁI</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>CÂU</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div><div class="keyboard-note" style="margin-top:13px">SPACE = nút chính · 1 = đúng · 0 = sai</div></div><div class="panel"><div class="panel-head"><h3>Bảng điểm nhanh</h3>' + (state.phase === "result" ? '<button class="btn ghost" data-action="scoreboard">Mở BXH</button>' : '') + '</div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
+        return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">∅</span><span class="brand-copy"><b>BẢO TÀNG KHÔNG TỒN TẠI</b><span>PPT GAME · MC</span></span></a><div class="header-actions"><a class="btn ghost" href="#/stage">Sân khấu ↗</a><button class="icon-btn" title="Bật/tắt âm thanh" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Đặt lại" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad"><div class="eyebrow">MC REMOTE</div><h1 style="font:800 clamp(28px,4vw,44px)/.95 var(--display);letter-spacing:-.05em;margin:10px 0 7px">Chỉ cần<br><span style="color:var(--cyan)">bấm tiếp.</span></h1><p class="muted" style="font-size:12px;line-height:1.55;margin:0">Mở mảnh → nghe trả lời → chọn đúng/sai.</p></div><div class="remote-status"><div class="status-tile"><small>TRẠNG THÁI</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>CÂU</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div><div class="keyboard-note" style="margin-top:13px">SPACE · 1 đúng · 0 sai</div></div><div class="panel"><div class="panel-head"><h3>Bảng điểm</h3>' + (state.phase === "result" ? '<button class="btn ghost" data-action="scoreboard">Mở BXH</button>' : '') + '</div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
       }
 
-      function stageCover() { return '<div class="slide"><div class="slide-kicker">EXHIBIT 00 · PPT GAME</div><h1>Bảo tàng<br><em>không tồn tại</em></h1><div class="slide-visual"><div class="scene-glow"></div>' + sceneSvg("orb") + '</div><p class="slide-sub">Mỗi câu chỉ có một mảnh ghép đúng. Chọn đúng — giành quyền — trả lời.</p></div>'; }
-      function stageReady() { var q = currentRound(); return '<div class="slide"><span class="slide-number">/' + String(state.roundIndex + 1).padStart(2, "0") + '</span><div class="slide-kicker">PHÒNG TRƯNG BÀY ' + q.id + '</div><h1>' + esc(q.title) + '</h1><div class="slide-visual"><div class="scene-glow"></div>' + sceneSvg(q.visual) + '</div><p class="slide-sub">Chuẩn bị chọn mảnh ghép.</p></div>'; }
+      function stageCover() { return '<div class="slide"><div class="slide-kicker">EXHIBIT 00</div><h1 class="horror-script">Bảo tàng<br><em>không tồn tại</em></h1><div class="slide-visual has-image hero-art"><img class="slide-art-image" src="assets/paradox-museum-hero.jpg" alt=""></div><p class="slide-sub">Chọn mảnh · giành quyền · trả lời</p></div>'; }
+      function stageReady() { var q = currentRound(); return '<div class="slide"><span class="slide-number">/' + String(state.roundIndex + 1).padStart(2, "0") + '</span><div class="slide-kicker">' + q.id + '</div><h1 class="horror-script">' + esc(q.title) + '</h1><div class="slide-visual has-image square-art"><img class="slide-art-image" src="assets/paradox-exhibit-shard.jpg" alt=""></div><p class="slide-sub">Sẵn sàng?</p></div>'; }
       function stageBuzz() {
         var q = currentRound(); var wrong = state.wrongTeams.length;
-        return '<div class="slide"><span class="slide-number">/' + String(state.roundIndex + 1).padStart(2, "0") + '</span><div class="slide-kicker">CỬA SỔ GIÀNH QUYỀN</div><h1>Chọn <em>một mảnh</em></h1><div class="buzz-line"><div class="timer ' + (currentTime() > 5 ? "safe" : "") + '">' + currentTime() + 's</div><span>đội đang chọn · ' + wrong + ' mảnh sai</span></div><div class="slide-visual" style="width:min(520px,75vw);aspect-ratio:1.45;margin-top:10px"><div class="scene-glow"></div>' + sceneSvg(q.visual) + '</div><div class="slide-puzzle">' + [0,1,2,3].map(function (i) { return '<div class="stage-piece">' + pieceSvg(i, ["#69e7ff","#ffd166","#ff6b9d","#69e0ad"][i]) + '<small>MẢNH 0' + (i + 1) + '</small></div>'; }).join("") + '</div></div>';
+        return '<div class="slide"><span class="slide-number">/' + String(state.roundIndex + 1).padStart(2, "0") + '</span><div class="slide-kicker">CHỌN MẢNH</div><h1 class="horror-script">Ai sẽ <em>mở cửa?</em></h1><div class="buzz-line"><div class="timer ' + (currentTime() > 5 ? "safe" : "") + '">' + currentTime() + 's</div><span>' + wrong + ' mảnh sai</span></div><div class="slide-visual has-image" style="width:min(520px,75vw);aspect-ratio:1.45;margin-top:10px"><img class="slide-art-image" src="assets/paradox-museum-hero.jpg" alt=""></div><div class="slide-puzzle">' + [0,1,2,3].map(function (i) { return '<div class="stage-piece">' + pieceSvg(i, ["#69e7ff","#ffd166","#ff6b9d","#69e0ad"][i]) + '<small>0' + (i + 1) + '</small></div>'; }).join("") + '</div></div>';
       }
       function stageQuestion() {
         var q = currentRound(); var who = state.winnerTeam ? '<div class="winner-card"><i class="winner-dot"></i><b>Đội ' + String(state.winnerTeam).padStart(2, "0") + ' · ' + esc(teamName(state.winnerTeam)) + '</b></div>' : '<div class="winner-card"><i class="winner-dot" style="background:var(--gold);box-shadow:0 0 16px var(--gold)"></i><b>Cả lớp cùng suy luận</b></div>';
-        return '<div class="slide"><span class="slide-number">/' + String(state.roundIndex + 1).padStart(2, "0") + '</span><div class="slide-kicker">CÂU HỎI · TRẢ LỜI TRỰC TIẾP</div>' + who + '<div class="question-box"><h2>' + esc(q.question) + '</h2><div class="options">' + q.options.map(function (o, i) { return '<div class="option"><b>' + String.fromCharCode(65 + i) + '</b><span>' + esc(o) + '</span></div>'; }).join("") + '</div></div><p class="slide-sub">' + esc(q.hint) + '</p></div>';
+        return '<div class="slide"><span class="slide-number">/' + String(state.roundIndex + 1).padStart(2, "0") + '</span><div class="slide-kicker">CÂU HỎI</div>' + who + '<div class="question-box has-art"><h2>' + esc(q.question) + '</h2><div class="options">' + q.options.map(function (o, i) { return '<div class="option"><b>' + String.fromCharCode(65 + i) + '</b><span>' + esc(o) + '</span></div>'; }).join("") + '</div></div></div>';
       }
-      function stageResult() { var award = state.lastAward || { points: 0, teamId: null, noWinner: true }; var ok = !award.noWinner && award.points > 0; return '<div class="slide"><div class="result-mark ' + (ok ? "" : "wrong") + '">' + (ok ? "✓" : "×") + '</div><div class="slide-kicker">' + (award.noWinner ? "HẾT GIỜ" : "KẾT QUẢ CÂU " + String(state.roundIndex + 1).padStart(2, "0")) + '</div><div class="award">' + (award.noWinner ? "0" : "+" + award.points) + '</div><h1 style="font-size:clamp(28px,5vw,62px)">' + (award.noWinner ? "Cả lớp cùng nhớ đáp án" : esc(teamName(award.teamId))) + '</h1><p class="slide-sub">' + (award.noWinner ? "Không chuyển quyền. Sang slide tiếp theo." : (ok ? "Câu trả lời đã được xác nhận." : "Không cộng điểm — sang câu tiếp theo.")) + '</p></div>'; }
+      function stageResult() { var award = state.lastAward || { points: 0, teamId: null, noWinner: true }; var ok = !award.noWinner && award.points > 0; return '<div class="slide result-slide"><div class="result-mark ' + (ok ? "" : "wrong") + '">' + (ok ? "✓" : "×") + '</div><div class="slide-kicker">' + (award.noWinner ? "HẾT GIỜ" : "KẾT QUẢ") + '</div><div class="award">' + (award.noWinner ? "0" : "+" + award.points) + '</div><h1 style="font-size:clamp(28px,5vw,62px)">' + (award.noWinner ? "Cả lớp" : esc(teamName(award.teamId))) + '</h1></div>'; }
       function stageScoreboard() {
         var list = scoreList(5); var max = Math.max(10, list[0] ? list[0].score : 10);
         return '<div class="slide"><div class="slide-kicker">BẢNG ĐIỂM TẠM THỜI</div><h1 style="font-size:clamp(36px,6vw,80px)">Ai đang dẫn đầu?</h1><div class="scoreboard-slide">' + list.map(function (t, i) { return '<div class="score-row"><span class="score-rank">0' + (i + 1) + '</span><div><div class="score-name">' + esc(t.name) + '</div><div class="score-bar"><i style="width:' + Math.max(4, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="score-points">' + t.score + 'đ</span></div>'; }).join("") + '</div></div>';
@@ -434,7 +456,7 @@
         return '<div class="slide"><div class="slide-kicker">KẾT THÚC · HỒ SƠ ĐÃ MỞ</div><h1 style="font-size:clamp(37px,6.3vw,90px)">Ba đội<br><em>đi xa nhất</em></h1><div class="podium"><div class="podium-col p2"><b>' + esc(list[1] ? list[1].name : "—") + '</b><div class="podium-block">02</div></div><div class="podium-col p1"><b>' + esc(list[0] ? list[0].name : "—") + '</b><div class="podium-block">01</div></div><div class="podium-col p3"><b>' + esc(list[2] ? list[2].name : "—") + '</b><div class="podium-block">03</div></div></div><p class="slide-sub">Cảm ơn các nhà điều tra của bảo tàng.</p></div>';
       }
       function stageSlide() { if (state.phase === "cover") return stageCover(); if (state.phase === "ready") return stageReady(); if (state.phase === "buzz") return stageBuzz(); if (state.phase === "question") return stageQuestion(); if (state.phase === "result") return stageResult(); if (state.phase === "scoreboard") return stageScoreboard(); return stageFinish(); }
-      function stageView(compact) { return '<main class="stage-root ' + (compact ? "stage-compact" : "") + '"><header class="stage-header"><a href="#/" class="brand"><span class="brand-mark">∅</span><span class="brand-copy"><b>BẢO TÀNG KHÔNG TỒN TẠI</b><span>TRÌNH CHIẾU · PPT MODE</span></span></a><div class="stage-code">' + phaseLabel() + ' · ' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + '/' + String(rounds.length).padStart(2, "0") + '</div></header><section class="stage-main">' + stageSlide() + '</section><footer class="stage-footer"><span>15 ĐỘI · 1 LẦN CHỌN · 10 ĐIỂM/CÂU</span><span>F11 = TOÀN MÀN HÌNH</span></footer></main>'; }
+      function stageView(compact) { return '<main class="stage-root ' + (compact ? "stage-compact" : "") + '"><header class="stage-header"><a href="#/" class="brand"><span class="brand-mark">∅</span><span class="brand-copy"><b>BẢO TÀNG KHÔNG TỒN TẠI</b><span>TRÌNH CHIẾU · PPT MODE</span></span></a><div class="stage-code">' + phaseLabel() + ' · ' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + '/' + String(rounds.length).padStart(2, "0") + '</div></header><section class="stage-main">' + stageSlide() + '</section>' + (compact ? '<footer class="stage-footer"><span>15 ĐỘI · 1 LẦN CHỌN · 10 ĐIỂM/CÂU</span><span>F11 = TOÀN MÀN HÌNH</span></footer>' : '') + '</main>'; }
 
       function teamView() {
         var id = selectedTeamId; var t = team(id); var choice = teamLocalChoice(id); var q = currentRound(); var body = "";
@@ -447,11 +469,11 @@
         } else if (state.phase === "finish") {
           body = '<div class="team-round">PHIÊN ĐÃ KẾT THÚC</div><h1>' + t.score + '<small style="font-size:.42em;color:var(--gold)">điểm</small></h1><p>Xem bảng xếp hạng trên màn chiếu.</p><div class="team-message">Cảm ơn đội đã tham gia.</div>';
         } else {
-          body = waitSvg() + '<div class="team-round">' + (state.phase === "ready" ? "SẮP MỞ CÂU " + String(state.roundIndex + 1).padStart(2, "0") : "ĐANG CHỜ") + '</div><h1>Nhìn<br>màn chiếu.</h1><p>Khi cửa sổ mở, bốn mảnh ghép sẽ xuất hiện tại đây.</p>';
+          body = '<div class="team-photo"><img src="assets/paradox-exhibit-shard.jpg" alt=""></div><div class="team-round">' + (state.phase === "ready" ? "CÂU " + String(state.roundIndex + 1).padStart(2, "0") : "ĐANG CHỜ") + '</div><h1>Nhìn<br>màn chiếu.</h1><p>Chờ cửa sổ mở.</p>';
         }
         return '<main class="team-root"><section class="team-phone"><header class="team-head"><div><b>' + esc(t.name) + '</b><small>ĐỘI ' + String(id).padStart(2, "0") + '</small></div><span class="team-score">' + t.score + 'đ</span></header><div class="team-body">' + body + '</div><footer class="team-foot">BẢO TÀNG KHÔNG TỒN TẠI · ĐỪNG ĐỔI TAB</footer></section></main>';
       }
-      function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><div class="eyebrow">PPT GAME · 15 ĐỘI · 1 LẦN CHỌN</div><h1>Bảo tàng<br><em>không tồn tại</em></h1><p>Một trò chơi sau thuyết trình được thiết kế như một bộ slide tương tác: hình ảnh dẫn đường, MC chỉ bấm tiếp, hệ thống tự khóa đội thắng và tự cộng điểm.</p><div class="home-actions"><a class="btn primary large" href="#/host">Mở bảng MC</a><a class="btn ghost large" href="#/stage">Mở màn chiếu</a></div><div class="home-note"><div><b>06</b><span>câu hỏi</span></div><div><b>15</b><span>đội chơi</span></div><div><b>10</b><span>điểm/câu</span></div></div></section><section class="museum-card" aria-label="Minh họa bảo tàng hình học"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">NULL</div><div class="eyebrow" style="position:absolute;right:27px;bottom:25px;color:#ffffff66">EXHIBIT 00 / 404</div></section></div></main>'; }
+      function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><div class="eyebrow">PPT GAME · 15 ĐỘI</div><h1 class="horror-script">Bảo tàng<br><em>không tồn tại</em></h1><p>Chọn mảnh. Giành quyền. Trả lời.</p><div class="home-actions"><a class="btn primary large" href="#/host">Mở MC</a><a class="btn ghost large" href="#/stage">Mở sân khấu</a></div><div class="home-note"><div><b>06</b><span>câu</span></div><div><b>15</b><span>đội</span></div><div><b>10</b><span>điểm</span></div></div></section><section class="museum-card" aria-label="Minh họa bảo tàng hình học"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">NULL</div><div class="eyebrow" style="position:absolute;right:27px;bottom:25px;color:#ffffff66">EXHIBIT 00</div></section></div></main>'; }
       function bind() { document.querySelectorAll("[data-action]").forEach(function (el) { el.addEventListener("click", handleAction); }); }
       function handleAction(event) {
         var el = event.currentTarget; var action = el.getAttribute("data-action");
