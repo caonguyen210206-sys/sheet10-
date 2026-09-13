@@ -20,7 +20,8 @@ const firebaseConfig = {
   var MASCOT_PREFIX = "paradox-ppt-mascot-v3-";
   var CARD_PREFIX = "paradox-ppt-card-v3-";
   var LEGACY_BET_PREFIX = "paradox-ppt-bet-v2-";
-  var selectedTeamId = 1;
+  var TEAM_SELECTION_KEY = "paradox-ppt-team-choice-v3";
+  var selectedTeamId = 0;
   var audioContext = null;
   var lastStageCelebration = "";
   var role = "home";
@@ -231,7 +232,16 @@ const firebaseConfig = {
     var clean = hash.slice(1);
     var path = clean.split("?")[0] || "/";
     role = path === "/host" ? "host" : path === "/stage" ? "stage" : path === "/team" ? "team" : "home";
-    if (role === "team") { var query = new URLSearchParams(clean.split("?")[1] || ""); selectedTeamId = Math.min(15, Math.max(1, Number(query.get("team")) || 1)); }
+    if (role === "team") {
+      var query = new URLSearchParams(clean.split("?")[1] || "");
+      var requested = Number(query.get("team"));
+      if (Number.isInteger(requested) && requested >= 1 && requested <= 15) {
+        selectedTeamId = requested;
+        try { localStorage.setItem(TEAM_SELECTION_KEY, String(selectedTeamId)); } catch (e) {}
+      } else {
+        try { var stored = Number(localStorage.getItem(TEAM_SELECTION_KEY)); selectedTeamId = Number.isInteger(stored) && stored >= 1 && stored <= 15 ? stored : 0; } catch (e) { selectedTeamId = 0; }
+      }
+    }
   }
   window.addEventListener("hashchange", render);
 
@@ -541,6 +551,9 @@ const firebaseConfig = {
     var t = team(id); var chosen = cardFor(id); var used = t.usedCards || [];
     return '<div class="card-grid team-card-grid">' + cardNumbers.map(function (n) { var isUsed = used.indexOf(n) >= 0; var isSelected = chosen && Number(chosen.card) === n; var disabled = !!chosen || isUsed; return '<button class="card-token ' + (isUsed ? "used" : "") + ' ' + (isSelected ? "selected" : "") + '" data-action="card" data-card="' + n + '" ' + (disabled ? "disabled" : "") + '>' + n + '</button>'; }).join("") + '</div><div class="card-grid-note"><span>' + (chosen ? "MÃ ĐÃ KHÓA" : "CHỌN 1 / 25 MÃ") + '</span><span>ĐÃ DÙNG ' + used.length + '/25</span></div>';
   }
+  function teamPickerView() {
+    return '<main class="team-root team-picker-root"><section class="team-phone"><div class="team-picker-body"><div class="eyebrow">VAULT 25 · LINK CHUNG</div><div class="team-picker-core"><img src="assets/vault-core.png" alt=""></div><h1>Chọn<br><em>đội của bạn</em></h1><p>Mỗi điện thoại chọn một đội.</p><div class="team-picker-grid">' + teamNames.map(function (name, i) { return '<button class="team-picker-card" data-action="select-team" data-team="' + (i + 1) + '"><b>' + String(i + 1).padStart(2, "0") + '</b><span>' + esc(name.replace(/^Đội\s*/, "")) + '</span></button>'; }).join("") + '</div></div><footer class="team-foot">CHỌN XONG · CHỜ MC MỞ KÉT</footer></section></main>';
+  }
   function teamView() {
     var id = selectedTeamId; var t = team(id); var q = currentRound(); var localMascot = teamLocalMascot(id); var mascotId = localMascot || t.mascotId || mascots[(id - 1) % mascots.length].id; var m = mascotById(mascotId); var chosen = cardFor(id); var body = "";
     if (state.phase === "mascot" || state.phase === "cover") {
@@ -564,9 +577,9 @@ const firebaseConfig = {
     } else {
       body = waitSvg() + '<div class="team-round">ĐANG CHỜ</div><h1>Nhìn<br>màn chiếu.</h1><p>Chờ cửa sổ mở.</p>';
     }
-    return '<main class="team-root"><section class="team-phone"><header class="team-head"><div><b>' + esc(t.name) + '</b><small>ĐỘI ' + String(id).padStart(2, "0") + ' · ' + esc(m.name) + '</small></div><span class="team-score">' + t.score + 'đ</span></header><div class="team-body">' + body + '</div><footer class="team-foot">VAULT 25 · ' + (state.phase === "bet" ? "CHỌN 1 MÃ" : "NHÌN MÀN CHIẾU") + '</footer></section></main>';
+    return '<main class="team-root"><section class="team-phone"><header class="team-head"><div><b>' + esc(t.name) + '</b><small>ĐỘI ' + String(id).padStart(2, "0") + ' · ' + esc(m.name) + '</small></div><div class="team-head-actions"><button class="team-switch" data-action="team-switch" title="Đổi đội">↺</button><span class="team-score">' + t.score + 'đ</span></div></header><div class="team-body">' + body + '</div><footer class="team-foot">VAULT 25 · ' + (state.phase === "bet" ? "CHỌN 1 MÃ" : "NHÌN MÀN CHIẾU") + '</footer></section></main>';
   }
-  function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><div class="eyebrow">PPT GAME · 15 ĐỘI</div><h1 class="horror-script">VAULT<br><em>25</em></h1><p>Chọn linh vật · chọn mã · giành quyền.</p><div class="home-actions"><a class="btn primary large" href="#/host">Mở MC</a><a class="btn ghost large" href="#/stage">Mở sân khấu</a></div><div class="home-note"><div><b>25</b><span>câu</span></div><div><b>15</b><span>đội</span></div><div><b>25</b><span>thẻ / đội</span></div></div></section><section class="museum-card" aria-label="Minh họa két VAULT 25"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">25</div><div class="eyebrow" style="position:absolute;right:27px;bottom:25px;color:#ffffff66">VAULT 25</div></section></div></main>'; }
+  function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><div class="eyebrow">PPT GAME · 15 ĐỘI</div><h1 class="horror-script">VAULT<br><em>25</em></h1><p>Chọn linh vật · chọn mã · giành quyền.</p><div class="home-actions"><a class="btn primary large" href="#/host">Mở MC</a><a class="btn ghost large" href="#/stage">Mở sân khấu</a><a class="btn ghost large" href="#/team">Link chung cho đội</a></div><div class="home-note"><div><b>25</b><span>câu</span></div><div><b>15</b><span>đội</span></div><div><b>25</b><span>thẻ / đội</span></div></div></section><section class="museum-card" aria-label="Minh họa két VAULT 25"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">25</div><div class="eyebrow" style="position:absolute;right:27px;bottom:25px;color:#ffffff66">VAULT 25</div></section></div></main>'; }
 
   function bind() { document.querySelectorAll("[data-action]").forEach(function (el) { el.addEventListener("click", handleAction); }); }
   function handleAction(event) {
@@ -580,6 +593,8 @@ const firebaseConfig = {
     if (action === "scoreboard") return showScoreboard();
     if (action === "reset") return resetGame();
     if (action === "sound") { initAudio(); var nextSound = !state.sound; mutate(function (s) { s.sound = nextSound; }, nextSound ? "Bật âm thanh" : "Tắt âm thanh"); return; }
+    if (action === "select-team") { var chosenTeam = Number(el.getAttribute("data-team")); if (Number.isInteger(chosenTeam) && chosenTeam >= 1 && chosenTeam <= 15) { selectedTeamId = chosenTeam; try { localStorage.setItem(TEAM_SELECTION_KEY, String(selectedTeamId)); } catch (e) {} render(); } return; }
+    if (action === "team-switch") { selectedTeamId = 0; try { localStorage.removeItem(TEAM_SELECTION_KEY); } catch (e) {} render(); return; }
     if (action === "mascot") return chooseMascot(selectedTeamId, el.getAttribute("data-mascot"));
     if (action === "skill-toggle") { var skill = team(selectedTeamId); if (!skill.skillUsed) { setTeamSkillArmed(selectedTeamId, !teamSkillArmed(selectedTeamId)); render(); } return; }
     if (action === "card") return teamCard(selectedTeamId, Number(el.getAttribute("data-card")));
@@ -592,7 +607,7 @@ const firebaseConfig = {
       if (signature !== lastStageCelebration) { lastStageCelebration = signature; initAudio(); soundFor("win"); }
     }
     if (role === "host" && firebaseReady && remoteStateKnown && !remoteStateExists && !pendingRemoteCreate) { pendingRemoteCreate = true; save("Khởi tạo phiên Firebase"); pendingRemoteCreate = false; }
-    document.getElementById("app").innerHTML = role === "host" ? hostView() : role === "stage" ? stageView(false) : role === "team" ? teamView() : homeView();
+    document.getElementById("app").innerHTML = role === "host" ? hostView() : role === "stage" ? stageView(false) : role === "team" ? (selectedTeamId ? teamView() : teamPickerView()) : homeView();
     bind();
   }
   document.addEventListener("keydown", function (event) {
