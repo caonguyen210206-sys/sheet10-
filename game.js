@@ -410,25 +410,29 @@ const firebaseConfig = {
     for (var i = 1; i <= 15; i++) {
       var pick = remoteCardFor(i) || null;
       if (!pick) { try { var raw = localStorage.getItem(prefix + i); if (raw) pick = JSON.parse(raw); } catch (e) {} }
-      if (next.cardPicks && next.cardPicks[String(i)]) {
-        if (pick && pick.submittedAt && !next.cardPicks[String(i)].serverAt) { next.cardPicks[String(i)].serverAt = actionAt(pick); changed = true; }
-        continue;
-      }
       if (!pick || !pickValid(pick, false)) continue;
       var id = Number(pick.teamId); var target = next.scores[id - 1]; var card = Number(pick.card);
       if (!target || hasUsedCard(target, card)) continue;
       if (!next.cardPicks) next.cardPicks = {};
-      next.cardPicks[String(id)] = { sessionId: state.sessionId, roundIndex: state.roundIndex, teamId: id, card: card, mascotId: target.mascotId, useSkill: !!pick.useSkill, at: Number(pick.at) || Date.now(), serverAt: pick.submittedAt ? actionAt(pick) : null, nonce: pick.nonce || "" };
-      target.usedCards = Array.isArray(target.usedCards) ? target.usedCards : [];
-      target.usedCards.push(card);
-      if (pick.useSkill && !target.skillUsed) target.skillUsed = true;
-      changed = true;
+      var key = String(id); var previous = next.cardPicks[key];
+      var normalized = { sessionId: state.sessionId, roundIndex: state.roundIndex, teamId: id, card: card, mascotId: target.mascotId, useSkill: !!pick.useSkill, at: Number(pick.at) || Date.now(), serverAt: pick.submittedAt ? actionAt(pick) : null, nonce: pick.nonce || "" };
+      var newPick = !previous || Number(previous.card) !== card || String(previous.nonce || "") !== String(normalized.nonce || "");
+      if (newPick) {
+        // The card is only consumed when the round is revealed. This lets a
+        // team change its mind while the countdown is still running.
+        if (previous && Number(previous.card) !== card && hasUsedCard(target, Number(previous.card))) target.usedCards = target.usedCards.filter(function (n) { return Number(n) !== Number(previous.card); });
+        next.cardPicks[key] = normalized;
+        if (pick.useSkill && !target.skillUsed) target.skillUsed = true;
+        changed = true;
+      } else if (pick.submittedAt && !previous.serverAt) {
+        previous.serverAt = actionAt(pick); changed = true;
+      }
     }
-    if (changed) { state = next; save("Mã đã khóa"); soundFor("card"); }
+    if (changed) { state = next; save("Mã đã chọn"); soundFor("card"); }
   }
   function teamCard(teamId, card) {
-    if (state.phase !== "bet" || Number(teamId) !== selectedTeamId || !team(teamId) || cardFor(teamId)) return;
-    card = Number(card); var target = team(teamId); if (!Number.isInteger(card) || card < 1 || card > 25 || hasUsedCard(target, card)) return;
+    if (state.phase !== "bet" || Number(teamId) !== selectedTeamId || !team(teamId)) return;
+    card = Number(card); var target = team(teamId); var current = cardFor(teamId); if (!Number.isInteger(card) || card < 1 || card > 25 || hasUsedCard(target, card) || current && Number(current.card) === card) return;
     var pick = { sessionId: state.sessionId, roundIndex: state.roundIndex, teamId: Number(teamId), card: card, useSkill: teamSkillArmed(teamId) && !target.skillUsed, at: Date.now() + performance.now() / 1000, nonce: Math.random().toString(36).slice(2) };
     try { localStorage.setItem(cardKey(teamId), JSON.stringify(pick)); } catch (e) {}
     setTeamSkillArmed(teamId, false);
@@ -441,6 +445,12 @@ const firebaseConfig = {
     scanCards(); if (state.phase !== "bet") return;
     var leaders = cardLeaders(15); var winner = leaders.length ? leaders[0] : null;
     mutate(function (s) {
+      Object.keys(s.cardPicks || {}).forEach(function (id) {
+        var pick = s.cardPicks[id]; var target = s.scores[Number(id) - 1]; var card = Number(pick && pick.card);
+        if (!target || !Number.isInteger(card) || card < 1 || card > 25 || hasUsedCard(target, card)) return;
+        target.usedCards = Array.isArray(target.usedCards) ? target.usedCards : [];
+        target.usedCards.push(card);
+      });
       s.winnerTeam = winner ? Number(winner.teamId) : null; s.winnerCard = winner ? Number(winner.card) : null; s.winnerSkill = winner && winner.useSkill ? winner.mascotId : null; s.timerEnd = null; s.phase = winner ? "reveal" : "result"; s.autoAt = Date.now() + (winner ? 8000 : 6000);
       s.lastAward = winner ? null : { teamId: null, card: null, points: 0, delta: 0, correct: false, noWinner: true };
     }, winner ? "Lộ mã · cao nhất giành quyền" : "Không có mã · 0 điểm");
@@ -566,7 +576,7 @@ const firebaseConfig = {
 
   function cardGridMarkup(id) {
     var t = team(id); var chosen = cardFor(id); var used = t.usedCards || [];
-    return '<div class="card-grid team-card-grid">' + cardNumbers.map(function (n) { var isUsed = used.indexOf(n) >= 0; var isSelected = chosen && Number(chosen.card) === n; var disabled = !!chosen || isUsed; return '<button class="card-token ' + (isUsed ? "used" : "") + ' ' + (isSelected ? "selected" : "") + '" data-action="card" data-card="' + n + '" ' + (disabled ? "disabled" : "") + '>' + n + '</button>'; }).join("") + '</div><div class="card-grid-note"><span>' + (chosen ? "MÃ ĐÃ KHÓA" : "CHỌN 1 / 25 MÃ") + '</span><span>ĐÃ DÙNG ' + used.length + '/25</span></div>';
+    return '<div class="card-grid team-card-grid">' + cardNumbers.map(function (n) { var isUsed = used.indexOf(n) >= 0; var isSelected = chosen && Number(chosen.card) === n; var disabled = isUsed || isSelected; return '<button class="card-token ' + (isUsed ? "used" : "") + ' ' + (isSelected ? "selected" : "") + '" data-action="card" data-card="' + n + '" ' + (disabled ? "disabled" : "") + '>' + n + '</button>'; }).join("") + '</div><div class="card-grid-note"><span>' + (chosen ? "ĐÃ CHỌN · ĐỔI ĐƯỢC" : "CHỌN 1 / 25 MÃ") + '</span><span>ĐÃ DÙNG ' + used.length + '/25</span></div>';
   }
   function teamPickerView() {
     return '<main class="team-root team-picker-root"><section class="team-phone"><div class="team-picker-body"><div class="eyebrow">VAULT 25 · LINK CHUNG</div><div class="team-picker-core"><img src="assets/vault-core.png" alt=""></div><h1>Chọn<br><em>đội của bạn</em></h1><p>Mỗi điện thoại chọn một đội.</p><div class="team-picker-grid">' + teamNames.map(function (name, i) { return '<button class="team-picker-card" data-action="select-team" data-team="' + (i + 1) + '"><b>' + String(i + 1).padStart(2, "0") + '</b><span>' + esc(name.replace(/^Đội\s*/, "")) + '</span></button>'; }).join("") + '</div></div><footer class="team-foot">CHỌN XONG · CHỜ MC MỞ KÉT</footer></section></main>';
@@ -580,7 +590,7 @@ const firebaseConfig = {
     } else if (state.phase === "bet") {
       var canUseSkill = !t.skillUsed; var armed = teamSkillArmed(id); var skillButton = canUseSkill ? '<button class="skill-toggle ' + (armed ? "armed" : "") + '" data-action="skill-toggle">' + mascotArt(mascotId) + '<span><b>' + esc(m.name) + ' · ' + esc(m.skill) + '</b><small>' + (armed ? "ĐÃ KÍCH HOẠT" : esc(m.desc)) + '</small></span></button>' : '<div class="skill-toggle" style="opacity:.45">' + mascotArt(mascotId) + '<span><b>' + esc(m.name) + ' · ĐÃ DÙNG</b><small>Kỹ năng đã hết</small></span></div>';
       var hint = armed && mascotId === "raven" ? '<div class="team-message" style="border-color:#69e7ff66;color:var(--cyan)">' + esc(q.hint) + '</div>' : '';
-      body = '<div class="team-round">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + ' / 25 · CHỌN MÃ</div><h1>' + (chosen ? "Mã đã<br>khóa." : "Chọn<br>một mã.") + '</h1><p>' + (chosen ? "Nhìn màn chiếu." : "+' + q.points + ' điểm nếu đúng.") + '</p><div class="phone-timer">' + currentTime() + 's</div>' + skillButton + hint + cardGridMarkup(id);
+      body = '<div class="team-round">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + ' / 25 · CHỌN MÃ</div><h1>' + (chosen ? "Mã đã<br>chọn." : "Chọn<br>một mã.") + '</h1><p>' + (chosen ? "Bấm số khác để đổi trước khi hết giờ." : "+' + q.points + ' điểm nếu đúng.") + '</p><div class="phone-timer">' + currentTime() + 's</div>' + skillButton + hint + cardGridMarkup(id);
     } else if (state.phase === "reveal") {
       body = '<div class="team-round">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + ' · LỘ MÃ</div><h1>' + (state.winnerTeam === id ? "Đội bạn<br>được gọi." : "Mã đã<br>chọn đội.") + '</h1><p>' + (state.winnerTeam === id ? "Chuẩn bị trả lời trực tiếp." : "Theo dõi màn chiếu.") + '</p><div class="card-reveal-number">' + state.winnerCard + '</div><div class="mascot-strip">' + mascotArt(mascotId) + '<span class="mascot-name">' + esc(m.name) + '</span></div>';
     } else if (state.phase === "question") {
