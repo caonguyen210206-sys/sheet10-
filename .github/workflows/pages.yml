@@ -1,4 +1,4 @@
-name: Deploy Paradox Museum to GitHub Pages
+name: Deploy Room 404 to GitHub Pages
 
 on:
   push:
