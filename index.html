@@ -123,8 +123,9 @@
     .slide-visual.hero-art::after { background: linear-gradient(180deg, #070a1510 25%, #070a158e 100%); }
     .question-box.has-art { background-image: linear-gradient(90deg, #111830f7 0 63%, #111830bb 100%), url("assets/paradox-exhibit-shard.jpg"); background-repeat: no-repeat; background-position: center, right center; background-size: 100% 100%, auto 125%; }
     .question-box.has-art h2, .question-box.has-art .options { max-width: 69%; }
-    .result-slide { position: relative; overflow: hidden; }
+    .result-slide { position: relative; overflow: hidden; isolation: isolate; }
     .result-slide::before { content: ""; position: absolute; inset: 12% 23%; border-radius: 50%; background: url("assets/paradox-exhibit-shard.jpg") center / cover no-repeat; opacity: .18; filter: blur(1px) saturate(.8); }
+    .result-slide::after { content: ""; position: absolute; width: min(74vw, 790px); aspect-ratio: 1; left: 50%; top: 46%; border-radius: 50%; opacity: 0; pointer-events: none; z-index: 0; }
     .result-slide > * { position: relative; z-index: 1; }
     .horror-script { font-family: var(--gothic); letter-spacing: .02em; text-shadow: 2px 0 #ff6b9d27, -2px 0 #69e7ff1c, 0 0 18px #ff6b9d2b; }
     .scene { width: 100%; height: 100%; display: block; filter: drop-shadow(0 25px 32px #0008); }
@@ -153,6 +154,28 @@
     .result-mark.wrong { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 50px #ff6d7c25; }
     @keyframes result-pop { from { transform: scale(.45); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .award { color: var(--gold); font: 800 clamp(60px, 11vw, 150px)/.8 var(--display); letter-spacing: -.08em; text-shadow: 0 0 32px #ffd16635; }
+    .correct-result::after { transform: translate(-50%, -50%); background: conic-gradient(from 0deg, transparent 0 12deg, #ffd1665c 15deg 21deg, transparent 24deg 47deg, #69e7ff45 50deg 56deg, transparent 59deg 94deg, #ff6b9d42 97deg 104deg, transparent 107deg 151deg, #ffd1665c 154deg 162deg, transparent 165deg 213deg, #69e7ff45 216deg 223deg, transparent 226deg 276deg, #ff6b9d42 279deg 287deg, transparent 290deg 360deg); filter: blur(1px); opacity: .36; animation: celebration-spin 4.6s linear infinite; }
+    .correct-result .result-mark { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 0 14px #ffd16608, 0 0 34px #ffd16664; animation: result-pop .5s ease-out, correct-ring 1.9s ease-out .3s infinite; }
+    .correct-result .award { text-shadow: 0 0 14px #ffd16699, 0 0 45px #ffd16655; animation: award-glow 1.7s ease-in-out .2s infinite alternate; }
+    .celebration-burst { position: absolute !important; inset: 0; z-index: 0 !important; pointer-events: none; }
+    .celebration-burst i { position: absolute; left: 50%; top: 46%; display: block; color: var(--gold); font: normal clamp(19px, 3vw, 39px)/1 var(--sans); opacity: 0; text-shadow: 0 0 10px currentColor, 0 0 24px currentColor; transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(.15); animation: burst-star 1.32s cubic-bezier(.17, .84, .3, 1) forwards; animation-delay: var(--burst-delay, 0s); }
+    .celebration-burst i:nth-child(even) { color: var(--cyan); font-size: clamp(14px, 2.3vw, 31px); }
+    .celebration-burst i:nth-child(1) { --burst-x: -30vw; --burst-y: -15vh; --burst-r: -28deg; --burst-delay: .02s; }
+    .celebration-burst i:nth-child(2) { --burst-x: -19vw; --burst-y: -28vh; --burst-r: 20deg; --burst-delay: .08s; }
+    .celebration-burst i:nth-child(3) { --burst-x: -3vw; --burst-y: -34vh; --burst-r: -12deg; --burst-delay: .13s; }
+    .celebration-burst i:nth-child(4) { --burst-x: 16vw; --burst-y: -29vh; --burst-r: 31deg; --burst-delay: .05s; }
+    .celebration-burst i:nth-child(5) { --burst-x: 30vw; --burst-y: -15vh; --burst-r: -19deg; --burst-delay: .1s; }
+    .celebration-burst i:nth-child(6) { --burst-x: 34vw; --burst-y: 3vh; --burst-r: 14deg; --burst-delay: .17s; }
+    .celebration-burst i:nth-child(7) { --burst-x: 27vw; --burst-y: 20vh; --burst-r: -33deg; --burst-delay: .04s; }
+    .celebration-burst i:nth-child(8) { --burst-x: 12vw; --burst-y: 31vh; --burst-r: 24deg; --burst-delay: .12s; }
+    .celebration-burst i:nth-child(9) { --burst-x: -8vw; --burst-y: 33vh; --burst-r: -16deg; --burst-delay: .07s; }
+    .celebration-burst i:nth-child(10) { --burst-x: -25vw; --burst-y: 24vh; --burst-r: 28deg; --burst-delay: .15s; }
+    .celebration-burst i:nth-child(11) { --burst-x: -35vw; --burst-y: 8vh; --burst-r: -21deg; --burst-delay: .09s; }
+    .celebration-burst i:nth-child(12) { --burst-x: 5vw; --burst-y: -20vh; --burst-r: 17deg; --burst-delay: .19s; }
+    @keyframes burst-star { 0% { opacity: 0; transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(.15); } 12% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--burst-x), var(--burst-y)) rotate(var(--burst-r)) scale(1.15); } }
+    @keyframes celebration-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+    @keyframes correct-ring { 0% { box-shadow: 0 0 0 0 #ffd1666b, 0 0 30px #ffd16644; } 70%, 100% { box-shadow: 0 0 0 26px transparent, 0 0 74px #ffd16600; } }
+    @keyframes award-glow { from { transform: scale(1); } to { transform: scale(1.035); } }
     .scoreboard-slide { width: min(960px, 95vw); margin: 20px auto 0; }
     .score-row { display: grid; grid-template-columns: 46px minmax(0,1fr) 70px; align-items: center; gap: 12px; min-height: 54px; padding: 7px 11px; border-bottom: 1px solid var(--line); text-align: left; }
     .score-row:first-child { border: 1px solid #ffd16663; border-radius: 14px; background: #ffd1660b; }
@@ -312,8 +335,23 @@
     .vault-title-mark::before { content: ""; position: absolute; inset: 0; border: 1px solid #69e7ff70; border-radius: 50%; box-shadow: 0 0 0 14px #69e7ff08, 0 0 50px #69e7ff22; animation: mark-pulse 3s ease-in-out infinite; }
     .vault-title-mark img { width: 72%; height: 72%; object-fit: contain; filter: drop-shadow(0 0 22px #69e7ffcc); animation: core-float 4s ease-in-out infinite; }
     @keyframes mark-pulse { 50% { transform: scale(1.06); opacity: .62; } }
-    .difficulty-badge { display: inline-flex; align-items: center; gap: 11px; min-height: 42px; margin-top: 13px; padding: 7px 13px; border: 1px solid #ffd16670; border-radius: 999px; background: #080b18b8; box-shadow: 0 9px 24px #0006; }
-    .difficulty-stars { color: var(--gold); font: 20px/1 var(--sans); letter-spacing: 2px; text-shadow: 0 0 14px #ffd16670; }
+    .difficulty-badge { position: relative; display: inline-flex; align-items: center; gap: 11px; min-height: 42px; margin-top: 13px; padding: 7px 13px; overflow: hidden; border: 1px solid #ffd16670; border-radius: 999px; background: #080b18b8; box-shadow: 0 9px 24px #0006; animation: badge-in .48s ease-out both; }
+    .difficulty-badge::before { content: ""; position: absolute; inset: -130%; background: conic-gradient(from 30deg, transparent, #ffd1661a, transparent 32%, #69e7ff16, transparent 62%, #ff6b9d14, transparent); animation: difficulty-spin 8s linear infinite; pointer-events: none; }
+    .difficulty-badge > * { position: relative; z-index: 1; }
+    .difficulty-stars { display: inline-flex; align-items: center; gap: 1px; color: var(--gold); font-size: 20px; line-height: 1; text-shadow: 0 0 14px #ffd16670; }
+    .star-pip { display: inline-block; color: #ffffff22; font: normal 18px/1 var(--sans); opacity: .5; transform: scale(.76); filter: grayscale(1); }
+    .star-pip.active { color: var(--gold); opacity: 1; transform: scale(1); filter: none; text-shadow: 0 0 8px #ffd166bb, 0 0 18px #ffd16666; animation: star-pop .55s cubic-bezier(.17, .84, .34, 1) both, star-pulse 1.65s ease-in-out .62s infinite; animation-delay: calc(var(--star-index) * .07s), .62s; }
+    .difficulty-2 { border-color: #69e7ff75; }
+    .difficulty-2 .star-pip.active { color: var(--cyan); text-shadow: 0 0 8px #69e7ffcc, 0 0 17px #69e7ff66; }
+    .difficulty-3 { border-color: #b7a5ff82; }
+    .difficulty-3 .star-pip.active { color: #c7bbff; text-shadow: 0 0 8px #b7a5ffcc, 0 0 17px #b7a5ff66; }
+    .difficulty-4 { border-color: #ffd1669b; box-shadow: 0 0 24px #ffd1661f, 0 9px 24px #0006; }
+    .difficulty-5 { border-color: #ff6b9d9b; background: linear-gradient(110deg, #201329cc, #11132ab8); box-shadow: 0 0 26px #ff6b9d25, 0 9px 24px #0006; }
+    .difficulty-5 .star-pip.active { color: #ffd36e; text-shadow: 0 0 8px #ff6b9dcc, 0 0 19px #ffd166aa; }
+    @keyframes badge-in { from { opacity: 0; transform: translateY(7px) scale(.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes difficulty-spin { to { transform: rotate(360deg); } }
+    @keyframes star-pop { 0% { opacity: 0; transform: translateY(5px) scale(.2) rotate(-24deg); } 70% { opacity: 1; transform: translateY(-1px) scale(1.15) rotate(7deg); } 100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); } }
+    @keyframes star-pulse { 50% { filter: brightness(1.35); text-shadow: 0 0 11px currentColor, 0 0 24px currentColor; } }
     .difficulty-points { color: var(--ink); font: 800 15px var(--mono); }
     .difficulty-mode { color: var(--muted); font: 9px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
     .vault-card-scene { width: min(430px, 62vw); aspect-ratio: 1.15; position: relative; margin: 17px auto 3px; overflow: hidden; border: 1px solid #ffffff25; border-radius: 28px; background: linear-gradient(145deg, #0c1832d9, #050712d9), url("assets/vault-shard.jpg") center / cover; box-shadow: 0 25px 55px #0009, inset 0 0 40px #69e7ff1a; }

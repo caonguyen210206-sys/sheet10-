@@ -22,6 +22,7 @@ const firebaseConfig = {
   var LEGACY_BET_PREFIX = "paradox-ppt-bet-v2-";
   var selectedTeamId = 1;
   var audioContext = null;
+  var lastStageCelebration = "";
   var role = "home";
   var state = null;
   var firebaseApp = initializeApp(firebaseConfig);
@@ -114,7 +115,7 @@ const firebaseConfig = {
       scores: teamNames.map(function (name, i) { return { id: i + 1, name: name, score: 0, wins: 0, rightsWon: 0, correctCount: 0, mascotId: null, skillUsed: false, usedCards: [] }; }),
       history: [],
       lastAward: null,
-      sound: false
+      sound: true
     };
   }
 
@@ -304,7 +305,30 @@ const firebaseConfig = {
     gain.gain.setValueAtTime(.0001, audioContext.currentTime); gain.gain.exponentialRampToValueAtTime(volume || .07, audioContext.currentTime + .02); gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
     osc.connect(gain).connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + duration + .03);
   }
-  function soundFor(name) { if (name === "open") { tone(440, .12, "sine", .09); setTimeout(function () { tone(660, .18, "sine", .08); }, 100); } if (name === "win") { tone(523, .12, "triangle", .1); setTimeout(function () { tone(784, .25, "triangle", .1); }, 120); } if (name === "wrong") tone(190, .3, "sawtooth", .05); if (name === "reveal") { tone(330, .1, "square", .05); setTimeout(function () { tone(495, .2, "triangle", .08); }, 110); } if (name === "card") tone(800, .06, "square", .035); }
+  function soundFor(name) {
+    if (name === "open") {
+      tone(440, .12, "sine", .08);
+      setTimeout(function () { tone(660, .18, "sine", .07); }, 100);
+      return;
+    }
+    if (name === "win" || name === "correct") {
+      // A short “vault unlocked” arpeggio: warm chord, rising sparkle, soft chime.
+      tone(392, .24, "sine", .045);
+      tone(523.25, .14, "triangle", .105);
+      setTimeout(function () { tone(659.25, .16, "triangle", .095); }, 105);
+      setTimeout(function () { tone(783.99, .2, "triangle", .1); }, 215);
+      setTimeout(function () { tone(1046.5, .28, "sine", .085); }, 335);
+      setTimeout(function () { tone(1567.98, .2, "sine", .035); }, 430);
+      return;
+    }
+    if (name === "wrong") { tone(190, .3, "sawtooth", .05); return; }
+    if (name === "reveal") {
+      tone(330, .1, "square", .05);
+      setTimeout(function () { tone(495, .2, "triangle", .08); }, 110);
+      return;
+    }
+    if (name === "card") tone(800, .06, "square", .035);
+  }
   function speakQuestion(q) {
     if (!q || q.media !== "audio" || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
     try { window.speechSynthesis.cancel(); var utterance = new window.SpeechSynthesisUtterance(q.question); utterance.lang = "en-US"; utterance.rate = .82; utterance.pitch = .94; window.speechSynthesis.speak(utterance); } catch (e) {}
@@ -313,7 +337,7 @@ const firebaseConfig = {
   function startGame() {
     initAudio(); clearRoundKeys();
     mutate(function (s) {
-      s.sessionId = makeSessionId(); s.phase = "mascot"; s.roundIndex = 0; s.winnerTeam = null; s.winnerCard = null; s.winnerSkill = null; s.cardPicks = {}; s.timerEnd = Date.now() + 12000; s.autoAt = null; s.history = []; s.lastAward = null;
+      s.sessionId = makeSessionId(); s.phase = "mascot"; s.roundIndex = 0; s.winnerTeam = null; s.winnerCard = null; s.winnerSkill = null; s.cardPicks = {}; s.timerEnd = Date.now() + 12000; s.autoAt = null; s.history = []; s.lastAward = null; s.sound = true;
       s.scores.forEach(function (t) { t.score = 0; t.wins = 0; t.rightsWon = 0; t.correctCount = 0; t.mascotId = null; t.skillUsed = false; t.usedCards = []; });
     }, "Mở VAULT 25 · chọn linh vật");
     soundFor("open");
@@ -435,7 +459,12 @@ const firebaseConfig = {
   function showScoreboard() { if (state.phase !== "result") return; mutate(function (s) { s.phase = "scoreboard"; s.autoAt = null; }, "Mở bảng xếp hạng"); }
   function resetGame() { if (!window.confirm("Đặt lại phiên VAULT 25 và điểm số?")) return; clearRoundKeys(); state = freshState(); save("Đặt lại phiên"); }
 
-  function difficultyBadge(q) { var meta = difficultyMeta[q.difficulty]; return '<div class="difficulty-badge"><span class="difficulty-stars">' + meta.stars + '</span><span class="difficulty-points">+' + meta.points + '</span><span class="difficulty-mode">' + esc(meta.short) + '</span></div>'; }
+  function difficultyBadge(q) {
+    var meta = difficultyMeta[q.difficulty];
+    var stars = "";
+    for (var i = 1; i <= 5; i++) stars += '<i class="star-pip ' + (i <= q.difficulty ? "active" : "") + '" style="--star-index:' + i + '">' + (i <= q.difficulty ? "★" : "☆") + '</i>';
+    return '<div class="difficulty-badge difficulty-' + q.difficulty + '"><span class="difficulty-stars" aria-label="' + q.difficulty + ' sao">' + stars + '</span><span class="difficulty-points">+' + meta.points + '</span><span class="difficulty-mode">' + esc(meta.short) + '</span></div>';
+  }
   function mediaChip(q) { if (!q.media || q.media === "none") return ""; var label = q.media === "audio" ? "◉ NGHE AUDIO" : q.media === "video" ? "▶ VIDEO GỢI Ý" : "▧ LẬT ẢNH"; return '<div class="media-chip">' + label + '</div>'; }
   function hostControls() {
     var p = state.phase; var q = currentRound();
@@ -483,7 +512,8 @@ const firebaseConfig = {
   }
   function stageResult() {
     var award = state.lastAward || { delta: 0, teamId: null, noWinner: true, correct: false }; var ok = !!award.correct; var n = award.noWinner ? "0" : (award.correct ? "+" : "") + award.delta;
-    return '<div class="slide result-slide"><div class="result-mark ' + (ok ? "" : "wrong") + '">' + (award.noWinner ? "·" : (ok ? "✓" : "×")) + '</div><div class="slide-kicker">' + (award.noWinner ? "KHÔNG CÓ MÃ" : (ok ? "MỞ KÉT" : "SAI · 0 ĐIỂM")) + '</div><div class="award">' + n + '</div><h1 style="font-size:clamp(28px,5vw,62px)">' + (award.noWinner ? "Cả lớp" : esc(teamName(award.teamId))) + '</h1>' + (award.correct && award.applied ? '<div class="tag">KỸ NĂNG ' + esc(award.applied) + '</div>' : '') + '</div>';
+    var burst = ok ? '<div class="celebration-burst" aria-hidden="true"><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i></div>' : '';
+    return '<div class="slide result-slide ' + (ok ? "correct-result" : "wrong-result") + '">' + burst + '<div class="result-mark ' + (ok ? "" : "wrong") + '">' + (award.noWinner ? "·" : (ok ? "✓" : "×")) + '</div><div class="slide-kicker">' + (award.noWinner ? "KHÔNG CÓ MÃ" : (ok ? "MỞ KÉT" : "SAI · 0 ĐIỂM")) + '</div><div class="award">' + n + '</div><h1 style="font-size:clamp(28px,5vw,62px)">' + (award.noWinner ? "Cả lớp" : esc(teamName(award.teamId))) + '</h1>' + (award.correct && award.applied ? '<div class="tag">KỸ NĂNG ' + esc(award.applied) + '</div>' : '') + '</div>';
   }
   function stageScoreboard() { var list = scoreList(5); var max = Math.max(1, list[0] ? list[0].score : 1); return '<div class="slide"><div class="slide-kicker">BXH · CẬP NHẬT</div><h1 style="font-size:clamp(34px,5.6vw,74px)">Ai còn đứng?</h1><div class="stage-score-strip">' + list.map(function (t, i) { return '<div class="score-row"><span class="score-rank">0' + (i + 1) + '</span><div><div class="score-name">' + esc(t.name) + '</div><div class="score-bar"><i style="width:' + Math.max(4, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="score-points">' + t.score + 'đ</span></div>'; }).join("") + '</div></div>'; }
   function stageFinish() { var list = scoreList(3); return '<div class="slide"><div class="slide-kicker">KẾT THÚC · HỒ SƠ ĐÃ MỞ</div><h1 style="font-size:clamp(37px,6.3vw,90px)">Ba đội<br><em>đi xa nhất</em></h1><div class="podium"><div class="podium-col p2"><b>' + esc(list[1] ? list[1].name : "—") + '</b><div class="podium-block">02</div></div><div class="podium-col p1"><b>' + esc(list[0] ? list[0].name : "—") + '</b><div class="podium-block">01</div></div><div class="podium-col p3"><b>' + esc(list[2] ? list[2].name : "—") + '</b><div class="podium-block">03</div></div></div><p class="slide-sub">Mỗi thẻ đã dùng · mỗi câu đã tính.</p></div>'; }
@@ -539,6 +569,11 @@ const firebaseConfig = {
   }
   function render() {
     parseRoute();
+    if (role === "stage" && state.phase === "result" && state.lastAward && state.lastAward.correct) {
+      var award = state.lastAward;
+      var signature = String(state.sessionId) + ":" + String(state.roundIndex) + ":" + String(award.teamId) + ":" + String(award.after);
+      if (signature !== lastStageCelebration) { lastStageCelebration = signature; initAudio(); soundFor("win"); }
+    }
     if (role === "host" && firebaseReady && remoteStateKnown && !remoteStateExists && !pendingRemoteCreate) { pendingRemoteCreate = true; save("Khởi tạo phiên Firebase"); pendingRemoteCreate = false; }
     document.getElementById("app").innerHTML = role === "host" ? hostView() : role === "stage" ? stageView(false) : role === "team" ? teamView() : homeView();
     bind();
