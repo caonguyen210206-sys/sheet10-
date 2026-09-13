@@ -483,6 +483,7 @@
             if (choice && choice.sessionId && choice.teamId) remoteMascots[String(choice.sessionId) + "-" + String(choice.teamId)] = choice;
           });
           if (role === "host") scanMascots();
+          else if (role !== "home") render();
         }, setFirebaseError);
         bidUnsubscribe = onSnapshot(collection(db, "games", "paradox", "bids"), function (snapshot) {
           remoteBids = {};
@@ -491,6 +492,7 @@
             if (bet && bet.sessionId && bet.roundIndex != null && bet.teamId) remoteBids[String(bet.sessionId) + "-" + String(bet.roundIndex) + "-" + String(bet.teamId)] = bet;
           });
           if (role === "host") scanBids();
+          else if (role !== "home") render();
         }, setFirebaseError);
       }
       async function bootFirebase() {
@@ -549,9 +551,31 @@
       function teamLocalBet(teamId) { try { var raw = localStorage.getItem(betKey(teamId)); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
       function teamSkillArmed(teamId) { try { return sessionStorage.getItem("paradox-ppt-skill-" + state.sessionId + "-" + teamId) === "1"; } catch (e) { return false; } }
       function setTeamSkillArmed(teamId, armed) { try { sessionStorage.setItem("paradox-ppt-skill-" + state.sessionId + "-" + teamId, armed ? "1" : "0"); } catch (e) {} }
-      function bidFor(teamId) { return state.bids && state.bids[teamId] ? state.bids[teamId] : teamLocalBet(teamId); }
-      function bidCount() { return Object.keys(state.bids || {}).length; }
-      function bidLeaders(limit) { return Object.keys(state.bids || {}).map(function (id) { return state.bids[id]; }).sort(function (a, b) { return Number(b.amount) - Number(a.amount) || Number(a.teamId) - Number(b.teamId); }).slice(0, limit || 4); }
+      function remoteMascotFor(teamId) { return remoteMascots[String(state.sessionId) + "-" + String(teamId)] || null; }
+      function remoteBidFor(teamId) { return remoteBids[String(state.sessionId) + "-" + String(state.roundIndex) + "-" + String(teamId)] || null; }
+      function mascotCount() {
+        var claimed = {};
+        state.scores.forEach(function (t) { if (t.mascotId) claimed[t.id] = true; });
+        Object.keys(remoteMascots).forEach(function (key) { var choice = remoteMascots[key]; if (choice && choice.sessionId === state.sessionId && Number(choice.teamId) >= 1 && Number(choice.teamId) <= 15) claimed[Number(choice.teamId)] = true; });
+        return Object.keys(claimed).length;
+      }
+      function mascotClaimed(mascotId) {
+        if (state.scores.some(function (t) { return t.mascotId === mascotId; })) return true;
+        return Object.keys(remoteMascots).some(function (key) { var choice = remoteMascots[key]; return choice && choice.sessionId === state.sessionId && choice.id === mascotId; });
+      }
+      function bidFor(teamId) { return state.bids && state.bids[teamId] ? state.bids[teamId] : remoteBidFor(teamId) || teamLocalBet(teamId); }
+      function bidCount() {
+        var locked = {};
+        Object.keys(state.bids || {}).forEach(function (id) { var b = state.bids[id]; if (b && b.sessionId === state.sessionId && Number(b.roundIndex) === state.roundIndex) locked[id] = true; });
+        Object.keys(remoteBids).forEach(function (key) { var b = remoteBids[key]; if (b && b.sessionId === state.sessionId && Number(b.roundIndex) === state.roundIndex) locked[String(b.teamId)] = true; });
+        return Object.keys(locked).length;
+      }
+      function bidLeaders(limit) {
+        var all = {};
+        Object.keys(state.bids || {}).forEach(function (id) { var b = state.bids[id]; if (b && b.sessionId === state.sessionId && Number(b.roundIndex) === state.roundIndex) all[id] = b; });
+        Object.keys(remoteBids).forEach(function (key) { var b = remoteBids[key]; if (b && b.sessionId === state.sessionId && Number(b.roundIndex) === state.roundIndex) all[String(b.teamId)] = b; });
+        return Object.keys(all).map(function (id) { return all[id]; }).sort(function (a, b) { return Number(b.amount) - Number(a.amount) || Number(a.teamId) - Number(b.teamId); }).slice(0, limit || 4);
+      }
       function initAudio() { if (!audioContext) { try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (audioContext && audioContext.state === "suspended") audioContext.resume(); }
       function tone(freq, duration, type, volume) {
         if (!state.sound || !audioContext) return;
@@ -681,7 +705,7 @@
       function hostControls() {
         var p = state.phase;
         if (p === "cover") return '<button class="btn primary large" data-action="start">▶ Bắt đầu game</button><div class="auto-note">Mỗi đội chọn một linh vật. Màn chọn tự đóng sau 12 giây.</div>';
-        if (p === "mascot") return '<div class="remote-live"><span class="eyebrow">Chọn linh vật</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">Đã chọn ' + state.scores.filter(function (t) { return !!t.mascotId; }).length + '/15</span></div><button class="btn gold large" data-action="begin">→ Mở câu 01</button>';
+        if (p === "mascot") return '<div class="remote-live"><span class="eyebrow">Chọn linh vật</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">Đã chọn ' + mascotCount() + '/15</span></div><button class="btn gold large" data-action="begin">→ Mở câu 01</button>';
         if (p === "ready") return '<button class="btn gold large" data-action="open">✦ Mở cược câu ' + String(state.roundIndex + 1).padStart(2, "0") + '</button><div class="auto-note">Cược kín: 0 · 1 · 3 · 5 điểm.</div>';
         if (p === "bet") return '<div class="remote-live"><span class="eyebrow">Niêm phong cược</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">Đã khóa ' + bidCount() + '/15 đội</span></div><button class="btn danger" data-action="reveal">Lộ cược</button>';
         if (p === "reveal") return '<div class="remote-live"><span class="eyebrow">Cao nhất</span><b>Đội ' + String(state.winnerTeam).padStart(2, "0") + ' · ' + state.winnerBid + ' điểm</b><span class="muted">Hoà → ưu tiên luân phiên.</span></div>';
@@ -696,7 +720,7 @@
         return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">∅</span><span class="brand-copy"><b>BẢO TÀNG KHÔNG TỒN TẠI</b><span>PPT GAME · MC</span></span></a><div class="header-actions">' + connectionBadge() + '<a class="btn ghost" href="#/stage">Sân khấu ↗</a><button class="icon-btn" title="Bật/tắt âm thanh" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Đặt lại" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad"><div class="eyebrow">MC REMOTE</div><h1 style="font:800 clamp(28px,4vw,44px)/.95 var(--display);letter-spacing:-.05em;margin:10px 0 7px">Chỉ cần<br><span style="color:var(--cyan)">bấm tiếp.</span></h1><p class="muted" style="font-size:12px;line-height:1.55;margin:0">Mở cược → nghe trả lời → chọn đúng/sai.</p></div><div class="remote-status"><div class="status-tile"><small>TRẠNG THÁI</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>CÂU</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div><div class="keyboard-note" style="margin-top:13px">SPACE · mở/đóng · 1 đúng · 0 sai</div></div><div class="panel"><div class="panel-head"><h3>Bảng điểm · top 3</h3>' + (state.phase === "result" ? '<button class="btn ghost" data-action="scoreboard">Mở BXH</button>' : '') + '</div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
       }
 
-      function mascotCards(stage) { return mascots.map(function (m) { return '<div class="mascot-card ' + (state.scores.some(function (t) { return t.mascotId === m.id; }) ? "claimed" : "") + '">' + mascotArt(m.id) + '<div class="mascot-name">' + esc(m.name) + '</div><div class="mascot-skill">' + esc(m.skill) + '</div>' + (stage ? "" : "<div class=\"mascot-desc\">" + esc(m.desc) + "</div>") + '</div>'; }).join(""); }
+      function mascotCards(stage) { return mascots.map(function (m) { return '<div class="mascot-card ' + (mascotClaimed(m.id) ? "claimed" : "") + '">' + mascotArt(m.id) + '<div class="mascot-name">' + esc(m.name) + '</div><div class="mascot-skill">' + esc(m.skill) + '</div>' + (stage ? "" : "<div class=\"mascot-desc\">" + esc(m.desc) + "</div>") + '</div>'; }).join(""); }
       function stageCover() { return '<div class="slide"><div class="slide-kicker">EXHIBIT 00</div><h1 class="horror-script">Bảo tàng<br><em>không tồn tại</em></h1><div class="slide-visual has-image hero-art"><img class="slide-art-image" src="assets/paradox-museum-hero.jpg" alt=""></div><p class="slide-sub">Cược điểm · gọi linh vật · trả lời</p></div>'; }
       function stageMascot() { return '<div class="slide stage-mascot"><div class="slide-kicker">MỞ HỒ SƠ · 00</div><h1 class="horror-script">Chọn <em>linh vật</em></h1><div class="mascot-grid">' + mascotCards(true) + '</div><p class="slide-sub">Một linh vật · một kỹ năng · dùng một lần</p></div>'; }
       function stageReady() { var q = currentRound(); return '<div class="slide"><span class="slide-number">/' + String(state.roundIndex + 1).padStart(2, "0") + '</span><div class="slide-kicker">' + q.id + '</div><h1 class="horror-script">' + esc(q.title) + '</h1><div class="slide-visual has-image square-art"><img class="slide-art-image" src="assets/paradox-exhibit-shard.jpg" alt=""></div><div class="vault-chip">HŨ NGUYỀN <b>' + state.vault + '</b></div></div>'; }
