@@ -465,6 +465,13 @@ const firebaseConfig = {
     for (var i = 1; i <= 5; i++) stars += '<i class="star-pip ' + (i <= q.difficulty ? "active" : "") + '" style="--star-index:' + i + '">' + (i <= q.difficulty ? "★" : "☆") + '</i>';
     return '<div class="difficulty-badge difficulty-' + q.difficulty + '"><span class="difficulty-stars" aria-label="' + q.difficulty + ' sao">' + stars + '</span><span class="difficulty-points">+' + meta.points + '</span><span class="difficulty-mode">' + esc(meta.short) + '</span></div>';
   }
+  function formatPickTime(pick) {
+    var ms = actionAt(pick);
+    if (!Number.isFinite(ms) || ms === Number.MAX_SAFE_INTEGER) return "—";
+    var date = new Date(ms);
+    if (Number.isNaN(date.getTime())) return "—";
+    return String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0") + ":" + String(date.getSeconds()).padStart(2, "0") + "." + String(date.getMilliseconds()).padStart(3, "0");
+  }
   function mediaChip(q) { if (!q.media || q.media === "none") return ""; var label = q.media === "audio" ? "◉ NGHE AUDIO" : q.media === "video" ? "▶ VIDEO GỢI Ý" : "▧ LẬT ẢNH"; return '<div class="media-chip">' + label + '</div>'; }
   function hostControls() {
     var p = state.phase; var q = currentRound();
@@ -499,8 +506,18 @@ const firebaseConfig = {
   function stageReady() { var q = currentRound(); return '<div class="slide"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/25</span><div class="slide-kicker">KHOÁ CÂU · ' + q.id + '</div><h1 class="horror-script">' + esc(q.title) + '</h1>' + difficultyBadge(q) + '<div class="vault-card-scene"><img src="assets/vault-core.png" alt=""></div><div class="loot-value">+' + q.points + ' ĐIỂM</div></div>'; }
   function stageBet() { var q = currentRound(); return '<div class="slide stage-bet"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/25</span><div class="slide-kicker">MÃ KHÓA · ' + esc(q.format) + '</div><h1 class="horror-script">Chọn <em>một mã</em></h1><div class="buzz-line"><div class="timer ' + (currentTime() > 4 ? "safe" : "") + '">' + currentTime() + 's</div><span>' + cardCount() + '/15 đã khóa</span></div><div class="card-grid stage-token-grid">' + cardTokens() + '</div><p class="slide-sub">Mã cao nhất giành quyền · hòa theo timestamp nhanh nhất</p></div>'; }
   function stageReveal() {
-    var leaders = cardLeaders(5); var winner = state.winnerTeam ? team(state.winnerTeam) : null;
-    return '<div class="slide"><div class="slide-kicker">LỘ MÃ</div><h1 class="horror-script">Mã được gọi</h1><div class="stage-reveal-art"><img src="assets/vault-core.png" alt=""></div><div class="card-reveal-number">' + (state.winnerCard || "—") + '</div><div class="winner-card"><i class="winner-dot"></i><b>Đội ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + (winner ? ' · ' + esc(winner.name) : '') + '</b></div><div class="bid-rail">' + leaders.map(function (pick, i) { return '<div class="bid-row"><b>#' + (i + 1) + '</b><span>Đội ' + String(pick.teamId).padStart(2, "0") + ' · mã ' + pick.card + '<i class="bid-meter"><i style="width:' + Math.max(8, Number(pick.card) / 25 * 100) + '%"></i></i></span><strong>' + pick.card + '</strong></div>'; }).join("") + '</div></div>';
+    var leaders = cardLeaders(15); var winner = state.winnerTeam ? team(state.winnerTeam) : null; var winnerPick = leaders.find(function (pick) { return Number(pick.teamId) === Number(state.winnerTeam); });
+    var picked = {};
+    leaders.forEach(function (pick) { picked[String(pick.teamId)] = true; });
+    var missing = [];
+    for (var i = 1; i <= 15; i++) if (!picked[String(i)]) missing.push({ teamId: i, card: null, missing: true });
+    var rows = leaders.concat(missing);
+    var board = rows.map(function (pick, index) {
+      var hasPick = !pick.missing; var pickedTeam = team(pick.teamId); var isWinner = hasPick && Number(pick.teamId) === Number(state.winnerTeam);
+      return '<div class="bid-row ' + (isWinner ? "is-winner" : "") + '"><span class="bid-rank">' + (hasPick ? "#" + (index + 1) : "—") + '</span><span class="bid-team"><b>Đội ' + String(pick.teamId).padStart(2, "0") + '</b><small>' + esc(pickedTeam ? pickedTeam.name : "") + '</small><small class="bid-time">' + (hasPick ? "⏱ " + formatPickTime(pick) : "CHƯA CHỐT") + '</small><i class="bid-meter"><i style="width:' + (hasPick ? Math.max(8, Number(pick.card) / 25 * 100) : 0) + '%"></i></i></span><strong class="bid-number">' + (hasPick ? pick.card : "—") + '</strong></div>';
+    }).join("");
+    var winnerLabel = winner ? ' · ' + esc(winner.name) : '';
+    return '<div class="slide stage-reveal"><div class="slide-kicker">LỘ MÃ · ' + leaders.length + '/15 ĐÃ CHỐT</div><h1 class="horror-script">Bảng mã<br><em>đã khóa</em></h1><div class="stage-reveal-art"><img src="assets/vault-core.png" alt=""></div><div class="card-reveal-number">' + (state.winnerCard || "—") + '</div><div class="winner-card"><i class="winner-dot"></i><b>ĐỘI ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + winnerLabel + '</b><span class="reveal-winner-time">⏱ ' + (winnerPick ? formatPickTime(winnerPick) : "—") + '</span></div><div class="reveal-summary"><span>THỨ TỰ: SỐ CAO → THỜI GIAN</span><span>ĐẦU BẢNG = GIÀNH QUYỀN</span></div><div class="bid-rail">' + board + '</div></div>';
   }
   function stageQuestion() {
     var q = currentRound(); var winner = team(state.winnerTeam); var m = mascotById(winner.mascotId); var skill = state.winnerSkill ? '<span class="tag" style="color:' + m.color + ';border-color:' + m.color + '66">' + esc(m.skill) + '</span>' : '';
