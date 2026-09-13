@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080b18">
-  <title>Nghịch lý · Bảo tàng không tồn tại</title>
+  <title>VAULT 25 · Mật kho không tồn tại</title>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&family=Grenze+Gotisch:wght@400;500;600;700;800&family=UnifrakturCook:wght@700&display=swap");
     :root {
@@ -60,7 +60,7 @@
     .home-note { display: flex; gap: 26px; margin-top: 36px; }
     .home-note b { display: block; color: var(--gold); font: 800 26px var(--display); }
     .home-note span { display: block; margin-top: 3px; color: var(--dim); font-size: 10px; text-transform: uppercase; letter-spacing: .11em; }
-    .museum-card { position: relative; min-height: 570px; overflow: hidden; border: 1px solid var(--line2); border-radius: 32px; background-image: linear-gradient(90deg, #060914b8, #06091418 55%, #06091435), url("assets/paradox-museum-hero.jpg"); background-position: center; background-size: cover; box-shadow: 0 35px 100px #0009; }
+    .museum-card { position: relative; min-height: 570px; overflow: hidden; border: 1px solid var(--line2); border-radius: 32px; background-image: linear-gradient(90deg, #060914c9, #06091422 55%, #06091455), url("assets/vault-hall.jpg"); background-position: center; background-size: cover; box-shadow: 0 35px 100px #0009; }
     .museum-card::before { content: "MUSEUM 00"; position: absolute; top: 22px; left: 28px; color: #ffffff7a; font: 11px var(--mono); letter-spacing: .2em; }
     .museum-card::after { content: ""; position: absolute; inset: 0; border: 1px solid #ffffff14; border-radius: 23px; pointer-events: none; background: linear-gradient(180deg, transparent 45%, #050711a8); }
     .museum-card > .home-door, .museum-card > .home-orbit, .museum-card > .home-piece, .museum-card > .museum-word { display: none; }
@@ -289,6 +289,93 @@
     .stage-score-strip .score-points { font-size: 14px; }
     .stage-score-strip .score-bar { margin-top: 3px; height: 4px; }
 
+    /* Vault 25 visual layer */
+    .stage-root { position: relative; isolation: isolate; overflow: hidden; background: #050712 url("assets/vault-chamber.jpg") center / cover fixed no-repeat; }
+    .stage-root::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, #050712f2 0%, #0507129c 42%, #050712c8 100%), radial-gradient(circle at 61% 48%, #69e7ff22, transparent 33%); z-index: 0; }
+    .stage-main { z-index: 1; padding-right: clamp(220px, 20vw, 310px); }
+    .stage-main::before { background: radial-gradient(circle at 52% 46%, #69e7ff22, transparent 48%), radial-gradient(circle at 58% 82%, #ffd16616, transparent 31%); }
+    .stage-header, .stage-footer { z-index: 4; }
+    .vault-backdrop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+    .vault-backdrop::before, .vault-backdrop::after { content: ""; position: absolute; border-radius: 50%; border: 1px solid #69e7ff28; transform: translate(-50%, -50%); left: 52%; top: 51%; animation: vault-spin 28s linear infinite; }
+    .vault-backdrop::before { width: min(72vw, 920px); aspect-ratio: 1; box-shadow: 0 0 0 28px #69e7ff05, 0 0 90px #69e7ff15; }
+    .vault-backdrop::after { width: min(47vw, 590px); aspect-ratio: 1; border-color: #ffd16638; animation-duration: 19s; animation-direction: reverse; }
+    @keyframes vault-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+    .floating-core { position: absolute; z-index: 1; left: 51%; top: 53%; width: min(265px, 25vw); max-height: 48vh; object-fit: contain; transform: translate(-50%, -50%); filter: drop-shadow(0 0 28px #69e7ff75) drop-shadow(0 24px 32px #000b); animation: core-float 4.8s ease-in-out infinite; pointer-events: none; }
+    @keyframes core-float { 0%, 100% { transform: translate(-50%, -50%) rotate(-2deg); } 50% { transform: translate(-50%, calc(-50% - 14px)) rotate(2deg); } }
+    .spark { position: absolute; z-index: 2; width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 18px var(--cyan); animation: spark-drift 5s ease-in-out infinite; pointer-events: none; }
+    .spark-a { left: 43%; top: 29%; } .spark-b { left: 63%; top: 69%; background: var(--gold); box-shadow: 0 0 18px var(--gold); animation-delay: -1.8s; } .spark-c { left: 68%; top: 37%; animation-delay: -3s; }
+    @keyframes spark-drift { 50% { transform: translate(18px, -23px) scale(1.5); opacity: .45; } }
+    .slide { z-index: 2; }
+    .slide h1 { text-shadow: 0 8px 34px #000b; }
+    .slide-kicker { text-shadow: 0 0 16px #ffd16644; }
+    .vault-title-mark { width: min(250px, 34vw); aspect-ratio: 1; position: relative; margin: 20px auto 7px; display: grid; place-items: center; }
+    .vault-title-mark::before { content: ""; position: absolute; inset: 0; border: 1px solid #69e7ff70; border-radius: 50%; box-shadow: 0 0 0 14px #69e7ff08, 0 0 50px #69e7ff22; animation: mark-pulse 3s ease-in-out infinite; }
+    .vault-title-mark img { width: 72%; height: 72%; object-fit: contain; filter: drop-shadow(0 0 22px #69e7ffcc); animation: core-float 4s ease-in-out infinite; }
+    @keyframes mark-pulse { 50% { transform: scale(1.06); opacity: .62; } }
+    .difficulty-badge { display: inline-flex; align-items: center; gap: 11px; min-height: 42px; margin-top: 13px; padding: 7px 13px; border: 1px solid #ffd16670; border-radius: 999px; background: #080b18b8; box-shadow: 0 9px 24px #0006; }
+    .difficulty-stars { color: var(--gold); font: 20px/1 var(--sans); letter-spacing: 2px; text-shadow: 0 0 14px #ffd16670; }
+    .difficulty-points { color: var(--ink); font: 800 15px var(--mono); }
+    .difficulty-mode { color: var(--muted); font: 9px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .vault-card-scene { width: min(430px, 62vw); aspect-ratio: 1.15; position: relative; margin: 17px auto 3px; overflow: hidden; border: 1px solid #ffffff25; border-radius: 28px; background: linear-gradient(145deg, #0c1832d9, #050712d9), url("assets/vault-shard.jpg") center / cover; box-shadow: 0 25px 55px #0009, inset 0 0 40px #69e7ff1a; }
+    .vault-card-scene::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 28%, #69e7ff25 50%, transparent 70%); transform: translateX(-120%); animation: shine 5s ease-in-out infinite; }
+    .vault-card-scene img { position: absolute; inset: 8%; z-index: 1; width: 84%; height: 84%; object-fit: contain; filter: drop-shadow(0 0 25px #69e7ff99); }
+    .loot-value { color: var(--gold); font: 800 clamp(35px, 5vw, 60px)/.9 var(--display); text-shadow: 0 0 24px #ffd16655; }
+    .card-grid { width: min(420px, 100%); display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin: 21px auto 0; }
+    .card-token { min-height: 56px; position: relative; display: grid; place-items: center; border: 1px solid #69e7ff40; border-radius: 12px; background: linear-gradient(145deg, #162b48, #0a1327); color: var(--cyan); font: 800 18px var(--mono); box-shadow: inset 0 0 14px #69e7ff0b, 0 7px 18px #0005; transition: transform .15s ease, border-color .15s ease, background .15s ease, opacity .15s ease; }
+    .card-token::after { content: ""; position: absolute; inset: 4px; border: 1px solid #ffffff10; border-radius: 8px; pointer-events: none; }
+    .card-token:hover { transform: translateY(-4px) scale(1.03); border-color: var(--gold); background: #ffd16618; color: var(--gold); }
+    .card-token.used, .card-token:disabled { opacity: .2; filter: grayscale(.8); cursor: not-allowed; transform: none; }
+    .card-token.selected { border-color: var(--gold); background: #ffd16625; color: var(--gold); box-shadow: 0 0 22px #ffd1662c; opacity: 1; }
+    .card-grid-note { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; color: var(--dim); font: 9px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .stage-token-grid { width: min(470px, 60vw); grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 22px auto 0; }
+    .stage-token-grid .card-token { min-height: 55px; font-size: 17px; }
+    .stage-bet .slide { padding-top: 4vh; }
+    .stage-bet .slide h1 { margin-top: 6px; }
+    .stage-bet .buzz-line { margin-top: 13px; }
+    .stage-reveal-art { width: min(170px, 23vw); aspect-ratio: 1; margin: 17px auto 4px; position: relative; display: grid; place-items: center; }
+    .stage-reveal-art::before { content: ""; position: absolute; inset: 0; border: 1px solid #ffd16665; border-radius: 50%; animation: mark-pulse 2.4s ease-in-out infinite; }
+    .stage-reveal-art img { width: 80%; height: 80%; object-fit: contain; filter: drop-shadow(0 0 25px #ffd166bb); }
+    .card-reveal-number { color: var(--gold); font: 800 clamp(84px, 13vw, 172px)/.75 var(--display); text-shadow: 0 0 36px #ffd16666; }
+    .media-chip { display: inline-flex; align-items: center; gap: 7px; min-height: 29px; margin-top: 13px; padding: 6px 10px; border: 1px solid #69e7ff61; border-radius: 999px; background: #69e7ff10; color: var(--cyan); font: 800 10px var(--mono); letter-spacing: .12em; animation: media-pulse 2s ease-in-out infinite; }
+    @keyframes media-pulse { 50% { box-shadow: 0 0 24px #69e7ff25; transform: translateY(-2px); } }
+    .open-answer { width: min(650px, 88vw); min-height: 112px; display: grid; place-items: center; margin: 18px auto 0; border: 1px dashed #ffd16670; border-radius: 18px; background: #ffd1660a; color: var(--gold); font: 800 19px var(--mono); letter-spacing: .15em; }
+    .rapid-cue { width: min(650px, 88vw); display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 15px auto 2px; opacity: .86; }
+    .rapid-cue span { min-height: 39px; display: grid; place-items: center; border: 1px solid #69e7ff4d; border-radius: 9px; background: linear-gradient(145deg, #69e7ff27, #9575ff12); color: var(--cyan); font: 700 10px var(--mono); animation: rapid-flash 1.15s steps(2, end) infinite; }
+    .rapid-cue span:nth-child(2) { animation-delay: .12s; } .rapid-cue span:nth-child(3) { animation-delay: .24s; } .rapid-cue span:nth-child(4) { animation-delay: .36s; } .rapid-cue span:nth-child(5) { animation-delay: .48s; }
+    @keyframes rapid-flash { 50% { transform: scale(1.07); border-color: var(--gold); background: #ffd1662c; color: var(--gold); } }
+    .stage-score-rail { position: absolute; z-index: 5; top: 50%; right: clamp(14px, 2.6vw, 42px); width: min(225px, 18vw); transform: translateY(-50%); padding: 12px 12px 9px; border: 1px solid #ffffff2c; border-radius: 20px; background: linear-gradient(160deg, #111a31d9, #070b18e6); box-shadow: 0 20px 55px #0009, inset 0 0 24px #69e7ff08; backdrop-filter: blur(13px); }
+    .stage-mascot { overflow: hidden; }
+    .stage-mascot::before { content: ""; position: absolute; inset: 7% 4% 10%; border-radius: 30px; background: linear-gradient(180deg, #070a1540, #070a15c8), url("assets/vault-mascots.jpg") center / cover; opacity: .24; filter: saturate(.85) contrast(1.1); box-shadow: inset 0 0 90px #050712; }
+    .stage-mascot > * { position: relative; z-index: 1; }
+    .rail-title { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px; color: var(--gold); font: 800 14px var(--display); letter-spacing: .12em; }
+    .rail-title span { color: var(--dim); font: 8px var(--mono); letter-spacing: .1em; }
+    .rail-row { display: grid; grid-template-columns: 24px minmax(0,1fr) 42px; gap: 6px; align-items: center; min-height: 35px; border-top: 1px solid #ffffff12; }
+    .rail-row:first-of-type { border-top: 0; }
+    .rail-rank { color: var(--gold); font: 700 12px var(--mono); }
+    .rail-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 9px; }
+    .rail-score { color: var(--cyan); text-align: right; font: 700 11px var(--mono); }
+    .rail-bar { height: 3px; margin-top: 3px; border-radius: 99px; background: #ffffff12; overflow: hidden; }
+    .rail-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--violet), var(--cyan)); }
+    .stage-compact .stage-main { padding-right: 16px; }
+    .stage-compact .stage-score-rail { display: none; }
+    .stage-compact .floating-core { width: 130px; opacity: .35; }
+    .stage-compact .vault-backdrop { opacity: .5; }
+    .stage-compact .stage-root::before { opacity: .65; }
+    .team-phone { background: linear-gradient(155deg, #121d3aee, #080d1cf5), url("assets/vault-shard.jpg") center / cover; }
+    .team-body { position: relative; overflow: hidden; }
+    .team-body::before { content: ""; position: absolute; width: 270px; height: 270px; top: 12%; left: 50%; transform: translateX(-50%); border-radius: 50%; border: 1px solid #69e7ff1d; box-shadow: 0 0 0 16px #69e7ff05, 0 0 65px #69e7ff14; pointer-events: none; animation: vault-spin 22s linear infinite; }
+    .team-body > * { position: relative; z-index: 1; }
+    .team-card-grid { width: min(390px, 100%); gap: 6px; margin-top: 20px; }
+    .team-card-grid .card-token { min-height: 53px; font-size: 17px; }
+    .phone-timer { display: inline-flex; align-items: center; gap: 7px; margin: 13px auto 0; color: var(--pink); font: 800 19px var(--mono); }
+    .phone-timer::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 12px var(--pink); animation: media-pulse 1s ease-in-out infinite; }
+    .team-score-flash { color: var(--gold); font: 800 clamp(54px, 13vw, 92px)/.8 var(--display); text-shadow: 0 0 28px #ffd16644; }
+    .stage-root .question-box { background: linear-gradient(145deg, #101b34e8, #070c1ce8); box-shadow: 0 23px 50px #0008; }
+    .stage-root .question-box.has-art { background-image: linear-gradient(90deg, #101b34f5 0 66%, #101b34aa 100%), url("assets/vault-shard.jpg"); }
+    .question-meta { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
+    .question-meta .tag { color: var(--muted); }
+    .round-counter { color: #ffffff78; font: 11px var(--mono); letter-spacing: .18em; }
+
     @media (max-width: 920px) {
       .home-grid, .host-grid { grid-template-columns: 1fr; }
       .museum-card { min-height: 420px; order: -1; }
@@ -309,6 +396,8 @@
       .home-copy h1 { font-size: 54px; }
       .btn.large { min-height: 54px; padding: 13px 17px; font-size: 13px; }
       .stage-main { padding: 14px; }
+      .stage-score-rail { display: none; }
+      .floating-core { width: 150px; opacity: .25; }
       .slide { min-height: 480px; }
       .slide h1 { font-size: 47px; }
       .slide-puzzle { grid-template-columns: repeat(2, 1fr); max-width: 350px; }
@@ -345,469 +434,4 @@
 </head>
 <body>
   <div id="app" class="app"></div>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFdtfRSDDMw7KvxpOYDCi-vxBwpiZUK1U",
-      authDomain: "sheet10-96b28.firebaseapp.com",
-      projectId: "sheet10-96b28",
-      storageBucket: "sheet10-96b28.firebasestorage.app",
-      messagingSenderId: "294910235179",
-      appId: "1:294910235179:web:abe39ce01b034bd67a506e"
-    };
-
-    (function () {
-      "use strict";
-      var CHANNEL = "paradox-ppt-live-v2";
-      var STATE_KEY = "paradox-ppt-state-v2";
-      var MASCOT_PREFIX = "paradox-ppt-mascot-v2-";
-      var BET_PREFIX = "paradox-ppt-bet-v2-";
-      var selectedTeamId = 1;
-      var audioContext = null;
-      var role = "home";
-      var state = null;
-      var firebaseApp = initializeApp(firebaseConfig);
-      var auth = getAuth(firebaseApp);
-      var db = getFirestore(firebaseApp);
-      var gameRef = doc(db, "games", "paradox");
-      var firebaseReady = false;
-      var firebaseError = "";
-      var remoteStateKnown = false;
-      var remoteStateExists = false;
-      var remoteMascots = {};
-      var remoteBids = {};
-      var stateUnsubscribe = null;
-      var mascotUnsubscribe = null;
-      var bidUnsubscribe = null;
-      var pendingRemoteCreate = false;
-      var teamNames = [
-        "Đội Sao Bắc Đẩu", "Đội Mắt Mèo", "Đội Mật Mã", "Đội Quạ Đêm", "Đội Tia Chớp",
-        "Đội Hộp Nhạc", "Đội Kính Vạn Hoa", "Đội Bóng Trăng", "Đội Cú Đêm", "Đội La Bàn",
-        "Đội Mê Cung", "Đội Mảnh Ghép", "Đội Đồng Hồ", "Đội Vệt Sáng", "Đội Cánh Cửa"
-      ];
-      var rounds = [
-        { id: "P01", title: "Chiếc bóng không có chủ", visual: "orb", question: "Chi tiết nào phá vỡ quy luật của căn phòng?", options: ["Bóng đi ngược hướng", "Cửa mở vào tường", "Đèn tắt", "Gương phản chiếu"], answer: "A", hint: "Quan sát hướng sáng và hướng bóng." },
-        { id: "P02", title: "Dấu chân trên trần", visual: "steps", question: "Bằng chứng nào đáng tin nhất để kết luận có người đi qua?", options: ["Một tiếng động", "Dấu chân có hướng", "Cánh cửa rung", "Lời kể lại"], answer: "B", hint: "Ưu tiên bằng chứng có thể kiểm chứng." },
-        { id: "P03", title: "Bức tranh đổi chỗ", visual: "frame", question: "Điều gì cần kiểm tra trước khi tin vào lời giải?", options: ["Nguồn dữ kiện", "Màu sắc", "Tốc độ trả lời", "Cảm giác"], answer: "A", hint: "Một kết luận tốt phải có dữ kiện rõ." },
-        { id: "P04", title: "Cánh cửa thứ năm", visual: "door", question: "Khi hai dấu hiệu mâu thuẫn, cách xử lý hợp lý là gì?", options: ["Chọn dấu hiệu nổi bật", "Bỏ qua cả hai", "Kiểm tra lại giả định", "Đoán theo số đông"], answer: "C", hint: "Đừng vội chốt khi tiền đề chưa chắc." },
-        { id: "P05", title: "Mảnh ghép cuối", visual: "mirror", question: "Thứ tự suy luận nào an toàn nhất?", options: ["Kết luận → dữ kiện", "Dữ kiện → kiểm tra → kết luận", "Đoán → bảo vệ đáp án", "Hỏi số đông → kết luận"], answer: "B", hint: "Luôn đi từ bằng chứng đến kết luận." },
-        { id: "P06", title: "Hồ sơ bị xé", visual: "file", question: "Một câu trả lời thuyết phục cần có điều gì?", options: ["Nói thật nhanh", "Nhiều thuật ngữ", "Một ví dụ bất kỳ", "Lập luận và bằng chứng"], answer: "D", hint: "Câu trả lời tốt phải đứng vững khi bị hỏi ngược." }
-      ];
-      var betAmounts = [0, 1, 3, 5];
-      var mascots = [
-        { id: "raven", name: "Quạ Tiên Tri", skill: "GỢI Ý", desc: "Xem gợi ý trước khi chốt cược.", color: "#69e7ff" },
-        { id: "cat", name: "Mèo Chín Mạng", skill: "HOÀN CƯỢC", desc: "Sai vẫn giữ nguyên điểm cược.", color: "#9575ff" },
-        { id: "fox", name: "Cáo Giao Kèo", skill: "GIẢM 4", desc: "Giảm 4 điểm phạt khi sai.", color: "#ff6b9d" },
-        { id: "dragon", name: "Rồng Tro Tàn", skill: "+8", desc: "Đúng nhận thêm 8 điểm.", color: "#ffd166" },
-        { id: "spider", name: "Nhện Đồng Hồ", skill: "+15 GIÂY", desc: "Được thêm 15 giây trả lời.", color: "#69e0ad" },
-        { id: "deer", name: "Hươu Hộ Mệnh", skill: "HỒI SINH 8", desc: "Về 0 điểm sẽ hồi lại 8.", color: "#b7a5ff" }
-      ];
-      function freshState() {
-        return { version: 2, sessionId: String(Date.now()) + "-" + Math.random().toString(36).slice(2, 7), phase: "cover", roundIndex: 0, winnerTeam: null, winnerBid: 0, winnerSkill: null, bids: {}, timerEnd: null, autoAt: null, vault: 0, scores: teamNames.map(function (name, i) { return { id: i + 1, name: name, score: 10, wins: 0, mascotId: null, skillUsed: false }; }), history: [], lastAward: null, sound: false };
-      }
-      function clone(value) { return JSON.parse(JSON.stringify(value)); }
-      function loadState() {
-        try {
-          var raw = localStorage.getItem(STATE_KEY);
-          if (raw) {
-            var loaded = JSON.parse(raw);
-            if (loaded && loaded.version === 2 && loaded.scores && loaded.scores.length === 15) return loaded;
-          }
-        } catch (e) {}
-        return freshState();
-      }
-      state = loadState();
-      var bus = null;
-      try { bus = new BroadcastChannel(CHANNEL); } catch (e) {}
-      if (bus) {
-        bus.onmessage = function (event) {
-          var data = event.data || {};
-          if (!firebaseReady && data.type === "state" && data.state) { state = data.state; render(); }
-          if (!firebaseReady && data.type === "mascot" && data.choice && role === "host") scanMascots();
-          if (!firebaseReady && data.type === "bet" && data.bet && role === "host") scanBids();
-        };
-      }
-      window.addEventListener("storage", function (event) {
-        if (!firebaseReady && event.key === STATE_KEY && event.newValue) { try { state = JSON.parse(event.newValue); render(); } catch (e) {} }
-        if (!firebaseReady && role === "host" && event.key && event.key.indexOf(MASCOT_PREFIX + state.sessionId + "-") === 0) scanMascots();
-        if (!firebaseReady && role === "host" && event.key && event.key.indexOf(BET_PREFIX + state.sessionId + "-" + state.roundIndex + "-") === 0) scanBids();
-      });
-      function validState(value) {
-        return !!(value && Number(value.version) === 2 && Array.isArray(value.scores) && value.scores.length === 15 && value.phase);
-      }
-      function setFirebaseError(error) {
-        firebaseReady = false;
-        firebaseError = error && error.message ? error.message : String(error || "Không kết nối được Firebase");
-        render();
-      }
-      function persistLocal() {
-        try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (e) {}
-      }
-      function save(reason) {
-        persistLocal();
-        if (firebaseReady && gameRef) {
-          var outgoing = clone(state);
-          outgoing.updatedAt = Date.now();
-          outgoing.lastReason = reason || "";
-          setDoc(gameRef, outgoing, { merge: false }).catch(setFirebaseError);
-        } else if (bus) {
-          bus.postMessage({ type: "state", state: state, reason: reason || "" });
-        }
-        render();
-      }
-      function startFirebaseListeners() {
-        if (!firebaseReady || stateUnsubscribe) return;
-        stateUnsubscribe = onSnapshot(gameRef, function (snapshot) {
-          remoteStateKnown = true;
-          remoteStateExists = snapshot.exists();
-          if (snapshot.exists()) {
-            var incoming = snapshot.data();
-            if (validState(incoming)) {
-              state = incoming;
-              persistLocal();
-              render();
-            }
-          } else if (role === "host" && !pendingRemoteCreate) {
-            pendingRemoteCreate = true;
-            save("Khởi tạo phiên Firebase");
-            pendingRemoteCreate = false;
-          }
-        }, setFirebaseError);
-        mascotUnsubscribe = onSnapshot(collection(db, "games", "paradox", "mascots"), function (snapshot) {
-          remoteMascots = {};
-          snapshot.forEach(function (item) {
-            var choice = item.data();
-            if (choice && choice.sessionId && choice.teamId) remoteMascots[String(choice.sessionId) + "-" + String(choice.teamId)] = choice;
-          });
-          if (role === "host") scanMascots();
-          else if (role !== "home") render();
-        }, setFirebaseError);
-        bidUnsubscribe = onSnapshot(collection(db, "games", "paradox", "bids"), function (snapshot) {
-          remoteBids = {};
-          snapshot.forEach(function (item) {
-            var bet = item.data();
-            if (bet && bet.sessionId && bet.roundIndex != null && bet.teamId) remoteBids[String(bet.sessionId) + "-" + String(bet.roundIndex) + "-" + String(bet.teamId)] = bet;
-          });
-          if (role === "host") scanBids();
-          else if (role !== "home") render();
-        }, setFirebaseError);
-      }
-      async function bootFirebase() {
-        try {
-          await signInAnonymously(auth);
-          firebaseReady = true;
-          firebaseError = "";
-          startFirebaseListeners();
-          render();
-        } catch (error) {
-          setFirebaseError(error);
-        }
-      }
-      function mutate(fn, reason) { var next = clone(state); fn(next); state = next; save(reason); }
-      function currentRound() { return rounds[state.roundIndex] || rounds[0]; }
-      function team(id) { return state.scores.find(function (t) { return t.id === Number(id); }) || state.scores[0]; }
-      function teamName(id) { return team(id).name; }
-      function esc(text) { return String(text == null ? "" : text).replace(/[&<>"']/g, function (s) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[s]; }); }
-      function phaseLabel() { return ({ cover: "MỞ MÀN", mascot: "CHỌN LINH VẬT", ready: "SẴN SÀNG", bet: "NIÊM PHONG CƯỢC", reveal: "LỘ CƯỢC", question: "CÂU HỎI", result: "KẾT QUẢ", scoreboard: "BẢNG ĐIỂM", finish: "CHUNG KẾT" })[state.phase] || "BẢO TÀNG"; }
-      function connectionBadge() {
-        if (firebaseReady) return '<span class="connection-badge live" title="15 thiết bị đang đồng bộ realtime">FIREBASE LIVE</span>';
-        if (firebaseError) return '<span class="connection-badge error" title="' + esc(firebaseError) + '">CẦN BẬT AUTH</span>';
-        return '<span class="connection-badge">ĐANG KẾT NỐI</span>';
-      }
-      function parseRoute() {
-        var hash = location.hash || "#/";
-        var clean = hash.slice(1);
-        var path = clean.split("?")[0] || "/";
-        role = path === "/host" ? "host" : path === "/stage" ? "stage" : path === "/team" ? "team" : "home";
-        if (role === "team") { var query = new URLSearchParams(clean.split("?")[1] || ""); selectedTeamId = Math.min(15, Math.max(1, Number(query.get("team")) || 1)); }
-      }
-      window.addEventListener("hashchange", render);
-      function sceneSvg(kind) {
-        var accent = kind === "steps" ? "#69e0ad" : kind === "door" ? "#ff6b9d" : kind === "file" ? "#ffd166" : "#69e7ff";
-        var second = kind === "mirror" ? "#9575ff" : "#ffffff";
-        return '<svg class="scene" viewBox="0 0 800 540" role="img" aria-label="Phòng trưng bày hình học"><defs><linearGradient id="wall" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#34346d"/><stop offset=".6" stop-color="#151b3b"/><stop offset="1" stop-color="#080b18"/></linearGradient><linearGradient id="door" x1="0" x2="1"><stop stop-color="#6450a2"/><stop offset="1" stop-color="#19264e"/></linearGradient><filter id="blur"><feGaussianBlur stdDeviation="9"/></filter></defs><rect x="7" y="7" width="786" height="526" rx="28" fill="url(#wall)" stroke="#ffffff28" stroke-width="2"/><path d="M48 424 L170 177 L580 144 L748 421 Z" fill="#0c1026" stroke="#ffffff25" stroke-width="2"/><path d="M70 421 L190 224 L568 199 L721 421" fill="none" stroke="#ffffff1b" stroke-width="3"/><path d="M191 421V191h165c68 0 119 53 119 119v111" fill="url(#door)" stroke="#0a0c1b" stroke-width="15"/><path d="M230 332c70-64 133-91 208-84" fill="none" stroke="' + accent + '" stroke-opacity=".65" stroke-width="6" stroke-linecap="round"/><circle cx="338" cy="254" r="57" fill="' + accent + '" fill-opacity=".13" filter="url(#blur)"/><circle cx="338" cy="254" r="40" fill="none" stroke="' + accent + '" stroke-width="2" stroke-dasharray="8 11"/><circle cx="338" cy="254" r="9" fill="' + accent + '"/><path d="M530 185h145v108H530z" fill="#ffffff08" stroke="#ffffff3b"/><path d="M550 210h104M550 235h74M550 260h91" stroke="' + second + '" stroke-opacity=".52" stroke-width="4"/><path d="M90 425h646" stroke="#ffd16669" stroke-width="5"/><circle cx="106" cy="98" r="8" fill="' + accent + '"/><circle cx="142" cy="98" r="5" fill="#ffd166"/><circle cx="169" cy="98" r="5" fill="#ff6b9d"/><text x="80" y="143" fill="#ffffff65" font-family="DM Mono,monospace" font-size="12" letter-spacing="4">EXHIBIT 00 / NO SUCH ROOM</text><path d="M656 357l25-26 25 26-25 26z" fill="#ffd166" fill-opacity=".6"/><path d="M116 365l19-20 19 20-19 20z" fill="' + accent + '" fill-opacity=".55"/></svg>';
-      }
-      function pieceSvg(index, color) {
-        var shapes = [
-          '<circle cx="50" cy="50" r="27" fill="none" stroke="' + color + '" stroke-width="6"/><circle cx="50" cy="50" r="7" fill="' + color + '"/>',
-          '<path d="M16 31h24V16h21v15h23v24H61v29H40V55H16z" fill="' + color + '" fill-opacity=".18" stroke="' + color + '" stroke-width="5"/><circle cx="52" cy="44" r="8" fill="' + color + '"/>',
-          '<path d="M18 22h64v56H18z" fill="none" stroke="' + color + '" stroke-width="5"/><path d="M28 67L72 32" stroke="' + color + '" stroke-width="7"/><path d="M31 30l36 39" stroke="#ffffff9a" stroke-width="3"/>',
-          '<path d="M50 12l10 25 27 3-20 18 6 27-23-14-23 14 6-27-20-18 27-3z" fill="' + color + '" fill-opacity=".22" stroke="' + color + '" stroke-width="5"/><circle cx="50" cy="51" r="6" fill="' + color + '"/>'
-        ];
-        return '<svg class="piece-icon" viewBox="0 0 100 100" aria-hidden="true">' + shapes[index % shapes.length] + '</svg>';
-      }
-      function waitSvg() { return '<svg class="team-wait-art" viewBox="0 0 180 140" aria-hidden="true"><circle cx="90" cy="70" r="39" fill="none" stroke="#ffffff25" stroke-width="2"/><circle cx="90" cy="70" r="55" fill="none" stroke="#69e7ff49" stroke-width="2" stroke-dasharray="4 10"/><circle cx="90" cy="70" r="10" fill="#69e7ff" fill-opacity=".8"/><path d="M90 15v22M90 103v22M35 70H13M167 70h-22" stroke="#ffd16675" stroke-width="3" stroke-linecap="round"/></svg>'; }
-      function scoreList(limit) { return state.scores.slice().sort(function (a, b) { return b.score - a.score || a.id - b.id; }).slice(0, limit || 5); }
-      function currentTime() { return state.timerEnd ? Math.max(0, Math.ceil((state.timerEnd - Date.now()) / 1000)) : 0; }
-      function mascotById(id) { return mascots.find(function (m) { return m.id === id; }) || mascots[0]; }
-      function mascotImage(id) { return "assets/mascots/" + (mascotById(id).id) + ".jpg"; }
-      function mascotArt(id, cls) { var m = mascotById(id); return '<span class="mascot-art ' + (cls || "") + '"><img src="' + mascotImage(m.id) + '" alt="' + esc(m.name) + '"></span>'; }
-      function mascotKey(teamId) { return MASCOT_PREFIX + state.sessionId + "-" + teamId; }
-      function betKey(teamId) { return BET_PREFIX + state.sessionId + "-" + state.roundIndex + "-" + teamId; }
-      function teamLocalMascot(teamId) { try { var raw = localStorage.getItem(mascotKey(teamId)); if (raw) { var obj = JSON.parse(raw); return obj.id || null; } } catch (e) {} return null; }
-      function teamLocalBet(teamId) { try { var raw = localStorage.getItem(betKey(teamId)); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
-      function teamSkillArmed(teamId) { try { return sessionStorage.getItem("paradox-ppt-skill-" + state.sessionId + "-" + teamId) === "1"; } catch (e) { return false; } }
-      function setTeamSkillArmed(teamId, armed) { try { sessionStorage.setItem("paradox-ppt-skill-" + state.sessionId + "-" + teamId, armed ? "1" : "0"); } catch (e) {} }
-      function remoteMascotFor(teamId) { return remoteMascots[String(state.sessionId) + "-" + String(teamId)] || null; }
-      function remoteBidFor(teamId) { return remoteBids[String(state.sessionId) + "-" + String(state.roundIndex) + "-" + String(teamId)] || null; }
-      function mascotCount() {
-        var claimed = {};
-        state.scores.forEach(function (t) { if (t.mascotId) claimed[t.id] = true; });
-        Object.keys(remoteMascots).forEach(function (key) { var choice = remoteMascots[key]; if (choice && choice.sessionId === state.sessionId && Number(choice.teamId) >= 1 && Number(choice.teamId) <= 15) claimed[Number(choice.teamId)] = true; });
-        return Object.keys(claimed).length;
-      }
-      function mascotClaimed(mascotId) {
-        if (state.scores.some(function (t) { return t.mascotId === mascotId; })) return true;
-        return Object.keys(remoteMascots).some(function (key) { var choice = remoteMascots[key]; return choice && choice.sessionId === state.sessionId && choice.id === mascotId; });
-      }
-      function bidFor(teamId) { return state.bids && state.bids[teamId] ? state.bids[teamId] : remoteBidFor(teamId) || teamLocalBet(teamId); }
-      function bidCount() {
-        var locked = {};
-        Object.keys(state.bids || {}).forEach(function (id) { var b = state.bids[id]; if (b && b.sessionId === state.sessionId && Number(b.roundIndex) === state.roundIndex) locked[id] = true; });
-        Object.keys(remoteBids).forEach(function (key) { var b = remoteBids[key]; if (b && b.sessionId === state.sessionId && Number(b.roundIndex) === state.roundIndex) locked[String(b.teamId)] = true; });
-        return Object.keys(locked).length;
-      }
-      function bidLeaders(limit) {
-        var all = {};
-        Object.keys(state.bids || {}).forEach(function (id) { var b = state.bids[id]; if (b && b.sessionId === state.sessionId && Number(b.roundIndex) === state.roundIndex) all[id] = b; });
-        Object.keys(remoteBids).forEach(function (key) { var b = remoteBids[key]; if (b && b.sessionId === state.sessionId && Number(b.roundIndex) === state.roundIndex) all[String(b.teamId)] = b; });
-        return Object.keys(all).map(function (id) { return all[id]; }).sort(function (a, b) { return Number(b.amount) - Number(a.amount) || Number(a.teamId) - Number(b.teamId); }).slice(0, limit || 4);
-      }
-      function initAudio() { if (!audioContext) { try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (audioContext && audioContext.state === "suspended") audioContext.resume(); }
-      function tone(freq, duration, type, volume) {
-        if (!state.sound || !audioContext) return;
-        var osc = audioContext.createOscillator(); var gain = audioContext.createGain(); osc.type = type || "sine"; osc.frequency.value = freq;
-        gain.gain.setValueAtTime(.0001, audioContext.currentTime); gain.gain.exponentialRampToValueAtTime(volume || .07, audioContext.currentTime + .02); gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
-        osc.connect(gain).connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + duration + .03);
-      }
-      function soundFor(name) { if (name === "open") { tone(440, .12, "sine", .09); setTimeout(function () { tone(660, .18, "sine", .08); }, 100); } if (name === "win") { tone(523, .12, "triangle", .1); setTimeout(function () { tone(784, .25, "triangle", .1); }, 120); } if (name === "wrong") tone(190, .3, "sawtooth", .05); if (name === "reveal") { tone(330, .1, "square", .05); setTimeout(function () { tone(495, .2, "triangle", .08); }, 110); } }
-      function startGame() {
-        initAudio(); clearRoundKeys();
-        mutate(function (s) { s.sessionId = String(Date.now()) + "-" + Math.random().toString(36).slice(2, 7); s.phase = "mascot"; s.roundIndex = 0; s.winnerTeam = null; s.winnerBid = 0; s.winnerSkill = null; s.bids = {}; s.timerEnd = Date.now() + 12000; s.autoAt = null; s.vault = 0; s.history = []; s.lastAward = null; s.scores.forEach(function (t) { t.score = 10; t.wins = 0; t.mascotId = null; t.skillUsed = false; }); }, "Mở phiên · chọn linh vật");
-        soundFor("open");
-      }
-      function clearRoundKeys() { var keys = []; for (var i = 0; i < localStorage.length; i++) { var key = localStorage.key(i); if (key && key.indexOf(BET_PREFIX) === 0) keys.push(key); } keys.forEach(function (key) { localStorage.removeItem(key); }); }
-      function chooseMascot(teamId, mascotId) {
-        if (state.phase !== "mascot" || Number(teamId) !== selectedTeamId || !mascotById(mascotId)) return;
-        var choice = { sessionId: state.sessionId, teamId: Number(teamId), id: mascotById(mascotId).id, at: Date.now() };
-        try { localStorage.setItem(mascotKey(teamId), JSON.stringify(choice)); } catch (e) {}
-        if (firebaseReady) {
-          setDoc(doc(db, "games", "paradox", "mascots", String(state.sessionId) + "-" + String(teamId)), choice, { merge: true }).catch(setFirebaseError);
-        } else if (bus) {
-          bus.postMessage({ type: "mascot", choice: choice });
-        }
-        render();
-      }
-      function scanMascots() {
-        if (role !== "host" || state.phase !== "mascot") return;
-        var prefix = MASCOT_PREFIX + state.sessionId + "-"; var next = clone(state); var changed = false;
-        for (var i = 1; i <= 15; i++) {
-          var choice = remoteMascots[String(state.sessionId) + "-" + String(i)] || null;
-          if (!choice) { try { var raw = localStorage.getItem(prefix + i); if (raw) choice = JSON.parse(raw); } catch (e) {} }
-          var id = choice ? Number(choice.teamId) : 0;
-          if (id >= 1 && id <= 15 && mascotById(choice.id) && next.scores[id - 1].mascotId !== choice.id) { next.scores[id - 1].mascotId = choice.id; changed = true; }
-        }
-        if (changed) { state = next; save("Linh vật đã khóa"); }
-      }
-      function beginRound() {
-        if (state.phase !== "mascot") return;
-        scanMascots();
-        mutate(function (s) { s.scores.forEach(function (t, i) { if (!t.mascotId) t.mascotId = mascots[i % mascots.length].id; }); s.phase = "ready"; s.timerEnd = null; s.autoAt = null; }, "Linh vật đã sẵn sàng");
-        soundFor("open");
-      }
-      function openRound() {
-        if (state.phase !== "ready") return;
-        clearRoundKeys();
-        mutate(function (s) { s.phase = "bet"; s.winnerTeam = null; s.winnerBid = 0; s.winnerSkill = null; s.bids = {}; s.timerEnd = Date.now() + 9000; s.autoAt = null; s.lastAward = null; }, "Mở cửa cược câu " + (state.roundIndex + 1));
-        soundFor("open");
-      }
-      function scanBids() {
-        if (role !== "host" || state.phase !== "bet") return;
-        var prefix = BET_PREFIX + state.sessionId + "-" + state.roundIndex + "-"; var next = clone(state); var changed = false;
-        for (var i = 1; i <= 15; i++) {
-          var bet = remoteBids[String(state.sessionId) + "-" + String(state.roundIndex) + "-" + String(i)] || null;
-          if (!bet) { try { var raw = localStorage.getItem(prefix + i); if (raw) bet = JSON.parse(raw); } catch (e) {} }
-          if (!bet) continue;
-          var id = Number(bet.teamId); var amount = Number(bet.amount); var target = next.scores[id - 1];
-          if (id >= 1 && id <= 15 && target && bet.sessionId === state.sessionId && Number(bet.roundIndex) === state.roundIndex && betAmounts.indexOf(amount) >= 0 && amount <= target.score && !next.bids[id]) {
-            next.bids[id] = { sessionId: bet.sessionId, roundIndex: bet.roundIndex, teamId: id, amount: amount, mascotId: target.mascotId, useSkill: !!bet.useSkill, at: Number(bet.at) || Date.now(), nonce: bet.nonce || "" };
-            changed = true;
-          }
-        }
-        if (changed) { state = next; save("Cược đã niêm phong"); }
-      }
-      function teamBet(teamId, amount) {
-        if (state.phase !== "bet" || Number(teamId) !== selectedTeamId || !team(teamId) || bidFor(teamId)) return;
-        amount = Number(amount); var target = team(teamId); if (betAmounts.indexOf(amount) < 0 || amount > target.score) return;
-        var bet = { sessionId: state.sessionId, roundIndex: state.roundIndex, teamId: Number(teamId), amount: amount, useSkill: teamSkillArmed(teamId) && !target.skillUsed, at: Date.now() + performance.now() / 1000, nonce: Math.random().toString(36).slice(2) };
-        try { localStorage.setItem(betKey(teamId), JSON.stringify(bet)); } catch (e) {}
-        setTeamSkillArmed(teamId, false);
-        if (firebaseReady) {
-          setDoc(doc(db, "games", "paradox", "bids", String(state.sessionId) + "-" + String(state.roundIndex) + "-" + String(teamId)), bet, { merge: true }).catch(setFirebaseError);
-        } else if (bus) {
-          bus.postMessage({ type: "bet", bet: bet });
-        }
-        render();
-      }
-      function revealBids() {
-        if (state.phase !== "bet") return;
-        scanBids(); if (state.phase !== "bet") return;
-        var bids = Object.keys(state.bids || {}).map(function (id) { return state.bids[id]; }).filter(function (b) { return Number(b.amount) > 0; });
-        var winner = null;
-        if (bids.length) {
-          bids.sort(function (a, b) { var diff = Number(b.amount) - Number(a.amount); if (diff) return diff; var ar = (Number(a.teamId) - 1 - state.roundIndex + 15) % 15; var br = (Number(b.teamId) - 1 - state.roundIndex + 15) % 15; return ar - br || Number(a.at) - Number(b.at); });
-          winner = bids[0];
-        }
-        mutate(function (s) {
-          s.winnerTeam = winner ? Number(winner.teamId) : null; s.winnerBid = winner ? Number(winner.amount) : 0; s.winnerSkill = winner && winner.useSkill ? winner.mascotId : null; s.timerEnd = null; s.phase = winner ? "reveal" : "result"; s.autoAt = Date.now() + (winner ? 1900 : 2200); s.lastAward = winner ? null : { teamId: null, bid: 0, delta: 0, correct: false, noWinner: true, vault: s.vault };
-          s.scores.forEach(function (t) { var b = s.bids[t.id]; if (b && b.useSkill && b.mascotId === "raven") t.skillUsed = true; });
-        }, winner ? "Lộ cược · đội dẫn đầu" : "Không có cược · hũ giữ nguyên");
-        soundFor(winner ? "reveal" : "wrong");
-      }
-      function enterQuestion() { if (state.phase !== "reveal") return; mutate(function (s) { s.phase = "question"; s.autoAt = null; }, "Mở câu hỏi"); soundFor("open"); }
-      function grade(correct) {
-        if (state.phase !== "question" || !state.winnerTeam) return;
-        var winner = state.winnerTeam;
-        mutate(function (s) {
-          var target = s.scores.find(function (t) { return t.id === winner; }); var bid = Number(s.winnerBid) || 0; var skill = s.winnerSkill; var delta = 0; var applied = ""; var before = target ? target.score : 0;
-          if (target) {
-            target.wins += 1;
-            if (correct) {
-              delta = 10 + s.vault; target.score += delta; s.vault = 0;
-              if (skill === "dragon" && !target.skillUsed) { target.score += 8; delta += 8; applied = "+8"; }
-            } else {
-              var penalty = bid;
-              if (skill === "cat" && !target.skillUsed) { penalty = 0; applied = "Hoàn cược"; }
-              if (skill === "fox" && !target.skillUsed) { penalty = Math.max(0, bid - 4); applied = "Giảm 4"; }
-              delta = -penalty; target.score = Math.max(0, target.score - penalty); s.vault += penalty;
-              if (skill === "deer" && !target.skillUsed && target.score === 0) { target.score += 8; applied = "Hồi sinh 8"; delta += 8; }
-            }
-            if (skill && skill !== "raven") target.skillUsed = true;
-          }
-          s.history.push({ round: currentRound().id, teamId: winner, bid: bid, correct: !!correct, delta: delta, vault: s.vault, skill: skill || null });
-          s.lastAward = { teamId: winner, bid: bid, delta: delta, correct: !!correct, noWinner: false, vault: s.vault, skill: skill || null, applied: applied, before: before, after: target ? target.score : before };
-          s.phase = "result"; s.timerEnd = null; s.autoAt = Date.now() + 2800;
-        }, correct ? "Đúng · mở hũ" : "Sai · nộp cược vào hũ");
-        soundFor(correct ? "win" : "wrong");
-      }
-      function advanceRound() {
-        if (state.phase !== "result" && state.phase !== "scoreboard") return;
-        if (state.roundIndex >= rounds.length - 1) { mutate(function (s) { s.phase = "finish"; s.autoAt = null; s.timerEnd = null; }, "Kết thúc phiên"); soundFor("open"); return; }
-        clearRoundKeys();
-        mutate(function (s) { s.roundIndex += 1; s.phase = "ready"; s.winnerTeam = null; s.winnerBid = 0; s.winnerSkill = null; s.bids = {}; s.timerEnd = null; s.autoAt = null; s.lastAward = null; }, "Sang câu tiếp theo");
-      }
-      function showScoreboard() { if (state.phase !== "result") return; mutate(function (s) { s.phase = "scoreboard"; s.autoAt = null; }, "Mở bảng điểm"); }
-      function resetGame() { if (!window.confirm("Đặt lại phiên chơi và điểm số?")) return; clearRoundKeys(); state = freshState(); save("Đặt lại phiên"); }
-
-      function hostControls() {
-        var p = state.phase;
-        if (p === "cover") return '<button class="btn primary large" data-action="start">▶ Bắt đầu game</button><div class="auto-note">Mỗi đội chọn một linh vật. Màn chọn tự đóng sau 12 giây.</div>';
-        if (p === "mascot") return '<div class="remote-live"><span class="eyebrow">Chọn linh vật</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">Đã chọn ' + mascotCount() + '/15</span></div><button class="btn gold large" data-action="begin">→ Mở câu 01</button>';
-        if (p === "ready") return '<button class="btn gold large" data-action="open">✦ Mở cược câu ' + String(state.roundIndex + 1).padStart(2, "0") + '</button><div class="auto-note">Cược kín: 0 · 1 · 3 · 5 điểm.</div>';
-        if (p === "bet") return '<div class="remote-live"><span class="eyebrow">Niêm phong cược</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">Đã khóa ' + bidCount() + '/15 đội</span></div><button class="btn danger" data-action="reveal">Lộ cược</button>';
-        if (p === "reveal") return '<div class="remote-live"><span class="eyebrow">Cao nhất</span><b>Đội ' + String(state.winnerTeam).padStart(2, "0") + ' · ' + state.winnerBid + ' điểm</b><span class="muted">Hoà → ưu tiên luân phiên.</span></div>';
-        if (p === "question") { var who = state.winnerTeam ? "Đội " + String(state.winnerTeam).padStart(2, "0") + " · " + esc(teamName(state.winnerTeam)) : "Đội chưa được xác định"; var gain = 10 + state.vault + (state.winnerSkill === "dragon" ? 8 : 0); return '<div class="remote-live"><span class="eyebrow">Trả lời · cược ' + state.winnerBid + '</span><b>' + who + '</b><span class="muted">Đúng: +' + gain + ' · Sai: −cược vào hũ</span></div><div class="remote-duo"><button class="btn green large" data-action="grade" data-correct="1">✓ ĐÚNG</button><button class="btn danger large" data-action="grade" data-correct="0">× SAI</button></div>'; }
-        if (p === "result") { var a = state.lastAward; var resultText = a && a.noWinner ? "Không ai cược" : ((a && a.delta > 0 ? "+" : "") + (a ? a.delta : 0) + " điểm"); return '<div class="remote-live"><span class="eyebrow">Kết quả · hũ ' + state.vault + '</span><b>' + resultText + '</b><span class="muted">' + (a && a.applied ? esc(a.applied) : "") + '</span></div><button class="btn primary large" data-action="next">→ Câu tiếp</button>'; }
-        if (p === "scoreboard") return '<button class="btn primary large" data-action="next">→ Quay lại game</button>';
-        if (p === "finish") return '<button class="btn gold large" data-action="reset">↻ Chơi lại</button>';
-        return "";
-      }
-      function miniScore() { return scoreList(3).map(function (t, i) { return '<div class="mini-score-row"><span>' + (i + 1) + ". " + esc(t.name) + '</span><b>' + t.score + "đ</b></div>"; }).join(""); }
-      function hostView() {
-        return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">∅</span><span class="brand-copy"><b>BẢO TÀNG KHÔNG TỒN TẠI</b><span>PPT GAME · MC</span></span></a><div class="header-actions">' + connectionBadge() + '<a class="btn ghost" href="#/stage">Sân khấu ↗</a><button class="icon-btn" title="Bật/tắt âm thanh" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Đặt lại" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad"><div class="eyebrow">MC REMOTE</div><h1 style="font:800 clamp(28px,4vw,44px)/.95 var(--display);letter-spacing:-.05em;margin:10px 0 7px">Chỉ cần<br><span style="color:var(--cyan)">bấm tiếp.</span></h1><p class="muted" style="font-size:12px;line-height:1.55;margin:0">Mở cược → nghe trả lời → chọn đúng/sai.</p></div><div class="remote-status"><div class="status-tile"><small>TRẠNG THÁI</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>CÂU</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div><div class="keyboard-note" style="margin-top:13px">SPACE · mở/đóng · 1 đúng · 0 sai</div></div><div class="panel"><div class="panel-head"><h3>Bảng điểm · top 3</h3>' + (state.phase === "result" ? '<button class="btn ghost" data-action="scoreboard">Mở BXH</button>' : '') + '</div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
-      }
-
-      function mascotCards(stage) { return mascots.map(function (m) { return '<div class="mascot-card ' + (mascotClaimed(m.id) ? "claimed" : "") + '">' + mascotArt(m.id) + '<div class="mascot-name">' + esc(m.name) + '</div><div class="mascot-skill">' + esc(m.skill) + '</div>' + (stage ? "" : "<div class=\"mascot-desc\">" + esc(m.desc) + "</div>") + '</div>'; }).join(""); }
-      function stageCover() { return '<div class="slide"><div class="slide-kicker">EXHIBIT 00</div><h1 class="horror-script">Bảo tàng<br><em>không tồn tại</em></h1><div class="slide-visual has-image hero-art"><img class="slide-art-image" src="assets/paradox-museum-hero.jpg" alt=""></div><p class="slide-sub">Cược điểm · gọi linh vật · trả lời</p></div>'; }
-      function stageMascot() { return '<div class="slide stage-mascot"><div class="slide-kicker">MỞ HỒ SƠ · 00</div><h1 class="horror-script">Chọn <em>linh vật</em></h1><div class="mascot-grid">' + mascotCards(true) + '</div><p class="slide-sub">Một linh vật · một kỹ năng · dùng một lần</p></div>'; }
-      function stageReady() { var q = currentRound(); return '<div class="slide"><span class="slide-number">/' + String(state.roundIndex + 1).padStart(2, "0") + '</span><div class="slide-kicker">' + q.id + '</div><h1 class="horror-script">' + esc(q.title) + '</h1><div class="slide-visual has-image square-art"><img class="slide-art-image" src="assets/paradox-exhibit-shard.jpg" alt=""></div><div class="vault-chip">HŨ NGUYỀN <b>' + state.vault + '</b></div></div>'; }
-      function stageBet() { return '<div class="slide stage-bet"><span class="slide-number">/' + String(state.roundIndex + 1).padStart(2, "0") + '</span><div class="slide-kicker">NIÊM PHONG CƯỢC</div><h1 class="horror-script">Ai dám trả <em>giá?</em></h1><div class="buzz-line"><div class="timer ' + (currentTime() > 4 ? "safe" : "") + '">' + currentTime() + 's</div><span>' + bidCount() + '/15 đã khóa</span></div><div class="slide-visual has-image"><img class="slide-art-image" src="assets/paradox-museum-hero.jpg" alt=""></div><div class="bet-grid">' + betAmounts.map(function (n) { return '<div class="bet-card"><span class="bet-amount">' + n + '</span><span class="bet-caption">' + (n === 0 ? "BỎ QUA" : "ĐIỂM") + '</span></div>'; }).join("") + '</div><p class="slide-sub">Cược kín · cao nhất giành quyền · hòa theo lượt</p></div>'; }
-      function stageReveal() { var leaders = bidLeaders(4); var winner = state.winnerTeam ? team(state.winnerTeam) : null; return '<div class="slide"><div class="slide-kicker">LỘ CƯỢC</div><h1 class="horror-script">Cánh cửa đã <em>chọn</em></h1><div class="reveal-badge">CAO NHẤT <b>' + state.winnerBid + '</b> ĐIỂM</div><div class="winner-card"><i class="winner-dot"></i><b>Đội ' + String(state.winnerTeam).padStart(2, "0") + ' · ' + esc(winner ? winner.name : "") + '</b></div><div class="bid-rail">' + leaders.map(function (b, i) { return '<div class="bid-row"><b>#' + (i + 1) + '</b><span>Đội ' + String(b.teamId).padStart(2, "0") + ' · ' + esc(teamName(b.teamId)) + '<i class="bid-meter"><i style="width:' + Math.max(8, Number(b.amount) / 5 * 100) + '%"></i></i></span><strong>' + b.amount + '</strong></div>'; }).join("") + '</div></div>'; }
-      function stageQuestion() {
-        var q = currentRound(); var winner = team(state.winnerTeam); var m = mascotById(winner.mascotId); var skill = state.winnerSkill ? '<span class="tag" style="color:' + m.color + ';border-color:' + m.color + '66">' + esc(m.skill) + '</span>' : '';
-        var who = '<div class="winner-card">' + mascotArt(winner.mascotId, "") + '<i class="winner-dot"></i><b>Đội ' + String(state.winnerTeam).padStart(2, "0") + ' · ' + esc(winner.name) + '</b><span class="tag">CƯỢC ' + state.winnerBid + '</span>' + skill + '</div>';
-        return '<div class="slide"><span class="slide-number">/' + String(state.roundIndex + 1).padStart(2, "0") + '</span><div class="slide-kicker">CÂU HỎI</div>' + who + '<div class="question-box has-art"><h2>' + esc(q.question) + '</h2><div class="options">' + q.options.map(function (o, i) { return '<div class="option"><b>' + String.fromCharCode(65 + i) + '</b><span>' + esc(o) + '</span></div>'; }).join("") + '</div></div></div>';
-      }
-      function stageResult() { var award = state.lastAward || { delta: 0, teamId: null, noWinner: true, correct: false }; var ok = !!award.correct; var n = award.noWinner ? "0" : (award.delta > 0 ? "+" : "") + award.delta; return '<div class="slide result-slide"><div class="result-mark ' + (ok ? "" : "wrong") + '">' + (award.noWinner ? "·" : (ok ? "✓" : "×")) + '</div><div class="slide-kicker">' + (award.noWinner ? "KHÔNG CÓ CƯỢC" : (ok ? "MỞ HŨ" : "CƯỢC ĐÃ NỘP")) + '</div><div class="award">' + n + '</div><h1 style="font-size:clamp(28px,5vw,62px)">' + (award.noWinner ? "Cả lớp" : esc(teamName(award.teamId))) + '</h1><div class="vault-chip">HŨ NGUYỀN <b>' + state.vault + '</b></div></div>'; }
-      function stageScoreboard() { var list = scoreList(3); var max = Math.max(10, list[0] ? list[0].score : 10); return '<div class="slide"><div class="slide-kicker">BXH · TOP 3</div><h1 style="font-size:clamp(34px,5.6vw,74px)">Ai còn đứng?</h1><div class="stage-score-strip">' + list.map(function (t, i) { return '<div class="score-row"><span class="score-rank">0' + (i + 1) + '</span><div><div class="score-name">' + esc(t.name) + '</div><div class="score-bar"><i style="width:' + Math.max(4, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="score-points">' + t.score + 'đ</span></div>'; }).join("") + '</div><div class="vault-chip">HŨ <b>' + state.vault + '</b></div></div>'; }
-      function stageFinish() {
-        var list = scoreList(3);
-        return '<div class="slide"><div class="slide-kicker">KẾT THÚC · HỒ SƠ ĐÃ MỞ</div><h1 style="font-size:clamp(37px,6.3vw,90px)">Ba đội<br><em>đi xa nhất</em></h1><div class="podium"><div class="podium-col p2"><b>' + esc(list[1] ? list[1].name : "—") + '</b><div class="podium-block">02</div></div><div class="podium-col p1"><b>' + esc(list[0] ? list[0].name : "—") + '</b><div class="podium-block">01</div></div><div class="podium-col p3"><b>' + esc(list[2] ? list[2].name : "—") + '</b><div class="podium-block">03</div></div></div><p class="slide-sub">Cảm ơn các nhà điều tra của bảo tàng.</p></div>';
-      }
-      function stageSlide() { if (state.phase === "cover") return stageCover(); if (state.phase === "mascot") return stageMascot(); if (state.phase === "ready") return stageReady(); if (state.phase === "bet") return stageBet(); if (state.phase === "reveal") return stageReveal(); if (state.phase === "question") return stageQuestion(); if (state.phase === "result") return stageResult(); if (state.phase === "scoreboard") return stageScoreboard(); return stageFinish(); }
-      function stageView(compact) { return '<main class="stage-root ' + (compact ? "stage-compact" : "") + '"><header class="stage-header"><a href="#/" class="brand"><span class="brand-mark">∅</span><span class="brand-copy"><b>BẢO TÀNG KHÔNG TỒN TẠI</b><span>TRÌNH CHIẾU · PPT MODE</span></span></a><div class="stage-code">' + phaseLabel() + ' · ' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + '/' + String(rounds.length).padStart(2, "0") + '</div></header><section class="stage-main">' + stageSlide() + '</section>' + (compact ? '<footer class="stage-footer"><span>15 ĐỘI · CƯỢC 0/1/3/5 · HŨ ' + state.vault + '</span><span>F11 = TOÀN MÀN HÌNH</span></footer>' : '') + '</main>'; }
-
-      function teamView() {
-        var id = selectedTeamId; var t = team(id); var q = currentRound(); var localMascot = teamLocalMascot(id); var mascotId = localMascot || t.mascotId || mascots[(id - 1) % mascots.length].id; var m = mascotById(mascotId); var bet = bidFor(id); var armed = teamSkillArmed(id); var body = "";
-        if (state.phase === "mascot" || state.phase === "cover") {
-          body = '<div class="team-round">ĐỘI ' + String(id).padStart(2, "0") + ' · LINH VẬT</div><h1>Chọn một<br>linh vật.</h1><p>' + (state.phase === "cover" ? "Đợi MC mở hồ sơ." : "Mỗi kỹ năng chỉ dùng một lần.") + '</p><div class="mascot-grid">' + mascots.map(function (x) { return '<button class="mascot-card ' + (mascotId === x.id ? "chosen" : "") + '" data-action="mascot" data-mascot="' + x.id + '" ' + (state.phase === "cover" ? "disabled" : "") + '>' + mascotArt(x.id) + '<div class="mascot-name">' + esc(x.name) + '</div><div class="mascot-skill">' + esc(x.skill) + '</div></button>'; }).join("") + '</div>' + (localMascot ? '<div class="team-message">Đã khóa: ' + esc(m.name) + '</div>' : "");
-        } else if (state.phase === "bet") {
-          var canUseSkill = !t.skillUsed; var skillButton = canUseSkill ? '<button class="skill-toggle ' + (armed ? "armed" : "") + '" data-action="skill-toggle">' + mascotArt(mascotId) + '<span><b>' + esc(m.name) + ' · ' + esc(m.skill) + '</b><small>' + (armed ? "ĐÃ KÍCH HOẠT" : esc(m.desc)) + '</small></span></button>' : '<div class="skill-toggle" style="opacity:.45">' + mascotArt(mascotId) + '<span><b>' + esc(m.name) + ' · ĐÃ DÙNG</b><small>Kỹ năng đã hết</small></span></div>';
-          var hint = armed && mascotId === "raven" ? '<div class="team-message" style="border-color:#69e7ff66;color:var(--cyan)">Gợi ý riêng · ' + esc(q.hint) + '</div>' : '';
-          body = '<div class="team-round">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + ' · NIÊM PHONG</div><h1>Đặt giá<br>một lần.</h1><p>' + (bet ? "Đã niêm phong. Nhìn màn chiếu." : "Cược càng cao, áp lực càng lớn.") + '</p>' + skillButton + hint + '<div class="bet-grid">' + betAmounts.map(function (n) { var disabled = !!bet || n > t.score; return '<button class="bet-card ' + (bet && Number(bet.amount) === n ? "selected" : "") + '" data-action="bet" data-amount="' + n + '" ' + (disabled ? "disabled" : "") + '><span class="bet-amount">' + n + '</span><span class="bet-caption">' + (n === 0 ? "BỎ QUA" : "ĐIỂM") + '</span></button>'; }).join("") + '</div>' + (bet ? '<div class="bet-status">Đã khóa <b>' + bet.amount + ' điểm</b>' + (bet.useSkill ? ' · ' + esc(m.skill) : '') + '</div>' : '');
-        } else if (state.phase === "reveal") {
-          body = '<div class="team-round">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + ' · LỘ CƯỢC</div><h1>' + (state.winnerTeam === id ? "Đội bạn<br>được gọi." : "Cửa đã<br>chọn đội.") + '</h1><p>' + (state.winnerTeam === id ? "Chuẩn bị trả lời trực tiếp." : "Nghe câu hỏi trên màn chiếu.") + '</p><div class="mascot-strip">' + mascotArt(mascotId) + '<span class="mascot-name">' + esc(m.name) + '</span><span class="tag">' + (state.winnerTeam === id ? "CƯỢC " + state.winnerBid : "") + '</span></div>';
-        } else if (state.phase === "question") {
-          body = '<div class="team-round">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + '</div><h1>' + (state.winnerTeam === id ? "Đội bạn<br>đang trả lời." : "Đang nghe<br>đội thắng.") + '</h1><p>' + (state.winnerTeam === id ? "Trả lời trực tiếp với MC." : "Chờ kết quả trên màn chiếu.") + '</p><div class="team-message">' + esc(q.title) + ' · cược ' + state.winnerBid + '</div>';
-        } else if (state.phase === "result") {
-          var mine = state.lastAward && state.lastAward.teamId === id; var delta = mine ? state.lastAward.delta : 0; body = '<div class="team-round">KẾT QUẢ CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + '</div><h1>' + (mine ? (delta > 0 ? "+" : "") + delta + " điểm" : "Chờ<br>câu tiếp") + '</h1><p>' + (mine ? "Điểm đã tính. Hũ hiện có " + state.vault + "." : "Theo dõi kết quả trên màn chiếu.") + '</p><div class="team-message">' + esc(q.title) + '</div>';
-        } else if (state.phase === "finish") {
-          body = '<div class="team-photo"><img src="' + mascotImage(mascotId) + '" alt=""></div><div class="team-round">PHIÊN ĐÃ KẾT THÚC</div><h1>' + t.score + '<small style="font-size:.42em;color:var(--gold)">điểm</small></h1><p>Xem bảng xếp hạng trên màn chiếu.</p>';
-        } else {
-          body = '<div class="team-photo"><img src="assets/paradox-exhibit-shard.jpg" alt=""></div><div class="team-round">' + (state.phase === "ready" ? "CÂU " + String(state.roundIndex + 1).padStart(2, "0") : "ĐANG CHỜ") + '</div><h1>Nhìn<br>màn chiếu.</h1><p>Chờ cửa sổ mở.</p>';
-        }
-        return '<main class="team-root"><section class="team-phone"><header class="team-head"><div><b>' + esc(t.name) + '</b><small>ĐỘI ' + String(id).padStart(2, "0") + ' · ' + esc(m.name) + '</small></div><span class="team-score">' + t.score + 'đ</span></header><div class="team-body">' + body + '</div><footer class="team-foot">BẢO TÀNG KHÔNG TỒN TẠI · ' + (state.phase === "bet" ? "CHỌN 1 MỨC CƯỢC" : "NHÌN MÀN CHIẾU") + '</footer></section></main>';
-      }
-      function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><div class="eyebrow">PPT GAME · 15 ĐỘI</div><h1 class="horror-script">Bảo tàng<br><em>không tồn tại</em></h1><p>Chọn linh vật · đặt giá · giành quyền.</p><div class="home-actions"><a class="btn primary large" href="#/host">Mở MC</a><a class="btn ghost large" href="#/stage">Mở sân khấu</a></div><div class="home-note"><div><b>06</b><span>câu</span></div><div><b>15</b><span>đội</span></div><div><b>10</b><span>điểm mở màn</span></div></div></section><section class="museum-card" aria-label="Minh họa bảo tàng hình học"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">NULL</div><div class="eyebrow" style="position:absolute;right:27px;bottom:25px;color:#ffffff66">EXHIBIT 00</div></section></div></main>'; }
-      function bind() { document.querySelectorAll("[data-action]").forEach(function (el) { el.addEventListener("click", handleAction); }); }
-      function handleAction(event) {
-        var el = event.currentTarget; var action = el.getAttribute("data-action");
-        if (action === "start") return startGame();
-        if (action === "begin") return beginRound();
-        if (action === "open") return openRound();
-        if (action === "reveal") return revealBids();
-        if (action === "grade") return grade(el.getAttribute("data-correct") === "1");
-        if (action === "next") return advanceRound();
-        if (action === "scoreboard") return showScoreboard();
-        if (action === "reset") return resetGame();
-        if (action === "sound") { initAudio(); mutate(function (s) { s.sound = !s.sound; }, state.sound ? "Tắt âm thanh" : "Bật âm thanh"); return; }
-        if (action === "mascot") return chooseMascot(selectedTeamId, el.getAttribute("data-mascot"));
-        if (action === "skill-toggle") { var skill = team(selectedTeamId); if (!skill.skillUsed) { setTeamSkillArmed(selectedTeamId, !teamSkillArmed(selectedTeamId)); render(); } return; }
-        if (action === "bet") return teamBet(selectedTeamId, Number(el.getAttribute("data-amount")));
-      }
-      function render() {
-        parseRoute();
-        if (role === "host" && firebaseReady && remoteStateKnown && !remoteStateExists && !pendingRemoteCreate) {
-          pendingRemoteCreate = true;
-          save("Khởi tạo phiên Firebase");
-          pendingRemoteCreate = false;
-        }
-        document.getElementById("app").innerHTML = role === "host" ? hostView() : role === "stage" ? stageView(false) : role === "team" ? teamView() : homeView();
-        bind();
-      }
-      document.addEventListener("keydown", function (event) {
-        if (role !== "host" || event.target && /input|textarea/i.test(event.target.tagName)) return;
-        if (event.code === "Space") {
-          event.preventDefault();
-          if (state.phase === "cover") startGame(); else if (state.phase === "mascot") beginRound(); else if (state.phase === "ready") openRound(); else if (state.phase === "bet") revealBids(); else if (state.phase === "question") grade(true); else if (state.phase === "result" || state.phase === "scoreboard") advanceRound(); else if (state.phase === "finish") resetGame();
-        }
-        if (event.key === "1" && state.phase === "question") grade(true);
-        if (event.key === "0" && state.phase === "question") grade(false);
-      });
-      setInterval(function () {
-        if (role === "host" && state.phase === "mascot") { scanMascots(); if (state.phase === "mascot" && currentTime() <= 0) beginRound(); }
-        if (role === "host" && state.phase === "bet") { scanBids(); if (state.phase === "bet" && currentTime() <= 0) revealBids(); }
-        if (role === "host" && state.phase === "reveal" && state.autoAt && Date.now() >= state.autoAt) enterQuestion();
-        if (role === "host" && state.phase === "result" && state.autoAt && Date.now() >= state.autoAt) advanceRound();
-        document.querySelectorAll(".remote-timer, .timer").forEach(function (el) { if (state.phase === "mascot" || state.phase === "bet") el.textContent = currentTime() + "s"; });
-      }, 220);
-      parseRoute();
-      render();
-      bootFirebase();
-    })();
-  </script>
-</body>
-</html>
+  <script type="module" src="game.js"></script>

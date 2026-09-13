@@ -1,6 +1,6 @@
-# Nghịch lý · Bảo tàng không tồn tại
+# VAULT 25 · PPT game
 
-PPT game ôn tập sau thuyết trình cho 15 đội. Màn chiếu là trung tâm: ảnh lớn, chữ ngắn, font gothic và chuyển cảnh tự động. Đội chỉ dùng điện thoại để chọn linh vật và niêm phong một mức cược.
+Game ôn tập dạng trình chiếu cho **15 đội / 25 câu**. Màn chiếu là game board: nền két 3D, lõi năng lượng nổi, thẻ phát sáng, animation và BXH nhỏ cố định ở cạnh phải. Điện thoại chỉ dùng để chọn linh vật, bật kỹ năng và chọn một mã.
 
 ## Các màn
 
@@ -9,28 +9,38 @@ PPT game ôn tập sau thuyết trình cho 15 đội. Màn chiếu là trung tâ
 - Màn chiếu: `#/stage`
 - Điện thoại đội: `#/team?team=1` đến `#/team?team=15`
 
-## Luật “Khế ước”
+## Luật chính
 
-- Mỗi đội bắt đầu với **10 điểm**.
-- Trước câu đầu, đội chọn một linh vật 3D; mỗi kỹ năng chỉ dùng **một lần**.
-- Mỗi câu có đúng **một lần niêm phong**: `0 · 1 · 3 · 5` điểm.
-- Cược cao nhất giành quyền trả lời. Nếu hòa, hệ thống dùng ưu tiên luân phiên theo số câu — không có đấu phụ.
-- Trả lời đúng: nhận `10 + Hũ Nguyền`; hũ về 0.
-- Trả lời sai: mất đúng số điểm đã cược; số đó chảy vào **Hũ Nguyền**.
-- Không có đội cược: hũ giữ nguyên. Điểm không âm; hệ thống tự tính mọi thay đổi.
+- Mỗi đội bắt đầu **0 điểm** và có bộ **25 thẻ số 1–25**.
+- Trước câu đầu, mỗi đội chọn một linh vật. Kỹ năng chỉ dùng một lần; bật trên điện thoại trước khi chọn mã.
+- MC công bố độ khó và điểm trước khi mở lượt chọn mã:
 
-## Sáu linh vật
+| Độ khó | Hình thức | Điểm đúng |
+| --- | --- | ---: |
+| ★ | Câu hỏi + A/B/C/D | 10 |
+| ★★ | Nghe tiếng Anh + A/B/C/D | 15 |
+| ★★★ | Nghe tiếng Anh + tự trả lời | 25 |
+| ★★★★ | Lật nửa ảnh + A/B/C/D | 40 |
+| ★★★★★ | Video gợi ý rất nhanh + tự trả lời | 60 |
 
-Quạ Tiên Tri (gợi ý), Mèo Chín Mạng (hoàn cược), Cáo Giao Kèo (giảm 4 điểm phạt), Rồng Tro Tàn (+8 khi đúng), Nhện Đồng Hồ (+15 giây), Hươu Hộ Mệnh (hồi sinh 8 điểm khi về 0).
+- Mỗi câu có một lượt chọn mã, thời gian mặc định **12 giây**.
+- Mỗi đội chỉ chọn **một thẻ chưa dùng**. Thẻ đã chọn bị đốt vĩnh viễn, dù đội có thắng hay không.
+- Mã lớn nhất giành quyền trả lời. Nếu bằng mã, hệ thống chọn timestamp gửi lên máy chủ sớm nhất; không có đấu phụ.
+- Trả lời đúng nhận điểm của sao tương ứng và thưởng kỹ năng nếu có. **Trả lời sai hoặc hết giờ = 0 điểm**, không hoàn lại thẻ.
+- Hết 25 câu, hệ thống tự tính điểm, số câu đúng và BXH; các tiêu chí phụ chỉ dùng khi tổng điểm bằng nhau.
 
-MC chỉ cần bấm: **Bắt đầu → Mở cược → Đúng/Sai → Câu tiếp**. Slide lộ cược, kết quả và BXH top 3 tự chạy; có thể dùng `Space`, `1` (đúng), `0` (sai).
+## Linh vật
+
+Quạ Tiên Tri (gợi ý), Mèo Chín Mạng (+5 khi đúng ★/★★), Cáo Giao Kèo (+5 khi đúng ★★★+), Rồng Tro Tàn (+8 khi đúng), Nhện Đồng Hồ (+15 giây), Hươu Hộ Mệnh (+8 khi đúng ★★★★+).
+
+MC chỉ cần bấm: **Mở VAULT → Khoá linh vật → Mở chọn mã → Lộ mã → Đúng/Sai → Câu tiếp**. Có phím tắt `Space`, `1` (đúng), `0` (sai). Kết quả sai luôn hiển thị lớn là `0`.
 
 ## Thiết kế & tài sản
 
 - Bố cục 16:9, tương phản cao, BXH chỉ là dải nhỏ.
-- Ảnh bảo tàng, hiện vật và sáu ảnh linh vật 3D nằm trong `assets/`.
+- Ảnh két, lõi năng lượng trong suốt, hiện vật và sáu ảnh linh vật 3D nằm trong `assets/`.
 - Tiêu đề dùng `Grenze Gotisch`/`UnifrakturCook`; nội dung dùng `Be Vietnam Pro`.
-- Sáu câu demo nằm trong mảng `rounds` ở `index.html`.
+- 25 câu demo nằm trong mảng `rounds` ở `game.js`; thay bằng audio/video thật trước buổi học.
 - Âm thanh Web Audio chỉ bật sau nút loa trên bảng MC.
 
 ## Kết nối Firebase
@@ -49,7 +59,7 @@ service cloud.firestore {
       match /mascots/{teamId} {
         allow read, write: if request.auth != null;
       }
-      match /bids/{bidId} {
+      match /cards/{cardId} {
         allow read, write: if request.auth != null;
       }
     }
@@ -57,8 +67,8 @@ service cloud.firestore {
 }
 ```
 
-Màn MC ghi trạng thái vào `games/paradox`; điện thoại ghi lựa chọn vào `games/paradox/mascots/*` và cược vào `games/paradox/bids/*`. Mọi màn hình đều nghe `onSnapshot`, nên 15 điện thoại và màn chiếu cập nhật gần như tức thời. Nếu Anonymous Auth chưa bật hoặc Firestore chưa có quyền, giao diện sẽ báo **CẦN BẬT AUTH** và tạm rơi về chế độ local.
+MC ghi trạng thái vào `games/paradox-v3`; điện thoại ghi linh vật vào `games/paradox-v3/mascots/*` và mã vào `games/paradox-v3/cards/*`. Các thiết bị nghe `onSnapshot` trực tiếp trên các collection hành động để giảm cảm giác trễ. Nếu Firebase chưa sẵn sàng, web tạm dùng BroadcastChannel/localStorage cho các tab cùng trình duyệt.
 
 ## Chạy thử
 
-Mở MC `#/host`, màn chiếu `#/stage`, rồi chia sẻ `#/team?team=1` đến `#/team?team=15`. GitHub Pages vẫn là nơi host; Firebase chỉ làm lớp đồng bộ realtime, không cần bật Firebase Hosting.
+Mở MC `#/host`, màn chiếu `#/stage`, rồi chia sẻ `#/team?team=1` đến `#/team?team=15`. Bật F11 trên sân khấu để chiếu toàn màn hình. GitHub Pages vẫn là nơi host; Firebase chỉ làm lớp đồng bộ realtime, không cần bật Firebase Hosting.
