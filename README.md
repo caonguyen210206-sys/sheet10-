@@ -1,31 +1,38 @@
 # Nghịch lý · Bảo tàng không tồn tại
 
-PPT game ôn tập sau thuyết trình cho 15 đội. Màn sân khấu được thiết kế như một bộ slide: hình ảnh lớn, chữ ngắn, MC chỉ bấm nút chính; hệ thống tự khóa đội chọn đúng đầu tiên, cộng điểm và chuyển sang câu kế tiếp.
+PPT game ôn tập sau thuyết trình cho 15 đội. Màn chiếu là trung tâm: ảnh lớn, chữ ngắn, font gothic và chuyển cảnh tự động. Đội chỉ dùng điện thoại để chọn linh vật và niêm phong một mức cược.
 
-## Mở game
+## Các màn
 
-- Trang chính: #/
-- Bảng MC: #/host
-- Màn chiếu: #/stage
-- Điện thoại đội: #/team?team=1 đến #/team?team=15
+- Trang chính: `#/`
+- Bảng MC: `#/host`
+- Màn chiếu: `#/stage`
+- Điện thoại đội: `#/team?team=1` đến `#/team?team=15`
 
-Trên bảng MC, quy trình chỉ có ba thao tác lặp lại:
+## Luật “Khế ước”
 
-1. **Mở mảnh ghép**
-2. Đội chọn một mảnh trên điện thoại; hệ thống tự xác định đội đúng đầu tiên
-3. MC nghe câu trả lời trực tiếp và bấm **ĐÚNG · 10** hoặc **SAI · 0**
+- Mỗi đội bắt đầu với **10 điểm**.
+- Trước câu đầu, đội chọn một linh vật 3D; mỗi kỹ năng chỉ dùng **một lần**.
+- Mỗi câu có đúng **một lần niêm phong**: `0 · 1 · 3 · 5` điểm.
+- Cược cao nhất giành quyền trả lời. Nếu hòa, hệ thống dùng ưu tiên luân phiên theo số câu — không có đấu phụ.
+- Trả lời đúng: nhận `10 + Hũ Nguyền`; hũ về 0.
+- Trả lời sai: mất đúng số điểm đã cược; số đó chảy vào **Hũ Nguyền**.
+- Không có đội cược: hũ giữ nguyên. Điểm không âm; hệ thống tự tính mọi thay đổi.
 
-Sau khi chấm, slide kết quả tự hiện rồi tự chuyển sang câu tiếp theo. Có thể dùng phím Space cho nút chính, phím 1 cho đúng và phím 0 cho sai.
+## Sáu linh vật
 
-## Thiết kế
+Quạ Tiên Tri (gợi ý), Mèo Chín Mạng (hoàn cược), Cáo Giao Kèo (giảm 4 điểm phạt), Rồng Tro Tàn (+8 khi đúng), Nhện Đồng Hồ (+15 giây), Hươu Hộ Mệnh (hồi sinh 8 điểm khi về 0).
 
-- Bố cục 16:9 ưu tiên cho máy chiếu.
-- Ảnh nền sân khấu và ảnh hiện vật được tạo riêng cho game trong thư mục assets.
-- Font tiêu đề dùng phong cách gothic, chữ nội dung vẫn giữ độ tương phản để đọc được trên máy chiếu.
-- Sáu câu demo ngắn, có thể đổi trong mảng rounds ở index.html.
-- Điểm tối đa 10/câu; bảng điểm tạm thời và podium cuối game tự cập nhật.
-- Âm thanh chỉ bật sau nút âm thanh trên màn MC.
+MC chỉ cần bấm: **Bắt đầu → Mở cược → Đúng/Sai → Câu tiếp**. Slide lộ cược, kết quả và BXH top 3 tự chạy; có thể dùng `Space`, `1` (đúng), `0` (sai).
 
-## Chạy thử nhiều màn
+## Thiết kế & tài sản
 
-GitHub Pages là web tĩnh. Bản demo đồng bộ giữa các tab cùng trình duyệt bằng localStorage và BroadcastChannel: mở MC, sân khấu và các URL đội trong cùng trình duyệt để thử workflow. Khi dùng 15 điện thoại ở các thiết bị khác nhau, cần thay lớp đồng bộ mô phỏng bằng backend realtime.
+- Bố cục 16:9, tương phản cao, BXH chỉ là dải nhỏ.
+- Ảnh bảo tàng, hiện vật và sáu ảnh linh vật 3D nằm trong `assets/`.
+- Tiêu đề dùng `Grenze Gotisch`/`UnifrakturCook`; nội dung dùng `Be Vietnam Pro`.
+- Sáu câu demo nằm trong mảng `rounds` ở `index.html`.
+- Âm thanh Web Audio chỉ bật sau nút loa trên bảng MC.
+
+## Chạy thử
+
+GitHub Pages là web tĩnh. Bản demo đồng bộ giữa các tab cùng trình duyệt bằng `localStorage` và `BroadcastChannel`: mở MC, sân khấu và các URL đội trong cùng trình duyệt để thử workflow. Muốn dùng 15 điện thoại ở các thiết bị khác nhau, thay lớp đồng bộ mô phỏng bằng backend realtime.
