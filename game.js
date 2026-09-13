@@ -315,6 +315,13 @@ const firebaseConfig = {
     gain.gain.setValueAtTime(.0001, audioContext.currentTime); gain.gain.exponentialRampToValueAtTime(volume || .07, audioContext.currentTime + .02); gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
     osc.connect(gain).connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + duration + .03);
   }
+  function sweep(from, to, duration, type, volume, delay) {
+    if (!state.sound || !audioContext) return;
+    var start = audioContext.currentTime + (delay || 0); var osc = audioContext.createOscillator(); var gain = audioContext.createGain();
+    osc.type = type || "sine"; osc.frequency.setValueAtTime(Math.max(1, from), start); osc.frequency.exponentialRampToValueAtTime(Math.max(1, to), start + duration * .9);
+    gain.gain.setValueAtTime(.0001, start); gain.gain.exponentialRampToValueAtTime(volume || .05, start + .025); gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+    osc.connect(gain).connect(audioContext.destination); osc.start(start); osc.stop(start + duration + .04);
+  }
   function soundFor(name) {
     if (name === "open") {
       tone(440, .12, "sine", .08);
@@ -322,16 +329,25 @@ const firebaseConfig = {
       return;
     }
     if (name === "win" || name === "correct") {
-      // A short “vault unlocked” arpeggio: warm chord, rising sparkle, soft chime.
-      tone(392, .24, "sine", .045);
-      tone(523.25, .14, "triangle", .105);
-      setTimeout(function () { tone(659.25, .16, "triangle", .095); }, 105);
-      setTimeout(function () { tone(783.99, .2, "triangle", .1); }, 215);
-      setTimeout(function () { tone(1046.5, .28, "sine", .085); }, 335);
-      setTimeout(function () { tone(1567.98, .2, "sine", .035); }, 430);
+      // “Két mở”: bass sweep + major arpeggio + glassy final chime.
+      sweep(150, 360, .62, "sine", .045);
+      tone(196, .48, "triangle", .05);
+      setTimeout(function () { tone(392, .24, "triangle", .08); }, 90);
+      setTimeout(function () { tone(493.88, .24, "triangle", .085); }, 185);
+      setTimeout(function () { tone(587.33, .27, "triangle", .09); }, 280);
+      setTimeout(function () { tone(783.99, .34, "sine", .085); }, 390);
+      setTimeout(function () { tone(1174.66, .38, "sine", .055); }, 510);
+      setTimeout(function () { tone(1567.98, .24, "sine", .035); }, 635);
       return;
     }
-    if (name === "wrong") { tone(190, .3, "sawtooth", .05); return; }
+    if (name === "wrong") {
+      // “Két đóng”: descending alarm, short enough to feel firm without hurting.
+      sweep(420, 105, .5, "sawtooth", .035);
+      tone(220, .28, "square", .045);
+      setTimeout(function () { tone(174.61, .34, "sawtooth", .045); }, 125);
+      setTimeout(function () { tone(110, .48, "triangle", .05); }, 270);
+      return;
+    }
     if (name === "reveal") {
       tone(330, .1, "square", .05);
       setTimeout(function () { tone(495, .2, "triangle", .08); }, 110);
@@ -508,8 +524,9 @@ const firebaseConfig = {
     return '<aside class="stage-score-rail" aria-label="Bảng xếp hạng"><div class="rail-title">BXH <span>TOP 5</span></div>' + list.map(function (t, i) { return '<div class="rail-row"><span class="rail-rank">0' + (i + 1) + '</span><div><div class="rail-name">' + esc(t.name) + '</div><div class="rail-bar"><i style="width:' + Math.max(5, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="rail-score">' + t.score + 'đ</span></div>'; }).join("") + '</aside>';
   }
   function cardTokens() {
-    var locked = {}; cardLeaders(15).forEach(function (pick) { locked[Number(pick.card)] = true; });
-    return cardNumbers.map(function (n) { return '<span class="card-token ' + (locked[n] ? "selected" : "") + '">' + n + '</span>'; }).join("");
+    // Keep every card visually identical while teams are choosing; the chosen
+    // numbers only appear on the reveal ranking after the MC locks the round.
+    return cardNumbers.map(function (n) { return '<span class="card-token">' + n + '</span>'; }).join("");
   }
   function stageCover() { return '<div class="slide"><div class="slide-kicker">MẬT KHO · 00</div><h1 class="horror-script">VAULT<br><em>25</em></h1><div class="vault-title-mark"><img src="assets/vault-core.png" alt=""></div><p class="slide-sub">25 câu · 25 mã · một đội được gọi</p></div>'; }
   function stageMascot() { return '<div class="slide stage-mascot"><div class="slide-kicker">CHỌN VỆ BINH</div><h1 class="horror-script">Linh vật<br><em>thức giấc</em></h1><div class="mascot-grid">' + mascotCards(true) + '</div></div>'; }
