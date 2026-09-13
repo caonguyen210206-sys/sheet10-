@@ -33,6 +33,32 @@ MC chỉ cần bấm: **Bắt đầu → Mở cược → Đúng/Sai → Câu ti
 - Sáu câu demo nằm trong mảng `rounds` ở `index.html`.
 - Âm thanh Web Audio chỉ bật sau nút loa trên bảng MC.
 
+## Kết nối Firebase
+
+Web đã dùng Firebase Web SDK dạng `<script>` module với project `sheet10-96b28`.
+
+1. Trong Firebase Console, vào **Authentication → Sign-in method → Anonymous → Enable**.
+2. Cloud Firestore cần cho phép người dùng đã đăng nhập ẩn danh đọc/ghi các đường dẫn game. Nếu database đang ở Test mode thì có thể chạy thử ngay; trước khi dùng thật, thay bằng rules tối thiểu:
+
+```text
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /games/{gameId} {
+      allow read, write: if request.auth != null;
+      match /mascots/{teamId} {
+        allow read, write: if request.auth != null;
+      }
+      match /bids/{bidId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+  }
+}
+```
+
+Màn MC ghi trạng thái vào `games/paradox`; điện thoại ghi lựa chọn vào `games/paradox/mascots/*` và cược vào `games/paradox/bids/*`. Mọi màn hình đều nghe `onSnapshot`, nên 15 điện thoại và màn chiếu cập nhật gần như tức thời. Nếu Anonymous Auth chưa bật hoặc Firestore chưa có quyền, giao diện sẽ báo **CẦN BẬT AUTH** và tạm rơi về chế độ local.
+
 ## Chạy thử
 
-GitHub Pages là web tĩnh. Bản demo đồng bộ giữa các tab cùng trình duyệt bằng `localStorage` và `BroadcastChannel`: mở MC, sân khấu và các URL đội trong cùng trình duyệt để thử workflow. Muốn dùng 15 điện thoại ở các thiết bị khác nhau, thay lớp đồng bộ mô phỏng bằng backend realtime.
+Mở MC `#/host`, màn chiếu `#/stage`, rồi chia sẻ `#/team?team=1` đến `#/team?team=15`. GitHub Pages vẫn là nơi host; Firebase chỉ làm lớp đồng bộ realtime, không cần bật Firebase Hosting.

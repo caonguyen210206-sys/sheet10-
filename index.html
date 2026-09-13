@@ -83,6 +83,12 @@
     .brand-copy b { display: block; font: 800 12px var(--display); letter-spacing: .16em; }
     .brand-copy span { display: block; color: var(--dim); font: 9px var(--mono); letter-spacing: .12em; margin-top: 2px; }
     .header-actions { display: flex; gap: 8px; align-items: center; }
+    .connection-badge { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 5px 9px; border: 1px solid #ffffff24; border-radius: 999px; color: var(--muted); font: 9px var(--mono); letter-spacing: .08em; white-space: nowrap; }
+    .connection-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+    .connection-badge.live { border-color: #69e0ad66; color: var(--green); }
+    .connection-badge.live::before { background: var(--green); box-shadow: 0 0 10px var(--green); }
+    .connection-badge.error { border-color: #ff6d7c66; color: var(--danger); }
+    .connection-badge.error::before { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
     .icon-btn { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line2); border-radius: 11px; background: #ffffff09; color: var(--ink); }
     .icon-btn:hover { border-color: var(--cyan); color: var(--cyan); }
     .panel { border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(145deg, #171d36ee, #0d1225f0); box-shadow: 0 25px 70px #0003; overflow: hidden; }
@@ -339,7 +345,20 @@
 </head>
 <body>
   <div id="app" class="app"></div>
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFdtfRSDDMw7KvxpOYDCi-vxBwpiZUK1U",
+      authDomain: "sheet10-96b28.firebaseapp.com",
+      projectId: "sheet10-96b28",
+      storageBucket: "sheet10-96b28.firebasestorage.app",
+      messagingSenderId: "294910235179",
+      appId: "1:294910235179:web:abe39ce01b034bd67a506e"
+    };
+
     (function () {
       "use strict";
       var CHANNEL = "paradox-ppt-live-v2";
@@ -350,6 +369,20 @@
       var audioContext = null;
       var role = "home";
       var state = null;
+      var firebaseApp = initializeApp(firebaseConfig);
+      var auth = getAuth(firebaseApp);
+      var db = getFirestore(firebaseApp);
+      var gameRef = doc(db, "games", "paradox");
+      var firebaseReady = false;
+      var firebaseError = "";
+      var remoteStateKnown = false;
+      var remoteStateExists = false;
+      var remoteMascots = {};
+      var remoteBids = {};
+      var stateUnsubscribe = null;
+      var mascotUnsubscribe = null;
+      var bidUnsubscribe = null;
+      var pendingRemoteCreate = false;
       var teamNames = [
         "Đội Sao Bắc Đẩu", "Đội Mắt Mèo", "Đội Mật Mã", "Đội Quạ Đêm", "Đội Tia Chớp",
         "Đội Hộp Nhạc", "Đội Kính Vạn Hoa", "Đội Bóng Trăng", "Đội Cú Đêm", "Đội La Bàn",
@@ -392,20 +425,84 @@
       if (bus) {
         bus.onmessage = function (event) {
           var data = event.data || {};
-          if (data.type === "state" && data.state) { state = data.state; render(); }
-          if (data.type === "mascot" && data.choice && role === "host") scanMascots();
-          if (data.type === "bet" && data.bet && role === "host") scanBids();
+          if (!firebaseReady && data.type === "state" && data.state) { state = data.state; render(); }
+          if (!firebaseReady && data.type === "mascot" && data.choice && role === "host") scanMascots();
+          if (!firebaseReady && data.type === "bet" && data.bet && role === "host") scanBids();
         };
       }
       window.addEventListener("storage", function (event) {
-        if (event.key === STATE_KEY && event.newValue) { try { state = JSON.parse(event.newValue); render(); } catch (e) {} }
-        if (role === "host" && event.key && event.key.indexOf(MASCOT_PREFIX + state.sessionId + "-") === 0) scanMascots();
-        if (role === "host" && event.key && event.key.indexOf(BET_PREFIX + state.sessionId + "-" + state.roundIndex + "-") === 0) scanBids();
+        if (!firebaseReady && event.key === STATE_KEY && event.newValue) { try { state = JSON.parse(event.newValue); render(); } catch (e) {} }
+        if (!firebaseReady && role === "host" && event.key && event.key.indexOf(MASCOT_PREFIX + state.sessionId + "-") === 0) scanMascots();
+        if (!firebaseReady && role === "host" && event.key && event.key.indexOf(BET_PREFIX + state.sessionId + "-" + state.roundIndex + "-") === 0) scanBids();
       });
-      function save(reason) {
-        localStorage.setItem(STATE_KEY, JSON.stringify(state));
-        if (bus) bus.postMessage({ type: "state", state: state, reason: reason || "" });
+      function validState(value) {
+        return !!(value && Number(value.version) === 2 && Array.isArray(value.scores) && value.scores.length === 15 && value.phase);
+      }
+      function setFirebaseError(error) {
+        firebaseReady = false;
+        firebaseError = error && error.message ? error.message : String(error || "Không kết nối được Firebase");
         render();
+      }
+      function persistLocal() {
+        try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+      function save(reason) {
+        persistLocal();
+        if (firebaseReady && gameRef) {
+          var outgoing = clone(state);
+          outgoing.updatedAt = Date.now();
+          outgoing.lastReason = reason || "";
+          setDoc(gameRef, outgoing, { merge: false }).catch(setFirebaseError);
+        } else if (bus) {
+          bus.postMessage({ type: "state", state: state, reason: reason || "" });
+        }
+        render();
+      }
+      function startFirebaseListeners() {
+        if (!firebaseReady || stateUnsubscribe) return;
+        stateUnsubscribe = onSnapshot(gameRef, function (snapshot) {
+          remoteStateKnown = true;
+          remoteStateExists = snapshot.exists();
+          if (snapshot.exists()) {
+            var incoming = snapshot.data();
+            if (validState(incoming)) {
+              state = incoming;
+              persistLocal();
+              render();
+            }
+          } else if (role === "host" && !pendingRemoteCreate) {
+            pendingRemoteCreate = true;
+            save("Khởi tạo phiên Firebase");
+            pendingRemoteCreate = false;
+          }
+        }, setFirebaseError);
+        mascotUnsubscribe = onSnapshot(collection(db, "games", "paradox", "mascots"), function (snapshot) {
+          remoteMascots = {};
+          snapshot.forEach(function (item) {
+            var choice = item.data();
+            if (choice && choice.sessionId && choice.teamId) remoteMascots[String(choice.sessionId) + "-" + String(choice.teamId)] = choice;
+          });
+          if (role === "host") scanMascots();
+        }, setFirebaseError);
+        bidUnsubscribe = onSnapshot(collection(db, "games", "paradox", "bids"), function (snapshot) {
+          remoteBids = {};
+          snapshot.forEach(function (item) {
+            var bet = item.data();
+            if (bet && bet.sessionId && bet.roundIndex != null && bet.teamId) remoteBids[String(bet.sessionId) + "-" + String(bet.roundIndex) + "-" + String(bet.teamId)] = bet;
+          });
+          if (role === "host") scanBids();
+        }, setFirebaseError);
+      }
+      async function bootFirebase() {
+        try {
+          await signInAnonymously(auth);
+          firebaseReady = true;
+          firebaseError = "";
+          startFirebaseListeners();
+          render();
+        } catch (error) {
+          setFirebaseError(error);
+        }
       }
       function mutate(fn, reason) { var next = clone(state); fn(next); state = next; save(reason); }
       function currentRound() { return rounds[state.roundIndex] || rounds[0]; }
@@ -413,6 +510,11 @@
       function teamName(id) { return team(id).name; }
       function esc(text) { return String(text == null ? "" : text).replace(/[&<>"']/g, function (s) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[s]; }); }
       function phaseLabel() { return ({ cover: "MỞ MÀN", mascot: "CHỌN LINH VẬT", ready: "SẴN SÀNG", bet: "NIÊM PHONG CƯỢC", reveal: "LỘ CƯỢC", question: "CÂU HỎI", result: "KẾT QUẢ", scoreboard: "BẢNG ĐIỂM", finish: "CHUNG KẾT" })[state.phase] || "BẢO TÀNG"; }
+      function connectionBadge() {
+        if (firebaseReady) return '<span class="connection-badge live" title="15 thiết bị đang đồng bộ realtime">FIREBASE LIVE</span>';
+        if (firebaseError) return '<span class="connection-badge error" title="' + esc(firebaseError) + '">CẦN BẬT AUTH</span>';
+        return '<span class="connection-badge">ĐANG KẾT NỐI</span>';
+      }
       function parseRoute() {
         var hash = location.hash || "#/";
         var clean = hash.slice(1);
@@ -468,13 +570,22 @@
         if (state.phase !== "mascot" || Number(teamId) !== selectedTeamId || !mascotById(mascotId)) return;
         var choice = { sessionId: state.sessionId, teamId: Number(teamId), id: mascotById(mascotId).id, at: Date.now() };
         try { localStorage.setItem(mascotKey(teamId), JSON.stringify(choice)); } catch (e) {}
-        if (bus) bus.postMessage({ type: "mascot", choice: choice });
+        if (firebaseReady) {
+          setDoc(doc(db, "games", "paradox", "mascots", String(state.sessionId) + "-" + String(teamId)), choice, { merge: true }).catch(setFirebaseError);
+        } else if (bus) {
+          bus.postMessage({ type: "mascot", choice: choice });
+        }
         render();
       }
       function scanMascots() {
         if (role !== "host" || state.phase !== "mascot") return;
         var prefix = MASCOT_PREFIX + state.sessionId + "-"; var next = clone(state); var changed = false;
-        for (var i = 0; i < localStorage.length; i++) { var key = localStorage.key(i); if (!key || key.indexOf(prefix) !== 0) continue; try { var choice = JSON.parse(localStorage.getItem(key)); var id = Number(choice.teamId); if (id >= 1 && id <= 15 && mascotById(choice.id) && next.scores[id - 1].mascotId !== choice.id) { next.scores[id - 1].mascotId = choice.id; changed = true; } } catch (e) {} }
+        for (var i = 1; i <= 15; i++) {
+          var choice = remoteMascots[String(state.sessionId) + "-" + String(i)] || null;
+          if (!choice) { try { var raw = localStorage.getItem(prefix + i); if (raw) choice = JSON.parse(raw); } catch (e) {} }
+          var id = choice ? Number(choice.teamId) : 0;
+          if (id >= 1 && id <= 15 && mascotById(choice.id) && next.scores[id - 1].mascotId !== choice.id) { next.scores[id - 1].mascotId = choice.id; changed = true; }
+        }
         if (changed) { state = next; save("Linh vật đã khóa"); }
       }
       function beginRound() {
@@ -492,7 +603,16 @@
       function scanBids() {
         if (role !== "host" || state.phase !== "bet") return;
         var prefix = BET_PREFIX + state.sessionId + "-" + state.roundIndex + "-"; var next = clone(state); var changed = false;
-        for (var i = 0; i < localStorage.length; i++) { var key = localStorage.key(i); if (!key || key.indexOf(prefix) !== 0) continue; try { var bet = JSON.parse(localStorage.getItem(key)); var id = Number(bet.teamId); var amount = Number(bet.amount); var target = next.scores[id - 1]; if (id >= 1 && id <= 15 && target && bet.sessionId === state.sessionId && Number(bet.roundIndex) === state.roundIndex && betAmounts.indexOf(amount) >= 0 && amount <= target.score && !next.bids[id]) { next.bids[id] = { sessionId: bet.sessionId, roundIndex: bet.roundIndex, teamId: id, amount: amount, mascotId: target.mascotId, useSkill: !!bet.useSkill, at: Number(bet.at) || Date.now(), nonce: bet.nonce || "" }; changed = true; } } catch (e) {} }
+        for (var i = 1; i <= 15; i++) {
+          var bet = remoteBids[String(state.sessionId) + "-" + String(state.roundIndex) + "-" + String(i)] || null;
+          if (!bet) { try { var raw = localStorage.getItem(prefix + i); if (raw) bet = JSON.parse(raw); } catch (e) {} }
+          if (!bet) continue;
+          var id = Number(bet.teamId); var amount = Number(bet.amount); var target = next.scores[id - 1];
+          if (id >= 1 && id <= 15 && target && bet.sessionId === state.sessionId && Number(bet.roundIndex) === state.roundIndex && betAmounts.indexOf(amount) >= 0 && amount <= target.score && !next.bids[id]) {
+            next.bids[id] = { sessionId: bet.sessionId, roundIndex: bet.roundIndex, teamId: id, amount: amount, mascotId: target.mascotId, useSkill: !!bet.useSkill, at: Number(bet.at) || Date.now(), nonce: bet.nonce || "" };
+            changed = true;
+          }
+        }
         if (changed) { state = next; save("Cược đã niêm phong"); }
       }
       function teamBet(teamId, amount) {
@@ -501,7 +621,11 @@
         var bet = { sessionId: state.sessionId, roundIndex: state.roundIndex, teamId: Number(teamId), amount: amount, useSkill: teamSkillArmed(teamId) && !target.skillUsed, at: Date.now() + performance.now() / 1000, nonce: Math.random().toString(36).slice(2) };
         try { localStorage.setItem(betKey(teamId), JSON.stringify(bet)); } catch (e) {}
         setTeamSkillArmed(teamId, false);
-        if (bus) bus.postMessage({ type: "bet", bet: bet });
+        if (firebaseReady) {
+          setDoc(doc(db, "games", "paradox", "bids", String(state.sessionId) + "-" + String(state.roundIndex) + "-" + String(teamId)), bet, { merge: true }).catch(setFirebaseError);
+        } else if (bus) {
+          bus.postMessage({ type: "bet", bet: bet });
+        }
         render();
       }
       function revealBids() {
@@ -569,7 +693,7 @@
       }
       function miniScore() { return scoreList(3).map(function (t, i) { return '<div class="mini-score-row"><span>' + (i + 1) + ". " + esc(t.name) + '</span><b>' + t.score + "đ</b></div>"; }).join(""); }
       function hostView() {
-        return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">∅</span><span class="brand-copy"><b>BẢO TÀNG KHÔNG TỒN TẠI</b><span>PPT GAME · MC</span></span></a><div class="header-actions"><a class="btn ghost" href="#/stage">Sân khấu ↗</a><button class="icon-btn" title="Bật/tắt âm thanh" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Đặt lại" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad"><div class="eyebrow">MC REMOTE</div><h1 style="font:800 clamp(28px,4vw,44px)/.95 var(--display);letter-spacing:-.05em;margin:10px 0 7px">Chỉ cần<br><span style="color:var(--cyan)">bấm tiếp.</span></h1><p class="muted" style="font-size:12px;line-height:1.55;margin:0">Mở cược → nghe trả lời → chọn đúng/sai.</p></div><div class="remote-status"><div class="status-tile"><small>TRẠNG THÁI</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>CÂU</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div><div class="keyboard-note" style="margin-top:13px">SPACE · mở/đóng · 1 đúng · 0 sai</div></div><div class="panel"><div class="panel-head"><h3>Bảng điểm · top 3</h3>' + (state.phase === "result" ? '<button class="btn ghost" data-action="scoreboard">Mở BXH</button>' : '') + '</div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
+        return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">∅</span><span class="brand-copy"><b>BẢO TÀNG KHÔNG TỒN TẠI</b><span>PPT GAME · MC</span></span></a><div class="header-actions">' + connectionBadge() + '<a class="btn ghost" href="#/stage">Sân khấu ↗</a><button class="icon-btn" title="Bật/tắt âm thanh" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Đặt lại" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad"><div class="eyebrow">MC REMOTE</div><h1 style="font:800 clamp(28px,4vw,44px)/.95 var(--display);letter-spacing:-.05em;margin:10px 0 7px">Chỉ cần<br><span style="color:var(--cyan)">bấm tiếp.</span></h1><p class="muted" style="font-size:12px;line-height:1.55;margin:0">Mở cược → nghe trả lời → chọn đúng/sai.</p></div><div class="remote-status"><div class="status-tile"><small>TRẠNG THÁI</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>CÂU</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div><div class="keyboard-note" style="margin-top:13px">SPACE · mở/đóng · 1 đúng · 0 sai</div></div><div class="panel"><div class="panel-head"><h3>Bảng điểm · top 3</h3>' + (state.phase === "result" ? '<button class="btn ghost" data-action="scoreboard">Mở BXH</button>' : '') + '</div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
       }
 
       function mascotCards(stage) { return mascots.map(function (m) { return '<div class="mascot-card ' + (state.scores.some(function (t) { return t.mascotId === m.id; }) ? "claimed" : "") + '">' + mascotArt(m.id) + '<div class="mascot-name">' + esc(m.name) + '</div><div class="mascot-skill">' + esc(m.skill) + '</div>' + (stage ? "" : "<div class=\"mascot-desc\">" + esc(m.desc) + "</div>") + '</div>'; }).join(""); }
@@ -632,6 +756,11 @@
       }
       function render() {
         parseRoute();
+        if (role === "host" && firebaseReady && remoteStateKnown && !remoteStateExists && !pendingRemoteCreate) {
+          pendingRemoteCreate = true;
+          save("Khởi tạo phiên Firebase");
+          pendingRemoteCreate = false;
+        }
         document.getElementById("app").innerHTML = role === "host" ? hostView() : role === "stage" ? stageView(false) : role === "team" ? teamView() : homeView();
         bind();
       }
@@ -651,7 +780,9 @@
         if (role === "host" && state.phase === "result" && state.autoAt && Date.now() >= state.autoAt) advanceRound();
         document.querySelectorAll(".remote-timer, .timer").forEach(function (el) { if (state.phase === "mascot" || state.phase === "bet") el.textContent = currentTime() + "s"; });
       }, 220);
+      parseRoute();
       render();
+      bootFirebase();
     })();
   </script>
 </body>
