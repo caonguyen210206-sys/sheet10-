@@ -457,6 +457,30 @@
     .team-score-flash { color: var(--gold); font: 800 clamp(54px, 13vw, 92px)/.8 var(--display); text-shadow: 0 0 28px #ffd16644; }
     .stage-root .question-box { background: linear-gradient(145deg, #101b34e8, #070c1ce8); box-shadow: 0 23px 50px #0008; }
     .stage-root .question-box.has-art { background-image: linear-gradient(90deg, #101b34f5 0 66%, #101b34aa 100%), url("assets/vault-shard.jpg"); }
+    @media (min-width: 621px) {
+      /* Projector typography: keep the question readable from the back of the room. */
+      .stage-root:not(.stage-compact) .question-box { width: min(1120px, 94vw); }
+      .stage-root:not(.stage-compact) .question-box h2 { font-size: clamp(31px, 3.8vw, 58px); line-height: 1.06; }
+      .stage-root:not(.stage-compact) .option { min-height: 58px; padding: 12px 15px; gap: 13px; font-size: clamp(16px, 1.55vw, 22px); }
+      .stage-root:not(.stage-compact) .option b { width: 35px; height: 35px; border-radius: 10px; font-size: 15px; }
+      .stage-root:not(.stage-compact) .open-answer { min-height: 132px; font-size: 22px; }
+
+      /* Reveal board: fewer tiny rows, stronger rank/card contrast. */
+      .stage-root:not(.stage-compact) .slide.stage-reveal { padding-top: 2.5vh; }
+      .stage-root:not(.stage-compact) .stage-reveal h1 { font-size: clamp(34px, 5vw, 62px); }
+      .stage-root:not(.stage-compact) .stage-reveal .stage-reveal-art { width: min(70px, 9vw); margin: 3px auto 1px; }
+      .stage-root:not(.stage-compact) .stage-reveal .card-reveal-number { font-size: clamp(58px, 7.5vw, 96px); }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-rail { width: min(1160px, 95vw); gap: 8px; margin-top: 8px; }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-row { min-height: 60px; grid-template-columns: 42px minmax(0, 1fr) 62px; gap: 10px; padding: 7px 10px; }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-rank { font-size: 16px; }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-team b { font-size: 16px; }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-team small,
+      .stage-root:not(.stage-compact) .stage-reveal .bid-team .bid-time { font-size: 11px; }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-row strong { font-size: 25px; }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-meter { height: 5px; margin-top: 5px; }
+      .stage-root:not(.stage-compact) .stage-reveal .reveal-summary { margin-top: 6px; font-size: 10px; }
+      .stage-root:not(.stage-compact) .stage-reveal .reveal-winner-time { font-size: 12px; }
+    }
     .question-meta { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
     .question-meta .tag { color: var(--muted); }
     .round-counter { color: #ffffff78; font: 11px var(--mono); letter-spacing: .18em; }
