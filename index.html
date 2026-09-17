@@ -723,8 +723,8 @@
     .stage-root:not(.stage-compact) .rail-name { font-size: 13px; color: var(--ink); }
     .stage-root:not(.stage-compact) .rail-score { font-size: 14px; }
 
-    .stage-root:not(.stage-compact) .stage-reveal .reveal-winner {
-      min-height: 76px;
+     .stage-root:not(.stage-compact) .stage-reveal .reveal-winner {
+      min-height: clamp(62px, 7vh, 76px);
       margin: 12px auto 4px;
       padding: 12px 18px;
       border-color: #ffd166bb;
@@ -738,8 +738,8 @@
       gap: 12px;
       margin-top: 13px;
     }
-    .stage-root:not(.stage-compact) .stage-reveal .bid-row {
-      min-height: 78px;
+     .stage-root:not(.stage-compact) .stage-reveal .bid-row {
+      min-height: clamp(54px, 7vh, 78px);
       grid-template-columns: 44px minmax(0,1fr) 70px;
       gap: 12px;
       padding: 10px 12px;
