@@ -233,6 +233,13 @@ const firebaseConfig = {
   function waitSvg() { return '<svg class="team-wait-art" viewBox="0 0 180 140" aria-hidden="true"><circle cx="90" cy="70" r="39" fill="none" stroke="#ffffff25" stroke-width="2"/><circle cx="90" cy="70" r="55" fill="none" stroke="#69e7ff49" stroke-width="2" stroke-dasharray="4 10"/><circle cx="90" cy="70" r="10" fill="#69e7ff" fill-opacity=".8"/><path d="M90 15v22M90 103v22M35 70H13M167 70h-22" stroke="#ffd16675" stroke-width="3" stroke-linecap="round"/></svg>'; }
   function scoreList(limit) { return state.scores.slice().sort(function (a, b) { return b.score - a.score || b.correctCount - a.correctCount || b.rightsWon - a.rightsWon || a.id - b.id; }).slice(0, limit || 5); }
   function currentTime() { return state.timerEnd ? Math.max(0, Math.ceil((state.timerEnd - Date.now()) / 1000)) : 0; }
+  function cardKey(teamId) {
+    return CARD_PREFIX + String(state.sessionId) + "-" + String(state.roundIndex) + "-" + String(Number(teamId));
+  }
+  function remoteCardFor(teamId) {
+    var key = String(state.sessionId) + "-" + String(state.roundIndex) + "-" + String(Number(teamId));
+    return remoteCards[key] || null;
+  }
   function teamLocalCard(teamId) { try { var raw = localStorage.getItem(cardKey(teamId)); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
   function hasUsedCard(t, number) { return !!(t && Array.isArray(t.usedCards) && t.usedCards.some(function (n) { return Number(n) === Number(number); })); }
   function pickValid(pick, allowAlreadyUsed) {
@@ -443,21 +450,26 @@ const firebaseConfig = {
   function mediaChip(q) { if (!q.media || q.media === "none") return ""; var label = q.media === "audio" ? "◉ NGHE AUDIO" : q.media === "video" ? "▶ VIDEO GỢI Ý" : "▧ LẬT ẢNH"; return '<div class="media-chip">' + label + '</div>'; }
   function hostControls() {
     var p = state.phase; var q = currentRound();
-    if (p === "cover") return '<button class="btn primary large" data-action="start">▶ Mở VAULT 25</button><div class="auto-note">25 câu · 25 thẻ / đội · sai = 0.</div>';
-    if (p === "ready") return '<div class="remote-live"><span class="eyebrow">Câu ' + String(state.roundIndex + 1).padStart(2, "0") + '</span>' + difficultyBadge(q) + '<span class="muted">' + esc(q.format) + '</span></div><button class="btn gold large" data-action="open">✦ Mở chọn mã</button>';
-    if (p === "bet") return '<div class="remote-live"><span class="eyebrow">Chọn mã bí mật</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">Đã chọn ' + cardCount() + '/15 đội</span></div><button class="btn danger" data-action="reveal">Lộ mã</button>';
-    if (p === "reveal") return '<div class="remote-live"><span class="eyebrow">Mã cao nhất</span><b>Đội ' + String(state.winnerTeam).padStart(2, "0") + ' · mã ' + state.winnerCard + '</b><span class="muted">Hòa mã → timestamp nhanh nhất.</span></div>';
-    if (p === "question") { var who = state.winnerTeam ? "Đội " + String(state.winnerTeam).padStart(2, "0") + " · " + esc(teamName(state.winnerTeam)) : "Đội chưa được xác định"; return '<div class="remote-live"><span class="eyebrow">Trả lời · mã ' + state.winnerCard + '</span><b>' + who + '</b><span class="muted">Đúng: +' + q.points + ' · Sai: 0</span></div><div class="remote-duo"><button class="btn green large" data-action="grade" data-correct="1">✓ ĐÚNG</button><button class="btn danger large" data-action="grade" data-correct="0">× SAI · 0</button></div>'; }
-    if (p === "result") { var a = state.lastAward; var resultText = a && a.noWinner ? "0 điểm" : ((a && a.correct ? "+" : "") + (a ? a.delta : 0) + " điểm"); return '<div class="remote-live"><span class="eyebrow">Kết quả</span><b>' + resultText + '</b><span class="muted">' + (a && !a.correct ? "Sai = 0" : "") + '</span></div><button class="btn primary large" data-action="next">→ Câu tiếp</button><button class="btn ghost" data-action="scoreboard">Mở BXH</button>'; }
+    if (p === "cover") return '<button class="btn primary large" data-action="start">▶ Mở VAULT 25</button>';
+    if (p === "ready") return '<div class="remote-live"><span class="eyebrow">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + '</span>' + difficultyBadge(q) + '</div><button class="btn gold large" data-action="open">✦ Mở chọn mã</button>';
+    if (p === "bet") return '<div class="remote-live"><span class="eyebrow">CHỌN MÃ</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">' + cardCount() + '/15 đội</span></div><button class="btn danger" data-action="reveal">Lộ mã</button>';
+    if (p === "reveal") return '<div class="remote-live"><span class="eyebrow">MÃ CAO NHẤT</span><b>Đội ' + String(state.winnerTeam).padStart(2, "0") + ' · mã ' + state.winnerCard + '</b></div>';
+    if (p === "question") {
+      var who = state.winnerTeam ? "Đội " + String(state.winnerTeam).padStart(2, "0") + " · " + esc(teamName(state.winnerTeam)) : "Đội chưa được xác định";
+      return '<div class="remote-live"><span class="eyebrow">TRẢ LỜI · MÃ ' + state.winnerCard + '</span><b>' + who + '</b><span class="muted">Đúng +' + q.points + ' · Sai 0</span></div><div class="remote-duo"><button class="btn green large" data-action="grade" data-correct="1">✓ ĐÚNG</button><button class="btn danger large" data-action="grade" data-correct="0">× SAI</button></div>';
+    }
+    if (p === "result") {
+      var a = state.lastAward; var resultText = a && a.noWinner ? "0 điểm" : ((a && a.correct ? "+" : "") + (a ? a.delta : 0) + " điểm");
+      return '<div class="remote-live"><span class="eyebrow">KẾT QUẢ</span><b>' + resultText + '</b></div><button class="btn primary large" data-action="next">→ Câu tiếp</button><button class="btn ghost" data-action="scoreboard">Mở BXH</button>';
+    }
     if (p === "scoreboard") return '<button class="btn primary large" data-action="next">→ Quay lại game</button>';
     if (p === "finish") return '<button class="btn gold large" data-action="reset">↻ Chơi lại</button>';
     return "";
   }
   function miniScore() { return scoreList(3).map(function (t, i) { return '<div class="mini-score-row"><span>' + (i + 1) + ". " + esc(t.name) + '</span><b>' + t.score + "đ</b></div>"; }).join(""); }
   function hostView() {
-    return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 25</b><span>PPT GAME · MC</span></span></a><div class="header-actions">' + connectionBadge() + '<a class="btn ghost" href="#/stage">Sân khấu ↗</a><button class="icon-btn" title="Bật/tắt âm thanh" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Đặt lại" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad"><div class="eyebrow">MC REMOTE</div><h1 style="font:800 clamp(28px,4vw,44px)/.95 var(--display);letter-spacing:-.05em;margin:10px 0 7px">Chỉ cần<br><span style="color:var(--cyan)">bấm tiếp.</span></h1><p class="muted" style="font-size:12px;line-height:1.55;margin:0">Mở mã → nghe/trình chiếu → Đúng hoặc Sai.</p></div><div class="remote-status"><div class="status-tile"><small>TRẠNG THÁI</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>CÂU</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div><div class="keyboard-note" style="margin-top:13px">SPACE · chuyển · 1 đúng · 0 sai</div></div><div class="panel"><div class="panel-head"><h3>Bảng điểm · top 3</h3></div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
+    return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 25</b><span>PPT GAME · MC</span></span></a><div class="header-actions">' + connectionBadge() + '<a class="btn ghost" href="#/stage">Sân khấu ↗</a><button class="icon-btn" title="Bật/tắt âm thanh" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Đặt lại" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad remote-title"><div class="eyebrow">MC REMOTE</div><h1>ĐIỀU <span style="color:var(--cyan)">KHIỂN</span></h1></div><div class="remote-status"><div class="status-tile"><small>TRẠNG THÁI</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>CÂU</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div></div><div class="panel"><div class="panel-head"><h3>Bảng điểm · top 3</h3></div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
   }
-
   function stageDecor() { return '<div class="vault-backdrop" aria-hidden="true"></div><div class="stage-rays" aria-hidden="true"></div><div class="fx-grid" aria-hidden="true"></div><i class="fx-orbit fx-orbit-a" aria-hidden="true"></i><i class="fx-orbit fx-orbit-b" aria-hidden="true"></i><i class="fx-particle fp-a" aria-hidden="true"></i><i class="fx-particle fp-b" aria-hidden="true"></i><i class="fx-particle fp-c" aria-hidden="true"></i><i class="fx-particle fp-d" aria-hidden="true"></i><img class="floating-core" src="assets/vault-core.png" alt=""><i class="spark spark-a"></i><i class="spark spark-b"></i><i class="spark spark-c"></i>'; }
   function stageScoreRail() {
     var list = scoreList(5); var max = Math.max(1, list[0] ? list[0].score : 1);
@@ -501,8 +513,9 @@ const firebaseConfig = {
   function stageScoreboard() { var list = scoreList(5); var max = Math.max(1, list[0] ? list[0].score : 1); return '<div class="slide stage-scoreboard"><div class="slide-kicker">BXH · CẬP NHẬT</div><h1 style="font-size:clamp(34px,5.6vw,74px)">Ai còn đứng?</h1><div class="stage-score-strip">' + list.map(function (t, i) { return '<div class="score-row"><span class="score-rank">0' + (i + 1) + '</span><div><div class="score-name">' + esc(t.name) + '</div><div class="score-bar"><i style="width:' + Math.max(4, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="score-points">' + t.score + 'đ</span></div>'; }).join("") + '</div></div>'; }
   function stageFinish() { var list = scoreList(3); return '<div class="slide"><div class="slide-kicker">KẾT THÚC · HỒ SƠ ĐÃ MỞ</div><h1 style="font-size:clamp(37px,6.3vw,90px)">Ba đội<br><em>đi xa nhất</em></h1><div class="podium"><div class="podium-col p2"><b>' + esc(list[1] ? list[1].name : "—") + '</b><div class="podium-block">02</div></div><div class="podium-col p1"><b>' + esc(list[0] ? list[0].name : "—") + '</b><div class="podium-block">01</div></div><div class="podium-col p3"><b>' + esc(list[2] ? list[2].name : "—") + '</b><div class="podium-block">03</div></div></div><p class="slide-sub">Mỗi thẻ đã dùng · mỗi câu đã tính.</p></div>'; }
   function stageSlide() { if (state.phase === "cover") return stageCover(); if (state.phase === "ready") return stageReady(); if (state.phase === "bet") return stageBet(); if (state.phase === "reveal") return stageReveal(); if (state.phase === "question") return stageQuestion(); if (state.phase === "result") return stageResult(); if (state.phase === "scoreboard") return stageScoreboard(); return stageFinish(); }
-  function stageView(compact) { return '<main class="stage-root ' + (compact ? "stage-compact" : "") + '"><header class="stage-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 25</b><span>TRÌNH CHIẾU · PPT MODE</span></span></a><div class="stage-code">' + phaseLabel() + ' · ' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + '/' + String(rounds.length).padStart(2, "0") + '</div></header><section class="stage-main">' + stageDecor() + stageSlide() + (compact ? "" : stageScoreRail()) + '</section>' + (compact ? '<footer class="stage-footer"><span>15 ĐỘI · 25 CÂU · 25 THẺ / ĐỘI</span><span>F11 = TOÀN MÀN HÌNH</span></footer>' : '') + '</main>'; }
-
+  function stageView(compact) {
+    return '<main class="stage-root ' + (compact ? "stage-compact" : "") + '"><header class="stage-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 25</b><span>TRÌNH CHIẾU · PPT MODE</span></span></a><div class="stage-tools"><div class="stage-code">' + phaseLabel() + ' · ' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + '/' + String(rounds.length).padStart(2, "0") + '</div>' + (compact ? "" : '<button class="stage-fullscreen" data-action="fullscreen" title="Toàn màn hình" aria-label="Toàn màn hình">⛶</button>') + '</div></header><section class="stage-main">' + stageDecor() + stageSlide() + (compact ? "" : stageScoreRail()) + '</section>' + (compact ? "" : '<footer class="stage-footer"><span>15 ĐỘI · 25 CÂU · 25 THẺ / ĐỘI</span></footer>') + '</main>';
+  }
   function cardGridMarkup(id) {
     var t = team(id); var chosen = cardFor(id); var used = t.usedCards || [];
     return '<div class="card-grid team-card-grid">' + cardNumbers.map(function (n) { var isUsed = used.indexOf(n) >= 0; var isSelected = chosen && Number(chosen.card) === n; var disabled = isUsed || isSelected; return '<button class="card-token ' + (isUsed ? "used" : "") + ' ' + (isSelected ? "selected" : "") + '" data-action="card" data-card="' + n + '" ' + (disabled ? "disabled" : "") + '>' + n + '</button>'; }).join("") + '</div><div class="card-grid-note"><span>' + (chosen ? "ĐÃ CHỌN · ĐỔI ĐƯỢC" : "CHỌN 1 / 25 MÃ") + '</span><span>ĐÃ DÙNG ' + used.length + '/25</span></div>';
@@ -547,6 +560,17 @@ const firebaseConfig = {
     if (action === "next") return advanceRound();
     if (action === "scoreboard") return showScoreboard();
     if (action === "reset") return resetGame();
+    if (action === "fullscreen") {
+      var stageTarget = document.querySelector(".stage-root:not(.stage-compact)") || document.documentElement;
+      if (document.fullscreenElement) {
+        if (document.exitFullscreen) document.exitFullscreen().catch(function () {});
+      } else if (stageTarget.requestFullscreen) {
+        stageTarget.requestFullscreen().catch(function () {});
+      } else if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(function () {});
+      }
+      return;
+    }
     if (action === "sound") {
       initAudio();
       var nextSound = !state.sound;
@@ -586,6 +610,7 @@ const firebaseConfig = {
       save("Khởi tạo phiên Firebase");
       pendingRemoteCreate = false;
     }
+    document.body.classList.toggle("stage-mode", role === "stage");
     document.getElementById("app").innerHTML = role === "host" ? hostView() : role === "stage" ? stageView(false) : role === "team" ? (selectedTeamId ? teamView() : teamPickerView()) : homeView();
     bind();
   }
