@@ -14,15 +14,16 @@ const firebaseConfig = {
 (function () {
   "use strict";
 
-  var GAME_ID = "paradox-v3";
-  var CHANNEL = "paradox-ppt-live-v3";
-  var STATE_KEY = "paradox-ppt-state-v3";
-  var CARD_PREFIX = "paradox-ppt-card-v3-";
-  var LEGACY_BET_PREFIX = "paradox-ppt-bet-v2-";
-  var TEAM_SELECTION_KEY = "paradox-ppt-team-choice-v3";
+  var GAME_ID = "vault-20";
+  var CHANNEL = "vault-ppt-live-v4";
+  var STATE_KEY = "vault-ppt-state-v4";
+  var CARD_PREFIX = "vault-ppt-card-v4-";
+  var LEGACY_BET_PREFIX = "vault-ppt-legacy-";
+  var TEAM_SELECTION_KEY = "vault-ppt-team-choice-v4";
   var selectedTeamId = 0;
   var audioContext = null;
   var lastStageCelebration = "";
+  var lastSpokenQuestion = "";
   var role = "home";
   var state = null;
   var firebaseApp = initializeApp(firebaseConfig);
@@ -37,61 +38,32 @@ const firebaseConfig = {
   var stateUnsubscribe = null;
   var cardUnsubscribe = null;
   var pendingRemoteCreate = false;
-  var cardNumbers = Array.from({ length: 25 }, function (_, i) { return i + 1; });
+  var cardNumbers = Array.from({ length: 20 }, function (_, i) { return i + 1; });
 
-  var teamNames = [
-    "Đội Sao Bắc Đẩu", "Đội Mắt Mèo", "Đội Mật Mã", "Đội Quạ Đêm", "Đội Tia Chớp",
-    "Đội Hộp Nhạc", "Đội Kính Vạn Hoa", "Đội Bóng Trăng", "Đội Cú Đêm", "Đội La Bàn",
-    "Đội Mê Cung", "Đội Mảnh Ghép", "Đội Đồng Hồ", "Đội Vệt Sáng", "Đội Cánh Cửa"
-  ];
+  var teamNames = ["Team North Star","Team Cat Eyes","Team Cipher","Team Night Raven","Team Lightning","Team Music Box","Team Kaleidoscope","Team Moon Shadow","Team Night Owl","Team Compass","Team Maze","Team Puzzle Piece","Team Clockwork","Team Light Trail","Team Door"];
+
 
   var difficultyMeta = {
-    1: { stars: "★", points: 10, format: "A / B / C / D", media: "none", short: "CHỌN ĐÁP ÁN" },
-    2: { stars: "★★", points: 15, format: "ENGLISH AUDIO · A / B / C / D", media: "audio", short: "NGHE · CHỌN" },
-    3: { stars: "★★★", points: 25, format: "ENGLISH AUDIO · OPEN", media: "audio", short: "NGHE · TỰ TRẢ LỜI" },
-    4: { stars: "★★★★", points: 40, format: "NỬA ẢNH · A / B / C / D", media: "image", short: "LẬT ẢNH · CHỌN" },
-    5: { stars: "★★★★★", points: 60, format: "VIDEO GỢI Ý · OPEN", media: "video", short: "VIDEO · TỰ TRẢ LỜI" }
+    1: { stars: "★", points: 10, format: "CHOOSE A / B / C / D", media: "none", short: "MULTIPLE CHOICE" },
+    2: { stars: "★★", points: 15, format: "AI VOICE · A / B / C / D", media: "audio", short: "LISTEN · CHOOSE" },
+    3: { stars: "★★★", points: 25, format: "AI VOICE · OPEN ANSWER", media: "audio", short: "LISTEN · ANSWER" },
+    4: { stars: "★★★★", points: 40, format: "IMAGE REVEAL · A / B / C / D", media: "image", short: "IMAGE · CHOOSE" },
+    5: { stars: "★★★★★", points: 60, format: "RAPID VIDEO · OPEN ANSWER", media: "video", short: "VIDEO · ANSWER" }
   };
 
-  var rounds = [
-    { title: "Chiếc bóng không có chủ", visual: "orb", difficulty: 1, question: "Chi tiết nào phá vỡ quy luật của căn phòng?", options: ["Bóng đi ngược hướng", "Cửa mở vào tường", "Đèn tắt", "Gương phản chiếu"], answer: "A", hint: "Quan sát hướng sáng và hướng bóng." },
-    { title: "Dấu chân trên trần", visual: "steps", difficulty: 1, question: "Bằng chứng nào đáng tin nhất để kết luận có người đi qua?", options: ["Một tiếng động", "Dấu chân có hướng", "Cánh cửa rung", "Lời kể lại"], answer: "B", hint: "Ưu tiên bằng chứng có thể kiểm chứng." },
-    { title: "Bức tranh đổi chỗ", visual: "frame", difficulty: 1, question: "Điều gì cần kiểm tra trước khi tin vào lời giải?", options: ["Nguồn dữ kiện", "Màu sắc", "Tốc độ trả lời", "Cảm giác"], answer: "A", hint: "Một kết luận tốt phải có dữ kiện rõ." },
-    { title: "Cánh cửa thứ năm", visual: "door", difficulty: 1, question: "Khi hai dấu hiệu mâu thuẫn, cách xử lý hợp lý là gì?", options: ["Chọn dấu hiệu nổi bật", "Bỏ qua cả hai", "Kiểm tra lại giả định", "Đoán theo số đông"], answer: "C", hint: "Đừng vội chốt khi tiền đề chưa chắc." },
-    { title: "Mảnh ghép cuối", visual: "mirror", difficulty: 1, question: "Thứ tự suy luận nào an toàn nhất?", options: ["Kết luận → dữ kiện", "Dữ kiện → kiểm tra → kết luận", "Đoán → bảo vệ đáp án", "Hỏi số đông → kết luận"], answer: "B", hint: "Luôn đi từ bằng chứng đến kết luận." },
-
-    { title: "The locked archive", visual: "file", difficulty: 2, question: "Which clue should you trust first?", options: ["A loud rumor", "A timestamped record", "A guess", "A dramatic photo"], answer: "B", hint: "Look for a source that can be checked." },
-    { title: "The silent alarm", visual: "door", difficulty: 2, question: "What does reliable mean in this case?", options: ["It can be checked", "It sounds scary", "It is very long", "It is popular"], answer: "A", hint: "Reliability is about verification." },
-    { title: "The missing label", visual: "frame", difficulty: 2, question: "Which question clarifies the problem fastest?", options: ["Who benefits?", "Can we verify the source?", "Who is loudest?", "What feels right?"], answer: "B", hint: "Start with the evidence behind the claim." },
-    { title: "The false map", visual: "mirror", difficulty: 2, question: "What is the best way to test a claim?", options: ["Repeat it", "Compare evidence", "Hide it", "Vote"], answer: "B", hint: "A claim is stronger when independent evidence agrees." },
-    { title: "The echo room", visual: "orb", difficulty: 2, question: "Which response shows critical thinking?", options: ["I agree because everyone does", "I need evidence before deciding", "It looks true", "No one knows"], answer: "B", hint: "Pause before accepting an attractive answer." },
-
-    { title: "The borrowed shadow", visual: "steps", difficulty: 3, question: "Name one reason a source can be misleading.", options: null, answer: "", hint: "Think about selection, timing, or bias." },
-    { title: "The paper witness", visual: "file", difficulty: 3, question: "Why should a claim be separated from an opinion?", options: null, answer: "", hint: "One can be tested; the other expresses a view." },
-    { title: "The glass equation", visual: "orb", difficulty: 3, question: "What is one test for a strong explanation?", options: null, answer: "", hint: "Ask whether it predicts or explains the evidence." },
-    { title: "The repeating hallway", visual: "door", difficulty: 3, question: "How can you reduce confirmation bias?", options: null, answer: "", hint: "Deliberately look for evidence that could disprove you." },
-    { title: "The split testimony", visual: "mirror", difficulty: 3, question: "What should you do when two sources disagree?", options: null, answer: "", hint: "Compare their methods, dates, and evidence." },
-
-    { title: "Nửa chiếc đồng hồ", visual: "clock", difficulty: 4, question: "Which inference is safest from the revealed half-image?", options: ["The object is definitely new", "The room is empty", "The image is incomplete, so check more", "The clue is fake"], answer: "C", hint: "Do not overclaim from partial evidence." },
-    { title: "Mắt kính nứt", visual: "lens", difficulty: 4, question: "What should be checked before identifying an object?", options: ["Its context and scale", "The loudest guess", "The color only", "A random label"], answer: "A", hint: "Context changes what a visual clue means." },
-    { title: "Bóng sau rèm", visual: "curtain", difficulty: 4, question: "Which detail would confirm the direction of movement?", options: ["The wall color", "The frame size", "The soundtrack", "A second aligned frame"], answer: "D", hint: "A sequence gives direction better than one still." },
-    { title: "Bản đồ gấp", visual: "map", difficulty: 4, question: "What makes a visual clue useful?", options: ["It is mysterious", "It connects to a testable claim", "It is colorful", "It is hard to see"], answer: "B", hint: "The clue must help answer a specific question." },
-    { title: "Con dấu mờ", visual: "seal", difficulty: 4, question: "Which missing detail matters most?", options: ["The decoration", "The background music", "The date or source", "The frame border"], answer: "C", hint: "Provenance anchors a visual record." },
-
-    { title: "Ba khung hình", visual: "frames", difficulty: 5, question: "What pattern did you notice first?", options: null, answer: "", hint: "State the pattern, then point to one frame that supports it." },
-    { title: "Vệt sáng", visual: "streak", difficulty: 5, question: "What is the most likely sequence?", options: null, answer: "", hint: "Rebuild the order from the fastest visual changes." },
-    { title: "Mật mã chớp", visual: "code", difficulty: 5, question: "State the rule behind the symbols.", options: null, answer: "", hint: "Look for what changes and what stays constant." },
-    { title: "Căn phòng đảo", visual: "room", difficulty: 5, question: "Which object changed position?", options: null, answer: "", hint: "Compare the first and last frames, not the flash in between." },
-    { title: "Khung hình cuối", visual: "final", difficulty: 5, question: "Give the strongest conclusion and one reason.", options: null, answer: "", hint: "A strong conclusion is precise and evidence-based." }
-  ].map(function (round, index) {
+  var questionBank = [{"title":"Downsizing","visual":"downsize","difficulty":1,"question":"A company has suffered a fall in sales and decides to permanently reduce the number of employees in order to lower labour costs. What is this strategy called?","options":["Rightsizing","Downsizing","Recruitment","Job sharing"],"answer":"B","hint":"The workforce is permanently reduced to lower labour costs."},{"title":"Delayering","visual":"delayer","difficulty":1,"question":"A business keeps most of its employees but removes several levels of managers so that information can move more quickly between senior leaders and workers. What is this called?","options":["Delayering","Expansion","Subcontracting","Reorganization of staff benefits"],"answer":"A","hint":"The company removes layers of management."},{"title":"Outsourcing","visual":"outsource","difficulty":1,"question":"Instead of maintaining an internal accounting department, a company pays an independent firm to perform all of its accounting activities. Which practice is being used?","options":["Outsourcing","Recruitment","Manufacturing","Appointment"],"answer":"A","hint":"An outside company performs the activity."},{"title":"Job Sharing","visual":"jobshare","difficulty":1,"question":"Anna works Monday to Wednesday morning, while another employee works Wednesday afternoon to Friday. Together, they are responsible for one full-time position. What arrangement is this?","options":["Temporary employment","Job sharing","Overtime work","Shift work"],"answer":"B","hint":"Two employees share one full-time position."},{"title":"Privatization","visual":"privatize","difficulty":1,"question":"A postal company that used to belong to the government is transferred into private ownership and begins operating for private investors. Which verb describes this action?","options":["Modernize","Privatize","Reorganize","Appoint"],"answer":"B","hint":"Ownership moves from the government to private investors."},{"title":"Job Security","visual":"security","difficulty":1,"question":"An employee chooses a company partly because it has rarely dismissed workers during economic downturns. Which employment benefit is the employee mainly concerned about?","options":["Higher productivity","Job security","Promotion opportunities","Flexible working hours"],"answer":"B","hint":"The employee wants protection from losing the job."},{"title":"Rightsizing","visual":"rightsize","difficulty":2,"question":"A firm realizes that its current workforce is too large for present demand, but managers do not want to cut as many employees as possible. Instead, they calculate the number of workers actually required and adjust staffing to that level. What is this process called?","options":["Rightsizing","Dismissal","Reallocation of salaries","Staff training"],"answer":"A","hint":"Staffing is adjusted to the number of workers actually needed."},{"title":"Flexible Labour Market","visual":"flexmarket","difficulty":2,"question":"In one country, companies can quickly employ people on temporary contracts when demand rises and reduce the number of non-permanent employees when demand falls. Which term best describes this labour environment?","options":["Permanent employment system","Flexible labour market","Public sector employment","Management hierarchy"],"answer":"B","hint":"The workforce can expand and shrink quickly."},{"title":"Subcontractor","visual":"subcontract","difficulty":2,"question":"A construction company wins a large project but does not have specialists to install the electrical system. It hires another independent company to complete only that part of the project. What is the second company called?","options":["Shareholder","Subcontractor","Trade representative","Permanent employee"],"answer":"B","hint":"The independent company completes one contracted part of a larger project."},{"title":"Redundancy Package","visual":"redundancy","difficulty":2,"question":"Twenty employees lose their positions after a factory introduces new technology. Because the workers are not responsible for losing their jobs, the company gives each of them financial compensation and other benefits. What is this compensation called?","options":["Annual bonus","Redundancy package","Commission payment","Pension contribution"],"answer":"B","hint":"The payment supports employees whose jobs disappear."},{"title":"Delocalization","visual":"delocalize","difficulty":2,"question":"A clothing company closes one of its factories in its home country and moves production to another country where wages and operating costs are considerably lower. Which term most precisely describes this decision?","options":["Delocalization","Relocation","Outsourcing","Restructuring"],"answer":"A","hint":"Production moves abroad to reduce operating costs."},{"title":"Rationalization","visual":"rationalize","difficulty":3,"question":"A company changes the way its departments operate, removes inefficient activities and simplifies procedures with the specific aim of reducing costs and increasing efficiency. What is this process called?","options":null,"answer":"Rationalization","hint":"The process removes waste and makes operations more efficient."},{"title":"Contract Work","visual":"contract","difficulty":3,"question":"A graphic designer is employed by a company only to complete a six-month advertising project. After the project ends, the employment agreement also ends. What type of work is this?","options":null,"answer":"Contract work","hint":"The job lasts for a specified project and period."},{"title":"Casual Work","visual":"casual","difficulty":3,"question":"A restaurant calls additional workers only when it is unusually busy. Their hours are irregular and there is no guarantee that they will work every week. What type of employment is this?","options":null,"answer":"Casual work","hint":"Workers are called in when extra help is needed."},{"title":"Turnover","visual":"turnover","difficulty":3,"question":"A company reports that the total value of its sales for the year increased from €15 million to €19 million. Which business term refers to this total sales figure?","options":null,"answer":"Turnover","hint":"This term means the total sales revenue for a period."},{"title":"Monopoly","visual":"monopoly","difficulty":4,"question":"Which market situation is represented by the image?","options":["Monopoly","Perfect competition","Oligopoly","Monopolistic competition"],"answer":"A","hint":"One company supplies the entire market."},{"title":"Trade Union","visual":"union","difficulty":4,"question":"Which organization is most likely being represented?","options":["Board of directors","Trade union","Employee association","Management committee"],"answer":"B","hint":"Workers join together to negotiate working conditions, salaries and job losses."},{"title":"Automated Machine","visual":"machine","difficulty":4,"question":"What has most likely replaced part of the manual sorting work?","options":["Temporary workers","Automated machines","Outsourced workers","Additional permanent staff"],"answer":"B","hint":"Machines now sort parcels on the conveyor belt."},{"title":"Technological Progress","visual":"progress","difficulty":5,"question":"What major economic development connects all of these changes?","options":null,"answer":"Technological progress","hint":"Technology raises productivity, changes jobs and creates new technical work."},{"title":"Preserve Jobs","visual":"jobs","difficulty":5,"question":"Instead of dismissing workers, what is the company trying to do?","options":null,"answer":"Preserve jobs","hint":"The company reduces working hours so employees can stay."}];
+  var fixedOrder = [0, 6, 1, 11, 7, 15, 2, 12, 8, 18, 3, 16, 9, 13, 4, 19, 10, 17, 5, 14];
+  var rounds = fixedOrder.map(function (sourceIndex, index) {
+    var round = questionBank[sourceIndex];
     var meta = difficultyMeta[round.difficulty];
-    return { id: "V" + String(index + 1).padStart(2, "0"), title: round.title, visual: round.visual, difficulty: round.difficulty, points: meta.points, format: meta.format, media: meta.media, question: round.question, options: round.options, answer: round.answer, hint: round.hint };
+    return { id: "Q" + String(index + 1).padStart(2, "0"), sourceNumber: sourceIndex + 1, title: round.title, visual: round.visual, difficulty: round.difficulty, points: meta.points, format: meta.format, media: meta.media, question: round.question, options: round.options, answer: round.answer, hint: round.hint };
   });
+
 
   function makeSessionId() { return String(Date.now()) + "-" + Math.random().toString(36).slice(2, 7); }
   function freshState() {
     return {
-      version: 3,
+      version: 4,
       sessionId: makeSessionId(),
       phase: "cover",
       roundIndex: 0,
@@ -111,12 +83,12 @@ const firebaseConfig = {
   function normalizeScores(scores) {
     return scores.map(function (t, i) {
       t.id = Number(t.id) || i + 1;
-      t.name = t.name || teamNames[i] || ("Đội " + String(i + 1).padStart(2, "0"));
+      t.name = t.name || teamNames[i] || ("Team " + String(i + 1).padStart(2, "0"));
       t.score = Number(t.score) || 0;
       t.wins = Number(t.wins) || 0;
       t.rightsWon = Number(t.rightsWon) || Number(t.wins) || 0;
       t.correctCount = Number(t.correctCount) || 0;
-      t.usedCards = Array.isArray(t.usedCards) ? t.usedCards.map(Number).filter(function (n) { return n >= 1 && n <= 25; }) : [];
+      t.usedCards = Array.isArray(t.usedCards) ? t.usedCards.map(Number).filter(function (n) { return n >= 1 && n <= 20; }) : [];
       return t;
     });
   }
@@ -125,7 +97,7 @@ const firebaseConfig = {
       var raw = localStorage.getItem(STATE_KEY);
       if (raw) {
         var loaded = JSON.parse(raw);
-        if (loaded && Number(loaded.version) === 3 && Array.isArray(loaded.scores) && loaded.scores.length === 15 && loaded.phase) {
+        if (loaded && Number(loaded.version) === 4 && Array.isArray(loaded.scores) && loaded.scores.length === 15 && loaded.phase) {
           loaded.scores = normalizeScores(loaded.scores);
           loaded.cardPicks = loaded.cardPicks || {};
           if (loaded.phase === "mascot") loaded.phase = "ready";
@@ -151,7 +123,7 @@ const firebaseConfig = {
     if (!firebaseReady && role === "host" && event.key && event.key.indexOf(CARD_PREFIX + state.sessionId + "-" + state.roundIndex + "-") === 0) scanCards();
   });
 
-  function validState(value) { if (value && value.phase === "mascot") value.phase = "ready"; return !!(value && Number(value.version) === 3 && Array.isArray(value.scores) && value.scores.length === 15 && value.phase); }
+  function validState(value) { if (value && value.phase === "mascot") value.phase = "ready"; return !!(value && Number(value.version) === 4 && Array.isArray(value.scores) && value.scores.length === 15 && value.phase); }
   function setFirebaseError(error) { firebaseReady = false; firebaseError = error && error.message ? error.message : String(error || "Không kết nối được Firebase"); render(); }
   function persistLocal() { try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (e) {} }
   function save(reason) {
@@ -201,11 +173,11 @@ const firebaseConfig = {
   function team(id) { return state.scores.find(function (t) { return t.id === Number(id); }) || state.scores[0]; }
   function teamName(id) { return team(id).name; }
   function esc(text) { return String(text == null ? "" : text).replace(/[&<>"']/g, function (s) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[s]; }); }
-  function phaseLabel() { return ({ cover: "MỞ MÀN", ready: "SẴN SÀNG", bet: "CHỌN MÃ", reveal: "LỘ MÃ", question: "TRẢ LỜI", result: "KẾT QUẢ", scoreboard: "BXH", finish: "CHUNG KẾT" })[state.phase] || "VAULT 25"; }
+  function phaseLabel() { return ({ cover: "OPENING", ready: "READY", bet: "PICK CODE", reveal: "REVEAL", question: "ANSWER", result: "RESULT", scoreboard: "LEADERBOARD", finish: "FINALE" })[state.phase] || "VAULT 20"; }
   function connectionBadge() {
-    if (firebaseReady) return '<span class="connection-badge live" title="Các thiết bị đang đồng bộ realtime">FIREBASE LIVE</span>';
-    if (firebaseError) return '<span class="connection-badge error" title="' + esc(firebaseError) + '">CẦN BẬT AUTH</span>';
-    return '<span class="connection-badge">ĐANG KẾT NỐI</span>';
+    if (firebaseReady) return '<span class="connection-badge live" title="Devices are syncing in real time">FIREBASE LIVE</span>';
+    if (firebaseError) return '<span class="connection-badge error" title="' + esc(firebaseError) + '">AUTH REQUIRED</span>';
+    return '<span class="connection-badge">CONNECTING</span>';
   }
   function parseRoute() {
     var hash = location.hash || "#/";
@@ -228,7 +200,7 @@ const firebaseConfig = {
   function sceneSvg(kind) {
     var accent = kind === "steps" ? "#69e0ad" : kind === "door" ? "#ff6b9d" : kind === "file" ? "#ffd166" : "#69e7ff";
     var second = kind === "mirror" ? "#9575ff" : "#ffffff";
-    return '<svg class="scene" viewBox="0 0 800 540" role="img" aria-label="Minh họa két bí mật"><defs><linearGradient id="wall" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#34346d"/><stop offset=".6" stop-color="#151b3b"/><stop offset="1" stop-color="#080b18"/></linearGradient><linearGradient id="door" x1="0" x2="1"><stop stop-color="#6450a2"/><stop offset="1" stop-color="#19264e"/></linearGradient><filter id="blur"><feGaussianBlur stdDeviation="9"/></filter></defs><rect x="7" y="7" width="786" height="526" rx="28" fill="url(#wall)" stroke="#ffffff28" stroke-width="2"/><path d="M48 424 L170 177 L580 144 L748 421 Z" fill="#0c1026" stroke="#ffffff25" stroke-width="2"/><path d="M70 421 L190 224 L568 199 L721 421" fill="none" stroke="#ffffff1b" stroke-width="3"/><path d="M191 421V191h165c68 0 119 53 119 119v111" fill="url(#door)" stroke="#0a0c1b" stroke-width="15"/><path d="M230 332c70-64 133-91 208-84" fill="none" stroke="' + accent + '" stroke-opacity=".65" stroke-width="6" stroke-linecap="round"/><circle cx="338" cy="254" r="57" fill="' + accent + '" fill-opacity=".13" filter="url(#blur)"/><circle cx="338" cy="254" r="40" fill="none" stroke="' + accent + '" stroke-width="2" stroke-dasharray="8 11"/><circle cx="338" cy="254" r="9" fill="' + accent + '"/><path d="M530 185h145v108H530z" fill="#ffffff08" stroke="#ffffff3b"/><path d="M550 210h104M550 235h74M550 260h91" stroke="' + second + '" stroke-opacity=".52" stroke-width="4"/><path d="M90 425h646" stroke="#ffd16669" stroke-width="5"/><circle cx="106" cy="98" r="8" fill="' + accent + '"/><circle cx="142" cy="98" r="5" fill="#ffd166"/><circle cx="169" cy="98" r="5" fill="#ff6b9d"/><text x="80" y="143" fill="#ffffff65" font-family="DM Mono,monospace" font-size="12" letter-spacing="4">VAULT 25 / NO SUCH ROOM</text><path d="M656 357l25-26 25 26-25 26z" fill="#ffd166" fill-opacity=".6"/><path d="M116 365l19-20 19 20-19 20z" fill="' + accent + '" fill-opacity=".55"/></svg>';
+    return '<svg class="scene" viewBox="0 0 800 540" role="img" aria-label="Secret vault illustration"><defs><linearGradient id="wall" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#34346d"/><stop offset=".6" stop-color="#151b3b"/><stop offset="1" stop-color="#080b18"/></linearGradient><linearGradient id="door" x1="0" x2="1"><stop stop-color="#6450a2"/><stop offset="1" stop-color="#19264e"/></linearGradient><filter id="blur"><feGaussianBlur stdDeviation="9"/></filter></defs><rect x="7" y="7" width="786" height="526" rx="28" fill="url(#wall)" stroke="#ffffff28" stroke-width="2"/><path d="M48 424 L170 177 L580 144 L748 421 Z" fill="#0c1026" stroke="#ffffff25" stroke-width="2"/><path d="M70 421 L190 224 L568 199 L721 421" fill="none" stroke="#ffffff1b" stroke-width="3"/><path d="M191 421V191h165c68 0 119 53 119 119v111" fill="url(#door)" stroke="#0a0c1b" stroke-width="15"/><path d="M230 332c70-64 133-91 208-84" fill="none" stroke="' + accent + '" stroke-opacity=".65" stroke-width="6" stroke-linecap="round"/><circle cx="338" cy="254" r="57" fill="' + accent + '" fill-opacity=".13" filter="url(#blur)"/><circle cx="338" cy="254" r="40" fill="none" stroke="' + accent + '" stroke-width="2" stroke-dasharray="8 11"/><circle cx="338" cy="254" r="9" fill="' + accent + '"/><path d="M530 185h145v108H530z" fill="#ffffff08" stroke="#ffffff3b"/><path d="M550 210h104M550 235h74M550 260h91" stroke="' + second + '" stroke-opacity=".52" stroke-width="4"/><path d="M90 425h646" stroke="#ffd16669" stroke-width="5"/><circle cx="106" cy="98" r="8" fill="' + accent + '"/><circle cx="142" cy="98" r="5" fill="#ffd166"/><circle cx="169" cy="98" r="5" fill="#ff6b9d"/><text x="80" y="143" fill="#ffffff65" font-family="DM Mono,monospace" font-size="12" letter-spacing="4">VAULT 20 / NO SUCH ROOM</text><path d="M656 357l25-26 25 26-25 26z" fill="#ffd166" fill-opacity=".6"/><path d="M116 365l19-20 19 20-19 20z" fill="' + accent + '" fill-opacity=".55"/></svg>';
   }
   function waitSvg() { return '<svg class="team-wait-art" viewBox="0 0 180 140" aria-hidden="true"><circle cx="90" cy="70" r="39" fill="none" stroke="#ffffff25" stroke-width="2"/><circle cx="90" cy="70" r="55" fill="none" stroke="#69e7ff49" stroke-width="2" stroke-dasharray="4 10"/><circle cx="90" cy="70" r="10" fill="#69e7ff" fill-opacity=".8"/><path d="M90 15v22M90 103v22M35 70H13M167 70h-22" stroke="#ffd16675" stroke-width="3" stroke-linecap="round"/></svg>'; }
   function scoreList(limit) { return state.scores.slice().sort(function (a, b) { return b.score - a.score || b.correctCount - a.correctCount || b.rightsWon - a.rightsWon || a.id - b.id; }).slice(0, limit || 5); }
@@ -245,7 +217,7 @@ const firebaseConfig = {
   function pickValid(pick, allowAlreadyUsed) {
     if (!pick || pick.sessionId !== state.sessionId || Number(pick.roundIndex) !== state.roundIndex) return false;
     var id = Number(pick.teamId); var card = Number(pick.card); var target = team(id);
-    if (id < 1 || id > 15 || !target || !Number.isInteger(card) || card < 1 || card > 25) return false;
+    if (id < 1 || id > 15 || !target || !Number.isInteger(card) || card < 1 || card > 20) return false;
     return allowAlreadyUsed || !hasUsedCard(target, card);
   }
   function cardFor(teamId) {
@@ -294,48 +266,61 @@ const firebaseConfig = {
   }
   function soundFor(name) {
     if (name === "open") {
-      tone(440, .12, "sine", .08);
-      setTimeout(function () { tone(660, .18, "sine", .07); }, 100);
+      sweep(240, 980, .34, "sawtooth", .045);
+      tone(440, .11, "square", .065);
+      setTimeout(function () { tone(660, .12, "triangle", .075); }, 90);
+      setTimeout(function () { tone(880, .19, "triangle", .08); }, 180);
       return;
     }
     if (name === "win" || name === "correct") {
-      // “Két mở”: bass sweep + major arpeggio + glassy final chime.
-      sweep(150, 360, .62, "sine", .045);
-      tone(196, .48, "triangle", .05);
-      setTimeout(function () { tone(392, .24, "triangle", .08); }, 90);
-      setTimeout(function () { tone(493.88, .24, "triangle", .085); }, 185);
-      setTimeout(function () { tone(587.33, .27, "triangle", .09); }, 280);
-      setTimeout(function () { tone(783.99, .34, "sine", .085); }, 390);
-      setTimeout(function () { tone(1174.66, .38, "sine", .055); }, 510);
-      setTimeout(function () { tone(1567.98, .24, "sine", .035); }, 635);
+      sweep(260, 760, .42, "triangle", .05);
+      [523.25, 659.25, 783.99, 1046.5, 1318.51].forEach(function (freq, index) {
+        setTimeout(function () { tone(freq, .2, index === 4 ? "sine" : "triangle", .09); }, index * 85);
+      });
+      setTimeout(function () { tone(1567.98, .32, "sine", .06); }, 470);
       return;
     }
     if (name === "wrong") {
-      // “Két đóng”: descending alarm, short enough to feel firm without hurting.
-      sweep(420, 105, .5, "sawtooth", .035);
-      tone(220, .28, "square", .045);
-      setTimeout(function () { tone(174.61, .34, "sawtooth", .045); }, 125);
-      setTimeout(function () { tone(110, .48, "triangle", .05); }, 270);
+      sweep(360, 88, .3, "sawtooth", .045);
+      tone(180, .2, "square", .055);
+      setTimeout(function () { tone(120, .32, "sawtooth", .055); }, 100);
+      setTimeout(function () { tone(82.41, .42, "triangle", .06); }, 210);
       return;
     }
     if (name === "reveal") {
-      tone(330, .1, "square", .05);
-      setTimeout(function () { tone(495, .2, "triangle", .08); }, 110);
+      tone(392, .08, "square", .06);
+      setTimeout(function () { tone(587.33, .11, "triangle", .08); }, 75);
+      setTimeout(function () { tone(880, .24, "triangle", .09); }, 150);
+      setTimeout(function () { tone(1174.66, .28, "sine", .07); }, 245);
       return;
     }
-    if (name === "card") tone(800, .06, "square", .035);
+    if (name === "card") {
+      tone(720, .06, "square", .05);
+      setTimeout(function () { tone(1080, .07, "triangle", .045); }, 48);
+    }
   }
   function speakQuestion(q) {
     if (!q || q.media !== "audio" || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
-    try { window.speechSynthesis.cancel(); var utterance = new window.SpeechSynthesisUtterance(q.question); utterance.lang = "en-US"; utterance.rate = .82; utterance.pitch = .94; window.speechSynthesis.speak(utterance); } catch (e) {}
+    try {
+      var synth = window.speechSynthesis;
+      synth.cancel();
+      var utterance = new window.SpeechSynthesisUtterance(q.question);
+      utterance.lang = "en-US";
+      utterance.rate = .84;
+      utterance.pitch = .98;
+      utterance.volume = .98;
+      var voices = synth.getVoices ? synth.getVoices() : [];
+      var voice = voices.find(function (item) { return /^en(-|_)(US|GB)/i.test(item.lang) && /Google|Microsoft|Samantha|Natural|English/i.test(item.name); }) || voices.find(function (item) { return /^en/i.test(item.lang); });
+      if (voice) utterance.voice = voice;
+      synth.speak(utterance);
+    } catch (e) {}
   }
-
   function startGame() {
     initAudio(); clearRoundKeys();
     mutate(function (s) {
       s.sessionId = makeSessionId(); s.phase = "ready"; s.roundIndex = 0; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.history = []; s.lastAward = null; s.sound = true;
       s.scores.forEach(function (t) { t.score = 0; t.wins = 0; t.rightsWon = 0; t.correctCount = 0; t.usedCards = []; });
-    }, "Mở VAULT 25");
+    }, "Open VAULT 20");
     soundFor("open");
   }
   function clearRoundKeys() {
@@ -346,7 +331,7 @@ const firebaseConfig = {
   function openRound() {
     if (state.phase !== "ready") return;
     clearRoundKeys();
-    mutate(function (s) { s.phase = "bet"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = Date.now() + 12000; s.autoAt = null; s.lastAward = null; }, "Mở khoá câu " + String(state.roundIndex + 1).padStart(2, "0"));
+    mutate(function (s) { s.phase = "bet"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = Date.now() + 12000; s.autoAt = null; s.lastAward = null; }, "Open question " + String(state.roundIndex + 1).padStart(2, "0"));
     soundFor("open");
   }
   function scanCards() {
@@ -372,7 +357,7 @@ const firebaseConfig = {
         previous.serverAt = actionAt(pick); changed = true;
       }
     }
-    if (changed) { state = next; save("Mã đã chọn"); soundFor("card"); }
+    if (changed) { state = next; save("Code locked"); soundFor("card"); }
   }
   function teamCard(teamId, card) {
     if (state.phase !== "bet" || Number(teamId) !== selectedTeamId || !team(teamId)) return;
@@ -396,13 +381,13 @@ const firebaseConfig = {
       });
       s.winnerTeam = winner ? Number(winner.teamId) : null; s.winnerCard = winner ? Number(winner.card) : null; s.timerEnd = null; s.phase = winner ? "reveal" : "result"; s.autoAt = Date.now() + (winner ? 8000 : 6000);
       s.lastAward = winner ? null : { teamId: null, card: null, points: 0, delta: 0, correct: false, noWinner: true };
-    }, winner ? "Lộ mã · cao nhất giành quyền" : "Không có mã · 0 điểm");
+    }, winner ? "Reveal · highest code wins" : "No code · 0 points");
     soundFor(winner ? "reveal" : "wrong");
   }
   function enterQuestion() {
     if (state.phase !== "reveal") return;
     var q = currentRound(); var seconds = q.difficulty >= 4 ? 25 : 20;
-    mutate(function (s) { s.phase = "question"; s.timerEnd = Date.now() + seconds * 1000; s.autoAt = null; }, "Mở câu hỏi");
+    mutate(function (s) { s.phase = "question"; s.timerEnd = Date.now() + seconds * 1000; s.autoAt = null; }, "Open question");
     speakQuestion(q);
     soundFor("open");
   }
@@ -422,17 +407,17 @@ const firebaseConfig = {
       s.history.push({ round: q.id, teamId: winner, card: card, difficulty: q.difficulty, points: q.points, correct: !!correct, delta: delta });
       s.lastAward = { teamId: winner, card: card, points: q.points, delta: delta, correct: !!correct, noWinner: false, before: before, after: target ? target.score : before };
       s.phase = "result"; s.timerEnd = null; s.autoAt = Date.now() + 6000;
-    }, correct ? "Đúng · nhận " + q.points + " điểm" : "Sai · 0 điểm");
+    }, correct ? "Correct · +" + q.points + " điểm" : "Wrong · 0 points");
     soundFor(correct ? "win" : "wrong");
   }
   function advanceRound() {
     if (state.phase !== "result" && state.phase !== "scoreboard") return;
-    if (state.roundIndex >= rounds.length - 1) { mutate(function (s) { s.phase = "finish"; s.autoAt = null; s.timerEnd = null; }, "Kết thúc VAULT 25"); soundFor("open"); return; }
+    if (state.roundIndex >= rounds.length - 1) { mutate(function (s) { s.phase = "finish"; s.autoAt = null; s.timerEnd = null; }, "Finish VAULT 20"); soundFor("open"); return; }
     clearRoundKeys();
-    mutate(function (s) { s.roundIndex += 1; s.phase = "ready"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.lastAward = null; }, "Sang câu tiếp theo");
+    mutate(function (s) { s.roundIndex += 1; s.phase = "ready"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.lastAward = null; }, "Next question");
   }
-  function showScoreboard() { if (state.phase !== "result") return; mutate(function (s) { s.phase = "scoreboard"; s.autoAt = null; }, "Mở bảng xếp hạng"); }
-  function resetGame() { if (!window.confirm("Đặt lại phiên VAULT 25 và điểm số?")) return; clearRoundKeys(); state = freshState(); save("Đặt lại phiên"); }
+  function showScoreboard() { if (state.phase !== "result") return; mutate(function (s) { s.phase = "scoreboard"; s.autoAt = null; }, "Open leaderboard"); }
+  function resetGame() { if (!window.confirm("Reset VAULT 20 and scores?")) return; clearRoundKeys(); state = freshState(); save("Reset session"); }
 
   function difficultyBadge(q) {
     var meta = difficultyMeta[q.difficulty];
@@ -450,103 +435,103 @@ const firebaseConfig = {
   function mediaChip(q) { if (!q.media || q.media === "none") return ""; var label = q.media === "audio" ? "◉ NGHE AUDIO" : q.media === "video" ? "▶ VIDEO GỢI Ý" : "▧ LẬT ẢNH"; return '<div class="media-chip">' + label + '</div>'; }
   function hostControls() {
     var p = state.phase; var q = currentRound();
-    if (p === "cover") return '<button class="btn primary large" data-action="start">▶ Mở VAULT 25</button>';
-    if (p === "ready") return '<div class="remote-live"><span class="eyebrow">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + '</span>' + difficultyBadge(q) + '</div><button class="btn gold large" data-action="open">✦ Mở chọn mã</button>';
-    if (p === "bet") return '<div class="remote-live"><span class="eyebrow">CHỌN MÃ</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">' + cardCount() + '/15 đội</span></div><button class="btn danger" data-action="reveal">Lộ mã</button>';
-    if (p === "reveal") return '<div class="remote-live"><span class="eyebrow">MÃ CAO NHẤT</span><b>Đội ' + String(state.winnerTeam).padStart(2, "0") + ' · mã ' + state.winnerCard + '</b></div>';
+    if (p === "cover") return '<button class="btn primary large" data-action="start">▶ OPEN VAULT 20</button>';
+    if (p === "ready") return '<div class="remote-live"><span class="eyebrow">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + '</span>' + difficultyBadge(q) + '</div><button class="btn gold large" data-action="open">✦ LOCK CODES</button>';
+    if (p === "bet") return '<div class="remote-live"><span class="eyebrow">CODE LOCK</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">' + cardCount() + '/15 TEAMS</span></div><button class="btn danger" data-action="reveal">REVEAL CODES</button>';
+    if (p === "reveal") return '<div class="remote-live"><span class="eyebrow">RIGHT TO ANSWER</span><b>TEAM ' + String(state.winnerTeam).padStart(2, "0") + ' · CODE ' + state.winnerCard + '</b></div>';
     if (p === "question") {
-      var who = state.winnerTeam ? "Đội " + String(state.winnerTeam).padStart(2, "0") + " · " + esc(teamName(state.winnerTeam)) : "Đội chưa được xác định";
-      return '<div class="remote-live"><span class="eyebrow">TRẢ LỜI · MÃ ' + state.winnerCard + '</span><b>' + who + '</b><span class="muted">Đúng +' + q.points + ' · Sai 0</span></div><div class="remote-duo"><button class="btn green large" data-action="grade" data-correct="1">✓ ĐÚNG</button><button class="btn danger large" data-action="grade" data-correct="0">× SAI</button></div>';
+      var who = state.winnerTeam ? "TEAM " + String(state.winnerTeam).padStart(2, "0") + " · " + esc(teamName(state.winnerTeam)) : "TEAM NOT SET";
+      return '<div class="remote-live"><span class="eyebrow">ANSWER · CODE ' + state.winnerCard + '</span><b>' + who + '</b><span class="muted">CORRECT +' + q.points + ' · WRONG 0</span></div><div class="remote-duo"><button class="btn green large" data-action="grade" data-correct="1">✓ CORRECT</button><button class="btn danger large" data-action="grade" data-correct="0">× WRONG</button></div>';
     }
     if (p === "result") {
-      var a = state.lastAward; var resultText = a && a.noWinner ? "0 điểm" : ((a && a.correct ? "+" : "") + (a ? a.delta : 0) + " điểm");
-      return '<div class="remote-live"><span class="eyebrow">KẾT QUẢ</span><b>' + resultText + '</b></div><button class="btn primary large" data-action="next">→ Câu tiếp</button><button class="btn ghost" data-action="scoreboard">Mở BXH</button>';
+      var a = state.lastAward; var resultText = a && a.noWinner ? "0 PTS" : ((a && a.correct ? "+" : "") + (a ? a.delta : 0) + " PTS");
+      return '<div class="remote-live"><span class="eyebrow">RESULT</span><b>' + resultText + '</b></div><button class="btn primary large" data-action="next">→ NEXT QUESTION</button><button class="btn ghost" data-action="scoreboard">LEADERBOARD</button>';
     }
-    if (p === "scoreboard") return '<button class="btn primary large" data-action="next">→ Quay lại game</button>';
-    if (p === "finish") return '<button class="btn gold large" data-action="reset">↻ Chơi lại</button>';
+    if (p === "scoreboard") return '<button class="btn primary large" data-action="next">→ RETURN TO GAME</button>';
+    if (p === "finish") return '<button class="btn gold large" data-action="reset">↻ PLAY AGAIN</button>';
     return "";
   }
   function miniScore() { return scoreList(3).map(function (t, i) { return '<div class="mini-score-row"><span>' + (i + 1) + ". " + esc(t.name) + '</span><b>' + t.score + "đ</b></div>"; }).join(""); }
   function hostView() {
-    return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 25</b><span>PPT GAME · MC</span></span></a><div class="header-actions">' + connectionBadge() + '<a class="btn ghost" href="#/stage">Sân khấu ↗</a><button class="icon-btn" title="Bật/tắt âm thanh" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Đặt lại" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad remote-title"><div class="eyebrow">MC REMOTE</div><h1>ĐIỀU <span style="color:var(--cyan)">KHIỂN</span></h1></div><div class="remote-status"><div class="status-tile"><small>TRẠNG THÁI</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>CÂU</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div></div><div class="panel"><div class="panel-head"><h3>Bảng điểm · top 3</h3></div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
+    return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 20</b><span>PPT GAME · HOST</span></span></a><div class="header-actions">' + connectionBadge() + '<a class="btn ghost" href="#/stage">STAGE ↗</a><button class="icon-btn" title="Toggle sound" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Reset" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad remote-title"><div class="eyebrow">HOST CONTROL</div><h1>GAME <span style="color:var(--cyan)">CONTROL</span></h1></div><div class="remote-status"><div class="status-tile"><small>STATUS</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>QUESTION</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div></div><div class="panel"><div class="panel-head"><h3>LEADERBOARD · TOP 3</h3></div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
   }
   function stageDecor() { return '<div class="vault-backdrop" aria-hidden="true"></div><div class="stage-rays" aria-hidden="true"></div><div class="fx-grid" aria-hidden="true"></div><i class="fx-orbit fx-orbit-a" aria-hidden="true"></i><i class="fx-orbit fx-orbit-b" aria-hidden="true"></i><i class="fx-particle fp-a" aria-hidden="true"></i><i class="fx-particle fp-b" aria-hidden="true"></i><i class="fx-particle fp-c" aria-hidden="true"></i><i class="fx-particle fp-d" aria-hidden="true"></i><img class="floating-core" src="assets/vault-core.png" alt=""><i class="spark spark-a"></i><i class="spark spark-b"></i><i class="spark spark-c"></i>'; }
   function stageScoreRail() {
     var list = scoreList(5); var max = Math.max(1, list[0] ? list[0].score : 1);
-    return '<aside class="stage-score-rail" aria-label="Bảng xếp hạng"><div class="rail-title">BXH <span>TOP 5</span></div>' + list.map(function (t, i) { return '<div class="rail-row"><span class="rail-rank">0' + (i + 1) + '</span><div><div class="rail-name">' + esc(t.name) + '</div><div class="rail-bar"><i style="width:' + Math.max(5, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="rail-score">' + t.score + 'đ</span></div>'; }).join("") + '</aside>';
+    return '<aside class="stage-score-rail" aria-label="Leaderboard"><div class="rail-title">LEADERBOARD <span>TOP 5</span></div>' + list.map(function (t, i) { return '<div class="rail-row"><span class="rail-rank">0' + (i + 1) + '</span><div><div class="rail-name">' + esc(t.name) + '</div><div class="rail-bar"><i style="width:' + Math.max(5, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="rail-score">' + t.score + ' pts</span></div>'; }).join("") + '</aside>';
   }
   function cardTokens() {
-    // Keep every card visually identical while teams are choosing; the chosen
-    // numbers only appear on the reveal ranking after the MC locks the round.
     return cardNumbers.map(function (n) { return '<span class="card-token">' + n + '</span>'; }).join("");
   }
-  function stageCover() { return '<div class="slide"><div class="slide-kicker">MẬT KHO · 00</div><h1 class="horror-script">VAULT<br><em>25</em></h1><div class="vault-title-mark"><img src="assets/vault-core.png" alt=""></div><p class="slide-sub">25 câu · 25 mã · một đội được gọi</p></div>'; }
-  function stageReady() { var q = currentRound(); return '<div class="slide"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/25</span><div class="slide-kicker">KHOÁ CÂU · ' + q.id + '</div><h1 class="horror-script">' + esc(q.title) + '</h1>' + difficultyBadge(q) + '<div class="vault-card-scene"><img src="assets/vault-core.png" alt=""></div><div class="loot-value">+' + q.points + ' ĐIỂM</div></div>'; }
-  function stageBet() { var q = currentRound(); return '<div class="slide stage-bet"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/25</span><div class="slide-kicker">MÃ KHÓA · ' + esc(q.format) + '</div><h1 class="horror-script">Chọn <em>một mã</em></h1><div class="buzz-line"><div class="timer ' + (currentTime() > 4 ? "safe" : "") + '">' + currentTime() + 's</div><span>' + cardCount() + '/15 đã chọn</span></div><div class="card-grid stage-token-grid">' + cardTokens() + '</div><p class="slide-sub">Mã cao nhất giành quyền · hòa theo timestamp nhanh nhất</p></div>'; }
+  function stageCover() { return '<div class="slide"><div class="slide-kicker">VAULT · 00</div><h1 class="horror-script">VAULT<br><em>20</em></h1><div class="vault-title-mark"><img src="assets/vault-core.png" alt=""></div><p class="slide-sub">20 questions · 20 codes · one team called</p></div>'; }
+  function stageReady() { var q = currentRound(); return '<div class="slide"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/20</span><div class="slide-kicker">QUESTION LOCK · ' + q.id + '</div><h1 class="horror-script">' + esc(q.title) + '</h1>' + difficultyBadge(q) + '<div class="vault-card-scene"><img src="assets/vault-core.png" alt=""></div><div class="loot-value">+' + q.points + ' PTS</div></div>'; }
+  function stageBet() { var q = currentRound(); return '<div class="slide stage-bet"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/20</span><div class="slide-kicker">CODE LOCK · ' + esc(q.format) + '</div><h1 class="horror-script">Choose <em>one code</em></h1><div class="buzz-line"><div class="timer ' + (currentTime() > 4 ? "safe" : "") + '">' + currentTime() + 's</div><span>' + cardCount() + '/15 TEAMS LOCKED</span></div><div class="card-grid stage-token-grid">' + cardTokens() + '</div></div>'; }
+  function formatLockDelta(pick, baseAt) {
+    var ms = actionAt(pick); if (!Number.isFinite(ms) || !baseAt) return "LOCK —";
+    return "LOCK +" + ((Math.max(0, ms - baseAt)) / 1000).toFixed(2) + "s";
+  }
   function stageReveal() {
     var leaders = cardLeaders(15); var winner = state.winnerTeam ? team(state.winnerTeam) : null; var winnerPick = leaders.find(function (pick) { return Number(pick.teamId) === Number(state.winnerTeam); });
-    var picked = {};
-    leaders.forEach(function (pick) { picked[String(pick.teamId)] = true; });
-    var missing = [];
-    for (var i = 1; i <= 15; i++) if (!picked[String(i)]) missing.push({ teamId: i, card: null, missing: true });
+    var baseAt = 0; leaders.forEach(function (pick) { var at = actionAt(pick); if (Number.isFinite(at) && at < Number.MAX_SAFE_INTEGER && (!baseAt || at < baseAt)) baseAt = at; });
+    var picked = {}; leaders.forEach(function (pick) { picked[String(pick.teamId)] = true; });
+    var missing = []; for (var i = 1; i <= 15; i++) if (!picked[String(i)]) missing.push({ teamId: i, card: null, missing: true });
     var rows = leaders.concat(missing);
     var board = rows.map(function (pick, index) {
       var hasPick = !pick.missing; var pickedTeam = team(pick.teamId); var isWinner = hasPick && Number(pick.teamId) === Number(state.winnerTeam);
-      return '<div class="bid-row ' + (isWinner ? "is-winner" : "") + '"><span class="bid-rank">' + (hasPick ? "#" + (index + 1) : "—") + '</span><span class="bid-team"><b>Đội ' + String(pick.teamId).padStart(2, "0") + '</b><small>' + esc(pickedTeam ? pickedTeam.name : "") + '</small><small class="bid-time">' + (hasPick ? "⏱ " + formatPickTime(pick) : "CHƯA CHỐT") + '</small><i class="bid-meter"><i style="width:' + (hasPick ? Math.max(8, Number(pick.card) / 25 * 100) : 0) + '%"></i></i></span><strong class="bid-number">' + (hasPick ? pick.card : "—") + '</strong></div>';
+      return '<div class="bid-row ' + (isWinner ? "is-winner" : "") + '"><span class="bid-rank">' + (hasPick ? "#" + (index + 1) : "—") + '</span><span class="bid-team"><b>TEAM ' + String(pick.teamId).padStart(2, "0") + '</b><small>' + esc(pickedTeam ? pickedTeam.name.replace("Team ", "") : "") + '</small><small class="bid-time">' + (hasPick ? formatLockDelta(pick, baseAt) : "NO LOCK") + '</small></span><strong class="bid-number">' + (hasPick ? pick.card : "—") + '</strong></div>';
     }).join("");
-    var winnerLabel = winner ? ' · ' + esc(winner.name) : '';
-    return '<div class="slide stage-reveal"><div class="slide-kicker">LỘ MÃ · ' + leaders.length + '/15 ĐÃ CHỐT</div><h1 class="horror-script">Bảng mã<br><em>đã khóa</em></h1><div class="stage-reveal-art"><img src="assets/vault-core.png" alt=""></div><div class="card-reveal-number">' + (state.winnerCard || "—") + '</div><div class="winner-card"><i class="winner-dot"></i><b>ĐỘI ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + winnerLabel + '</b><span class="reveal-winner-time">⏱ ' + (winnerPick ? formatPickTime(winnerPick) : "—") + '</span></div><div class="reveal-summary"><span>THỨ TỰ: SỐ CAO → THỜI GIAN</span><span>ĐẦU BẢNG = GIÀNH QUYỀN</span></div><div class="bid-rail">' + board + '</div></div>';
+    return '<div class="slide stage-reveal"><div class="slide-kicker">CODE RANKING · ' + leaders.length + '/15 LOCKED</div><h1 class="horror-script">CODES<br><em>REVEALED</em></h1><div class="winner-card reveal-winner"><i class="winner-dot"></i><div><span class="eyebrow">RIGHT TO ANSWER</span><b>TEAM ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + (winner ? ' · ' + esc(winner.name.replace("Team ", "")) : "") + '</b><small>CODE ' + (state.winnerCard || "—") + ' · ' + (winnerPick ? formatLockDelta(winnerPick, baseAt) : "LOCK —") + '</small></div></div><div class="bid-rail">' + board + '</div></div>';
   }
   function stageQuestion() {
     var q = currentRound();
-    var who = '<div class="winner-card"><i class="winner-dot"></i><b>Đội ' + String(state.winnerTeam).padStart(2, "0") + ' · ' + esc(teamName(state.winnerTeam)) + '</b><span class="tag">MÃ ' + state.winnerCard + '</span></div>';
-    var options = q.options ? '<div class="options">' + q.options.map(function (o, i) { return '<div class="option"><b>' + String.fromCharCode(65 + i) + '</b><span>' + esc(o) + '</span></div>'; }).join("") + '</div>' : '<div class="open-answer">TRẢ LỜI MIỆNG</div>';
-    var art = q.media === "image" ? '<div class="slide-visual has-image square-art"><img class="slide-art-image" src="assets/vault-shard.jpg" alt=""></div>' : '';
-    var rapid = q.media === "video" ? '<div class="rapid-cue"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span></div>' : '';
-    return '<div class="slide"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/25</span><div class="slide-kicker">CÂU HỎI · +' + q.points + '</div>' + who + '<div class="question-meta">' + difficultyBadge(q) + mediaChip(q) + '<span class="round-counter">' + esc(q.format) + '</span></div>' + art + rapid + '<div class="question-box ' + (q.media === "image" ? "has-art" : "") + '"><h2>' + esc(q.question) + '</h2>' + options + '</div></div>';
+    var who = '<div class="winner-card"><i class="winner-dot"></i><b>TEAM ' + String(state.winnerTeam).padStart(2, "0") + ' · ' + esc(teamName(state.winnerTeam).replace("Team ", "")) + '</b><span class="tag">CODE ' + state.winnerCard + '</span></div>';
+    var options = q.options ? '<div class="options">' + q.options.map(function (o, i) { return '<div class="option"><b>' + String.fromCharCode(65 + i) + '</b><span>' + esc(o) + '</span></div>'; }).join("") + '</div>' : '<div class="open-answer">OPEN ANSWER</div>';
+    var art = q.media === "image" ? '<div class="slide-visual has-image square-art media-placeholder"><img class="slide-art-image" src="assets/vault-shard.jpg" alt=""><span>IMAGE CLUE PENDING</span></div>' : "";
+    var rapid = q.media === "video" ? '<div class="rapid-cue"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span></div>' : "";
+    return '<div class="slide"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/20</span><div class="slide-kicker">QUESTION · +' + q.points + ' PTS</div>' + who + '<div class="question-meta">' + difficultyBadge(q) + mediaChip(q) + '<span class="round-counter">' + esc(q.format) + '</span></div>' + art + rapid + '<div class="question-box ' + (q.media === "image" ? "has-art" : "") + '"><h2>' + esc(q.question) + '</h2>' + options + '</div></div>';
   }
   function stageResult() {
     var award = state.lastAward || { delta: 0, teamId: null, noWinner: true, correct: false }; var ok = !!award.correct; var n = award.noWinner ? "0" : (award.correct ? "+" : "") + award.delta;
-    var burst = ok ? '<div class="celebration-burst" aria-hidden="true"><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i></div>' : '';
-    return '<div class="slide result-slide ' + (ok ? "correct-result" : "wrong-result") + '">' + burst + '<div class="result-mark ' + (ok ? "" : "wrong") + '">' + (award.noWinner ? "·" : (ok ? "✓" : "×")) + '</div><div class="slide-kicker">' + (award.noWinner ? "KHÔNG CÓ MÃ" : (ok ? "MỞ KÉT" : "SAI · 0 ĐIỂM")) + '</div><div class="award">' + n + '</div><h1 style="font-size:clamp(28px,5vw,62px)">' + (award.noWinner ? "Cả lớp" : esc(teamName(award.teamId))) + '</h1>' + '</div>';
+    var burst = ok ? '<div class="celebration-burst" aria-hidden="true"><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i></div>' : "";
+    return '<div class="slide result-slide ' + (ok ? "correct-result" : "wrong-result") + '">' + burst + '<div class="result-mark ' + (ok ? "" : "wrong") + '">' + (award.noWinner ? "·" : (ok ? "✓" : "×")) + '</div><div class="slide-kicker">' + (award.noWinner ? "NO CODE" : (ok ? "VAULT OPEN" : "WRONG · 0 PTS")) + '</div><div class="award">' + n + '</div><h1 style="font-size:clamp(28px,5vw,62px)">' + (award.noWinner ? "EVERYONE" : esc(teamName(award.teamId).replace("Team ", ""))) + '</h1></div>';
   }
-  function stageScoreboard() { var list = scoreList(5); var max = Math.max(1, list[0] ? list[0].score : 1); return '<div class="slide stage-scoreboard"><div class="slide-kicker">BXH · CẬP NHẬT</div><h1 style="font-size:clamp(34px,5.6vw,74px)">Ai còn đứng?</h1><div class="stage-score-strip">' + list.map(function (t, i) { return '<div class="score-row"><span class="score-rank">0' + (i + 1) + '</span><div><div class="score-name">' + esc(t.name) + '</div><div class="score-bar"><i style="width:' + Math.max(4, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="score-points">' + t.score + 'đ</span></div>'; }).join("") + '</div></div>'; }
-  function stageFinish() { var list = scoreList(3); return '<div class="slide"><div class="slide-kicker">KẾT THÚC · HỒ SƠ ĐÃ MỞ</div><h1 style="font-size:clamp(37px,6.3vw,90px)">Ba đội<br><em>đi xa nhất</em></h1><div class="podium"><div class="podium-col p2"><b>' + esc(list[1] ? list[1].name : "—") + '</b><div class="podium-block">02</div></div><div class="podium-col p1"><b>' + esc(list[0] ? list[0].name : "—") + '</b><div class="podium-block">01</div></div><div class="podium-col p3"><b>' + esc(list[2] ? list[2].name : "—") + '</b><div class="podium-block">03</div></div></div><p class="slide-sub">Mỗi thẻ đã dùng · mỗi câu đã tính.</p></div>'; }
+  function stageScoreboard() { var list = scoreList(5); var max = Math.max(1, list[0] ? list[0].score : 1); return '<div class="slide stage-scoreboard"><div class="slide-kicker">LEADERBOARD · UPDATED</div><h1 style="font-size:clamp(34px,5.6vw,74px)">WHO IS STILL STANDING?</h1><div class="stage-score-strip">' + list.map(function (t, i) { return '<div class="score-row"><span class="score-rank">0' + (i + 1) + '</span><div><div class="score-name">' + esc(t.name) + '</div><div class="score-bar"><i style="width:' + Math.max(4, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="score-points">' + t.score + ' pts</span></div>'; }).join("") + '</div></div>'; }
+  function stageFinish() { var list = scoreList(3); return '<div class="slide"><div class="slide-kicker">SESSION COMPLETE · VAULT OPEN</div><h1 style="font-size:clamp(37px,6.3vw,90px)">TOP THREE<br><em>TEAMS</em></h1><div class="podium"><div class="podium-col p2"><b>' + esc(list[1] ? list[1].name : "—") + '</b><div class="podium-block">02</div></div><div class="podium-col p1"><b>' + esc(list[0] ? list[0].name : "—") + '</b><div class="podium-block">01</div></div><div class="podium-col p3"><b>' + esc(list[2] ? list[2].name : "—") + '</b><div class="podium-block">03</div></div></div><p class="slide-sub">20 codes used · 20 questions scored.</p></div>'; }
   function stageSlide() { if (state.phase === "cover") return stageCover(); if (state.phase === "ready") return stageReady(); if (state.phase === "bet") return stageBet(); if (state.phase === "reveal") return stageReveal(); if (state.phase === "question") return stageQuestion(); if (state.phase === "result") return stageResult(); if (state.phase === "scoreboard") return stageScoreboard(); return stageFinish(); }
   function stageView(compact) {
-    return '<main class="stage-root ' + (compact ? "stage-compact" : "") + '"><header class="stage-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 25</b><span>TRÌNH CHIẾU · PPT MODE</span></span></a><div class="stage-tools"><div class="stage-code">' + phaseLabel() + ' · ' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + '/' + String(rounds.length).padStart(2, "0") + '</div>' + (compact ? "" : '<button class="stage-fullscreen" data-action="fullscreen" title="Toàn màn hình" aria-label="Toàn màn hình">⛶</button>') + '</div></header><section class="stage-main">' + stageDecor() + stageSlide() + (compact ? "" : stageScoreRail()) + '</section>' + (compact ? "" : '<footer class="stage-footer"><span>15 ĐỘI · 25 CÂU · 25 THẺ / ĐỘI</span></footer>') + '</main>';
+    return '<main class="stage-root ' + (compact ? "stage-compact" : "") + '"><header class="stage-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 20</b><span>STAGE · PPT MODE</span></span></a><div class="stage-tools"><div class="stage-code">' + phaseLabel() + ' · ' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + '/' + String(rounds.length).padStart(2, "0") + '</div>' + (compact ? "" : '<button class="stage-fullscreen" data-action="fullscreen" title="Fullscreen" aria-label="Fullscreen">⛶</button>') + '</div></header><section class="stage-main">' + stageDecor() + stageSlide() + (compact ? "" : stageScoreRail()) + '</section>' + (compact ? "" : '<footer class="stage-footer"><span>15 TEAMS · 20 QUESTIONS · 20 CODES / TEAM</span></footer>') + '</main>';
   }
   function cardGridMarkup(id) {
     var t = team(id); var chosen = cardFor(id); var used = t.usedCards || [];
-    return '<div class="card-grid team-card-grid">' + cardNumbers.map(function (n) { var isUsed = used.indexOf(n) >= 0; var isSelected = chosen && Number(chosen.card) === n; var disabled = isUsed || isSelected; return '<button class="card-token ' + (isUsed ? "used" : "") + ' ' + (isSelected ? "selected" : "") + '" data-action="card" data-card="' + n + '" ' + (disabled ? "disabled" : "") + '>' + n + '</button>'; }).join("") + '</div><div class="card-grid-note"><span>' + (chosen ? "ĐÃ CHỌN · ĐỔI ĐƯỢC" : "CHỌN 1 / 25 MÃ") + '</span><span>ĐÃ DÙNG ' + used.length + '/25</span></div>';
+    return '<div class="card-grid team-card-grid">' + cardNumbers.map(function (n) { var isUsed = used.indexOf(n) >= 0; var isSelected = chosen && Number(chosen.card) === n; var disabled = isUsed || isSelected; return '<button class="card-token ' + (isUsed ? "used" : "") + ' ' + (isSelected ? "selected" : "") + '" data-action="card" data-card="' + n + '" ' + (disabled ? "disabled" : "") + '>' + n + '</button>'; }).join("") + '</div><div class="card-grid-note"><span>' + (chosen ? "LOCKED · CHANGEABLE" : "PICK 1 / 20 CODE") + '</span><span>USED ' + used.length + '/20</span></div>';
   }
   function teamPickerView() {
-    return '<main class="team-root team-picker-root"><section class="team-phone"><div class="team-picker-body"><div class="eyebrow">VAULT 25 · LINK CHUNG</div><div class="team-picker-core"><img src="assets/vault-core.png" alt=""></div><h1>Chọn<br><em>đội của bạn</em></h1><p>Mỗi điện thoại chọn một đội.</p><div class="team-picker-grid">' + teamNames.map(function (name, i) { return '<button class="team-picker-card" data-action="select-team" data-team="' + (i + 1) + '"><b>' + String(i + 1).padStart(2, "0") + '</b><span>' + esc(name.replace(/^Đội\s*/, "")) + '</span></button>'; }).join("") + '</div></div><footer class="team-foot">CHỌN XONG · CHỜ MC MỞ KÉT</footer></section></main>';
+    return '<main class="team-root team-picker-root"><section class="team-phone"><div class="team-picker-body"><div class="eyebrow">VAULT 20 · SHARED LINK</div><div class="team-picker-core"><img src="assets/vault-core.png" alt=""></div><h1>Choose<br><em>your team</em></h1><p>One phone per team.</p><div class="team-picker-grid">' + teamNames.map(function (name, i) { return '<button class="team-picker-card" data-action="select-team" data-team="' + (i + 1) + '"><b>' + String(i + 1).padStart(2, "0") + '</b><span>' + esc(name.replace("Team ", "")) + '</span></button>'; }).join("") + '</div></div><footer class="team-foot">TEAM SELECTED · WAIT FOR HOST</footer></section></main>';
   }
   function teamView() {
     var id = selectedTeamId; var t = team(id); var q = currentRound(); var chosen = cardFor(id); var body = "";
     if (state.phase === "cover") {
-      body = waitSvg() + '<div class="team-round">VAULT 25</div><h1>Sẵn<br>sàng?</h1><p>Chờ MC mở game.</p>';
+      body = waitSvg() + '<div class="team-round">VAULT 20</div><h1>Ready<br>to play?</h1><p>Wait for the host to open the game.</p>';
     } else if (state.phase === "ready") {
-      body = '<div class="team-round">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + ' / 25</div><h1>Sẵn<br>sàng.</h1><p>MC sắp mở mã khóa.</p>' + difficultyBadge(q) + '<div class="team-photo"><img src="assets/vault-shard.jpg" alt=""></div>';
+      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + ' / 20</div><h1>Get<br>ready.</h1><p>The host is preparing the code lock.</p>' + difficultyBadge(q) + '<div class="team-photo"><img src="assets/vault-shard.jpg" alt=""></div>';
     } else if (state.phase === "bet") {
-      body = '<div class="team-round">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + ' / 25 · CHỌN MÃ</div><h1>' + (chosen ? "Mã đã<br>chọn." : "Chọn<br>một mã.") + '</h1><p>' + (chosen ? "Bấm số khác để đổi trước khi hết giờ." : "+' + q.points + ' điểm nếu đúng.") + '</p><div class="phone-timer">' + currentTime() + 's</div>' + cardGridMarkup(id);
+      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + ' / 20 · CODE LOCK</div><h1>' + (chosen ? "Code<br>locked." : "Pick<br>a code.") + '</h1><p>' + (chosen ? "Choose another number before the timer ends." : "+" + q.points + " points for a correct answer.") + '</p><div class="phone-timer">' + currentTime() + 's</div>' + cardGridMarkup(id);
     } else if (state.phase === "reveal") {
-      body = '<div class="team-round">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + ' · LỘ MÃ</div><h1>' + (state.winnerTeam === id ? "Đội bạn<br>được gọi." : "Mã đã<br>chọn đội.") + '</h1><p>' + (state.winnerTeam === id ? "Chuẩn bị trả lời trực tiếp." : "Theo dõi màn chiếu.") + '</p><div class="card-reveal-number">' + state.winnerCard + '</div>';
+      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + ' · REVEAL</div><h1>' + (state.winnerTeam === id ? "Your team<br>is called." : "Codes<br>revealed.") + '</h1><p>' + (state.winnerTeam === id ? "Get ready to answer." : "Watch the projector.") + '</p><div class="card-reveal-number">' + state.winnerCard + '</div>';
     } else if (state.phase === "question") {
-      body = '<div class="team-round">CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + ' · +' + q.points + '</div><h1>' + (state.winnerTeam === id ? "Đến<br>lượt." : "Đang<br>trả lời.") + '</h1><p>' + (state.winnerTeam === id ? "Nói đáp án với MC." : "Chờ kết quả trên màn chiếu.") + '</p>' + difficultyBadge(q) + '<div class="team-message">MÃ ' + state.winnerCard + ' · ' + esc(q.format) + '</div>';
+      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + ' · +' + q.points + ' PTS</div><h1>' + (state.winnerTeam === id ? "Your<br>turn." : "Team<br>answering.") + '</h1><p>' + (state.winnerTeam === id ? "Answer aloud to the host." : "Wait for the result.") + '</p>' + difficultyBadge(q) + '<div class="team-message">CODE ' + state.winnerCard + ' · ' + esc(q.format) + '</div>';
     } else if (state.phase === "result") {
-      var mine = state.lastAward && state.lastAward.teamId === id; var delta = mine ? state.lastAward.delta : 0; body = '<div class="team-round">KẾT QUẢ CÂU ' + String(state.roundIndex + 1).padStart(2, "0") + '</div>' + (mine ? '<div class="team-score-flash">' + (state.lastAward.correct ? "+" : "") + delta + '</div><h1>' + (state.lastAward.correct ? "Đúng." : "Sai.") + '</h1><p>' + (state.lastAward.correct ? "Điểm đã cộng." : "Sai = 0 điểm.") + '</p>' : '<h1>Chờ<br>câu tiếp.</h1><p>Theo dõi màn chiếu.</p>') + '<div class="team-message">' + esc(q.title) + '</div>';
+      var mine = state.lastAward && state.lastAward.teamId === id; var delta = mine ? state.lastAward.delta : 0; body = '<div class="team-round">RESULT · QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + '</div>' + (mine ? '<div class="team-score-flash">' + (state.lastAward.correct ? "+" : "") + delta + '</div><h1>' + (state.lastAward.correct ? "Correct." : "Wrong.") + '</h1><p>' + (state.lastAward.correct ? "Points added." : "Wrong = 0 points.") + '</p>' : '<h1>Wait for<br>the next question.</h1><p>Watch the projector.</p>') + '<div class="team-message">' + esc(q.title) + '</div>';
     } else if (state.phase === "finish") {
-      body = '<div class="team-photo"><img src="assets/vault-shard.jpg" alt=""></div><div class="team-round">PHIÊN ĐÃ KẾT THÚC</div><div class="team-score-flash">' + t.score + '</div><p>điểm · xem BXH trên màn chiếu</p>';
+      body = '<div class="team-photo"><img src="assets/vault-shard.jpg" alt=""></div><div class="team-round">SESSION COMPLETE</div><div class="team-score-flash">' + t.score + '</div><p>points · see the projector leaderboard</p>';
     } else if (state.phase === "scoreboard") {
-      body = waitSvg() + '<div class="team-round">BXH</div><h1>Điểm<br>đã cập nhật.</h1><p>' + t.score + ' điểm · hạng đang thay đổi.</p>';
+      body = waitSvg() + '<div class="team-round">LEADERBOARD</div><h1>Scores<br>updated.</h1><p>' + t.score + ' points · check the projector.</p>';
     } else {
-      body = waitSvg() + '<div class="team-round">ĐANG CHỜ</div><h1>Nhìn<br>màn chiếu.</h1><p>Chờ cửa sổ mở.</p>';
+      body = waitSvg() + '<div class="team-round">WAITING</div><h1>Watch<br>the projector.</h1><p>Wait for the next screen.</p>';
     }
-    return '<main class="team-root"><section class="team-phone"><header class="team-head"><div><b>' + esc(t.name) + '</b><small>ĐỘI ' + String(id).padStart(2, "0") + '</small></div><div class="team-head-actions"><button class="team-switch" data-action="team-switch" title="Đổi đội">↺</button><span class="team-score">' + t.score + 'đ</span></div></header><div class="team-body">' + body + '</div><footer class="team-foot">VAULT 25 · ' + (state.phase === "bet" ? "CHỌN 1 MÃ" : "NHÌN MÀN CHIẾU") + '</footer></section></main>';
+    return '<main class="team-root"><section class="team-phone"><header class="team-head"><div><b>' + esc(t.name.replace("Team ", "")) + '</b><small>TEAM ' + String(id).padStart(2, "0") + '</small></div><div class="team-head-actions"><button class="team-switch" data-action="team-switch" title="Switch team">↺</button><span class="team-score">' + t.score + ' pts</span></div></header><div class="team-body">' + body + '</div><footer class="team-foot">VAULT 20 · ' + (state.phase === "bet" ? "PICK 1 CODE" : "WATCH THE PROJECTOR") + '</footer></section></main>';
   }
-  function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><div class="eyebrow">PPT GAME · 15 ĐỘI</div><h1 class="horror-script">VAULT<br><em>25</em></h1><p>Chọn mã · giành quyền.</p><div class="home-actions"><a class="btn primary large" href="#/host">Mở MC</a><a class="btn ghost large" href="#/stage">Mở sân khấu</a><a class="btn ghost large" href="#/team">Link chung cho đội</a></div><div class="home-note"><div><b>25</b><span>câu</span></div><div><b>15</b><span>đội</span></div><div><b>25</b><span>thẻ / đội</span></div></div></section><section class="museum-card" aria-label="Minh họa két VAULT 25"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">25</div><div class="eyebrow" style="position:absolute;right:27px;bottom:25px;color:#ffffff66">VAULT 25</div></section></div></main>'; }
+  function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><div class="eyebrow">PPT GAME · 15 TEAMS</div><h1 class="horror-script">VAULT<br><em>20</em></h1><p>Pick a code · win the answer.</p><div class="home-actions"><a class="btn primary large" href="#/host">OPEN HOST</a><a class="btn ghost large" href="#/stage">OPEN STAGE</a><a class="btn ghost large" href="#/team">SHARED TEAM LINK</a></div><div class="home-note"><div><b>20</b><span>questions</span></div><div><b>15</b><span>teams</span></div><div><b>20</b><span>codes / team</span></div></div></section><section class="museum-card" aria-label="VAULT 20 illustration"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">20</div><div class="eyebrow" style="position:absolute;right:27px;bottom:25px;color:#ffffff66">VAULT 20</div></section></div></main>'; }
 
   function bind() {
     document.querySelectorAll("[data-action]").forEach(function (el) { el.addEventListener("click", handleAction); });
@@ -605,9 +590,18 @@ const firebaseConfig = {
         soundFor("win");
       }
     }
+    if (role === "stage" && state.phase === "question" && currentRound().media === "audio") {
+      var speechKey = String(state.sessionId) + ":" + String(state.roundIndex);
+      if (speechKey !== lastSpokenQuestion) {
+        lastSpokenQuestion = speechKey;
+        setTimeout(function () { if (role === "stage" && state.phase === "question") speakQuestion(currentRound()); }, 100);
+      }
+    } else if (state.phase !== "question") {
+      lastSpokenQuestion = "";
+    }
     if (role === "host" && firebaseReady && remoteStateKnown && !remoteStateExists && !pendingRemoteCreate) {
       pendingRemoteCreate = true;
-      save("Khởi tạo phiên Firebase");
+      save("Create VAULT 20 session");
       pendingRemoteCreate = false;
     }
     document.body.classList.toggle("stage-mode", role === "stage");
