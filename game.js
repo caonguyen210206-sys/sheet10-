@@ -124,7 +124,7 @@ const firebaseConfig = {
   });
 
   function validState(value) { if (value && value.phase === "mascot") value.phase = "ready"; return !!(value && Number(value.version) === 4 && Array.isArray(value.scores) && value.scores.length === 15 && value.phase); }
-  function setFirebaseError(error) { firebaseReady = false; firebaseError = error && error.message ? error.message : String(error || "Không kết nối được Firebase"); render(); }
+  function setFirebaseError(error) { firebaseReady = false; firebaseError = error && error.message ? error.message : String(error || "Firebase connection unavailable"); render(); }
   function persistLocal() { try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (e) {} }
   function save(reason) {
     persistLocal();
@@ -148,7 +148,7 @@ const firebaseConfig = {
         if (validState(incoming)) { incoming.scores = normalizeScores(incoming.scores); incoming.cardPicks = incoming.cardPicks || {}; state = incoming; persistLocal(); render(); }
       } else if (role === "host" && !pendingRemoteCreate) {
         pendingRemoteCreate = true;
-        save("Khởi tạo phiên Firebase");
+        save("Create Firebase session");
         pendingRemoteCreate = false;
       }
     }, setFirebaseError);
@@ -407,7 +407,7 @@ const firebaseConfig = {
       s.history.push({ round: q.id, teamId: winner, card: card, difficulty: q.difficulty, points: q.points, correct: !!correct, delta: delta });
       s.lastAward = { teamId: winner, card: card, points: q.points, delta: delta, correct: !!correct, noWinner: false, before: before, after: target ? target.score : before };
       s.phase = "result"; s.timerEnd = null; s.autoAt = Date.now() + 6000;
-    }, correct ? "Correct · +" + q.points + " điểm" : "Wrong · 0 points");
+    }, correct ? "Correct · +" + q.points + " pts" : "Wrong · 0 points");
     soundFor(correct ? "win" : "wrong");
   }
   function advanceRound() {
@@ -432,7 +432,7 @@ const firebaseConfig = {
     if (Number.isNaN(date.getTime())) return "—";
     return String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0") + ":" + String(date.getSeconds()).padStart(2, "0") + "." + String(date.getMilliseconds()).padStart(3, "0");
   }
-  function mediaChip(q) { if (!q.media || q.media === "none") return ""; var label = q.media === "audio" ? "◉ NGHE AUDIO" : q.media === "video" ? "▶ VIDEO GỢI Ý" : "▧ LẬT ẢNH"; return '<div class="media-chip">' + label + '</div>'; }
+  function mediaChip(q) { if (!q.media || q.media === "none") return ""; var label = q.media === "audio" ? "◉ AI VOICE" : q.media === "video" ? "▶ VIDEO CLUE" : "▧ IMAGE REVEAL"; return '<div class="media-chip">' + label + '</div>'; }
   function hostControls() {
     var p = state.phase; var q = currentRound();
     if (p === "cover") return '<button class="btn primary large" data-action="start">▶ OPEN VAULT 20</button>';
@@ -559,7 +559,7 @@ const firebaseConfig = {
     if (action === "sound") {
       initAudio();
       var nextSound = !state.sound;
-      mutate(function (s) { s.sound = nextSound; }, nextSound ? "Bật âm thanh" : "Tắt âm thanh");
+      mutate(function (s) { s.sound = nextSound; }, nextSound ? "Sound on" : "Sound off");
       return;
     }
     if (action === "select-team") {
