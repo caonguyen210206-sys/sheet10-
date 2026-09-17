@@ -361,7 +361,7 @@ const firebaseConfig = {
   }
   function teamCard(teamId, card) {
     if (state.phase !== "bet" || Number(teamId) !== selectedTeamId || !team(teamId)) return;
-    card = Number(card); var target = team(teamId); var current = cardFor(teamId); if (!Number.isInteger(card) || card < 1 || card > 25 || hasUsedCard(target, card) || current && Number(current.card) === card) return;
+    card = Number(card); var target = team(teamId); var current = cardFor(teamId); if (!Number.isInteger(card) || card < 1 || card > 20 || hasUsedCard(target, card) || current && Number(current.card) === card) return;
     var pick = { sessionId: state.sessionId, roundIndex: state.roundIndex, teamId: Number(teamId), card: card, at: Date.now() + performance.now() / 1000, nonce: Math.random().toString(36).slice(2) };
     try { localStorage.setItem(cardKey(teamId), JSON.stringify(pick)); } catch (e) {}
     if (firebaseReady) setDoc(doc(db, "games", GAME_ID, "cards", String(state.sessionId) + "-" + String(state.roundIndex) + "-" + String(teamId)), Object.assign({}, pick, { submittedAt: serverTimestamp() }), { merge: true }).catch(setFirebaseError);
@@ -375,7 +375,7 @@ const firebaseConfig = {
     mutate(function (s) {
       Object.keys(s.cardPicks || {}).forEach(function (id) {
         var pick = s.cardPicks[id]; var target = s.scores[Number(id) - 1]; var card = Number(pick && pick.card);
-        if (!target || !Number.isInteger(card) || card < 1 || card > 25 || hasUsedCard(target, card)) return;
+        if (!target || !Number.isInteger(card) || card < 1 || card > 20 || hasUsedCard(target, card)) return;
         target.usedCards = Array.isArray(target.usedCards) ? target.usedCards : [];
         target.usedCards.push(card);
       });
