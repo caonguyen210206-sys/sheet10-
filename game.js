@@ -535,21 +535,57 @@ const firebaseConfig = {
   }
   function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><div class="eyebrow">PPT GAME · 15 ĐỘI</div><h1 class="horror-script">VAULT<br><em>25</em></h1><p>Chọn mã · giành quyền.</p><div class="home-actions"><a class="btn primary large" href="#/host">Mở MC</a><a class="btn ghost large" href="#/stage">Mở sân khấu</a><a class="btn ghost large" href="#/team">Link chung cho đội</a></div><div class="home-note"><div><b>25</b><span>câu</span></div><div><b>15</b><span>đội</span></div><div><b>25</b><span>thẻ / đội</span></div></div></section><section class="museum-card" aria-label="Minh họa két VAULT 25"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">25</div><div class="eyebrow" style="position:absolute;right:27px;bottom:25px;color:#ffffff66">VAULT 25</div></section></div></main>'; }
 
-  function bind() { document.querySelectorAll("[data-action]").forEach(function (el) { el.addEventListener("click", handleAction); }); }
+  function bind() {
+    document.querySelectorAll("[data-action]").forEach(function (el) { el.addEventListener("click", handleAction); });
+  }
   function handleAction(event) {
     var el = event.currentTarget; var action = el.getAttribute("data-action");
     if (action === "start") return startGame();
-    if (action === "begin") return beginRound();
     if (action === "open") return openRound();
     if (action === "reveal") return revealCards();
     if (action === "grade") return grade(el.getAttribute("data-correct") === "1");
     if (action === "next") return advanceRound();
     if (action === "scoreboard") return showScoreboard();
     if (action === "reset") return resetGame();
-    if (action === "sound") { initAudio(); var nextSound = !state.sound; mutate(function (s) { s.sound = nextSound; }, nextSound ? "Bật âm thanh" : "Tắt âm thanh"); return; }
-    if (action === "select-team") { var chosenTeam = Number(el.getAttribute("data-team")); if (Number.isInteger(chosenTeam) && chosenTeam >= 1 && chosenTeam <= 15) { selectedTeamId = chosenTeam; try { localStorage.setItem(TEAM_SELECTION_KEY, String(selectedTeamId)); } catch (e) {} render(); } return; }
-    if (action === "team-switch") { selectedTeamId = 0; try { localStorage.removeItem(TEAM_SELECTION_KEY); } catch (e) {} render(); return; }
-    if (role === "host" && firebaseReady && remoteStateKnown && !remoteStateExists && !pendingRemoteCreate) { pendingRemoteCreate = true; save("Khởi tạo phiên Firebase"); pendingRemoteCreate = false; }
+    if (action === "sound") {
+      initAudio();
+      var nextSound = !state.sound;
+      mutate(function (s) { s.sound = nextSound; }, nextSound ? "Bật âm thanh" : "Tắt âm thanh");
+      return;
+    }
+    if (action === "select-team") {
+      var chosenTeam = Number(el.getAttribute("data-team"));
+      if (Number.isInteger(chosenTeam) && chosenTeam >= 1 && chosenTeam <= 15) {
+        selectedTeamId = chosenTeam;
+        try { localStorage.setItem(TEAM_SELECTION_KEY, String(selectedTeamId)); } catch (e) {}
+        render();
+      }
+      return;
+    }
+    if (action === "team-switch") {
+      selectedTeamId = 0;
+      try { localStorage.removeItem(TEAM_SELECTION_KEY); } catch (e) {}
+      render();
+      return;
+    }
+    if (action === "card") return teamCard(selectedTeamId, Number(el.getAttribute("data-card")));
+  }
+  function render() {
+    parseRoute();
+    if (role === "stage" && state.phase === "result" && state.lastAward && state.lastAward.correct) {
+      var award = state.lastAward;
+      var signature = String(state.sessionId) + ":" + String(state.roundIndex) + ":" + String(award.teamId) + ":" + String(award.after);
+      if (signature !== lastStageCelebration) {
+        lastStageCelebration = signature;
+        initAudio();
+        soundFor("win");
+      }
+    }
+    if (role === "host" && firebaseReady && remoteStateKnown && !remoteStateExists && !pendingRemoteCreate) {
+      pendingRemoteCreate = true;
+      save("Khởi tạo phiên Firebase");
+      pendingRemoteCreate = false;
+    }
     document.getElementById("app").innerHTML = role === "host" ? hostView() : role === "stage" ? stageView(false) : role === "team" ? (selectedTeamId ? teamView() : teamPickerView()) : homeView();
     bind();
   }
