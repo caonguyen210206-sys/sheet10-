@@ -28,6 +28,7 @@ const firebaseConfig = {
   var hostAnswerOpen = false;
   var hostAnswerKey = "";
   var role = "home";
+  var previewMode = new URLSearchParams(location.search).get("preview") || "";
   var state = null;
   var firebaseApp = initializeApp(firebaseConfig);
   var auth = getAuth(firebaseApp);
@@ -55,6 +56,26 @@ const firebaseConfig = {
   };
 
   var questionBank = [{"title":"Downsizing","visual":"downsize","difficulty":1,"question":"A company has suffered a fall in sales and decides to permanently reduce the number of employees in order to lower labour costs. What is this strategy called?","options":["Rightsizing","Downsizing","Recruitment","Job sharing"],"answer":"B","hint":"The workforce is permanently reduced to lower labour costs."},{"title":"Delayering","visual":"delayer","difficulty":1,"question":"A business keeps most of its employees but removes several levels of managers so that information can move more quickly between senior leaders and workers. What is this called?","options":["Delayering","Expansion","Subcontracting","Reorganization of staff benefits"],"answer":"A","hint":"The company removes layers of management."},{"title":"Outsourcing","visual":"outsource","difficulty":1,"question":"Instead of maintaining an internal accounting department, a company pays an independent firm to perform all of its accounting activities. Which practice is being used?","options":["Outsourcing","Recruitment","Manufacturing","Appointment"],"answer":"A","hint":"An outside company performs the activity."},{"title":"Job Sharing","visual":"jobshare","difficulty":1,"question":"Anna works Monday to Wednesday morning, while another employee works Wednesday afternoon to Friday. Together, they are responsible for one full-time position. What arrangement is this?","options":["Temporary employment","Job sharing","Overtime work","Shift work"],"answer":"B","hint":"Two employees share one full-time position."},{"title":"Privatization","visual":"privatize","difficulty":1,"question":"A postal company that used to belong to the government is transferred into private ownership and begins operating for private investors. Which verb describes this action?","options":["Modernize","Privatize","Reorganize","Appoint"],"answer":"B","hint":"Ownership moves from the government to private investors."},{"title":"Job Security","visual":"security","difficulty":1,"question":"An employee chooses a company partly because it has rarely dismissed workers during economic downturns. Which employment benefit is the employee mainly concerned about?","options":["Higher productivity","Job security","Promotion opportunities","Flexible working hours"],"answer":"B","hint":"The employee wants protection from losing the job."},{"title":"Rightsizing","visual":"rightsize","difficulty":2,"question":"A firm realizes that its current workforce is too large for present demand, but managers do not want to cut as many employees as possible. Instead, they calculate the number of workers actually required and adjust staffing to that level. What is this process called?","options":["Rightsizing","Dismissal","Reallocation of salaries","Staff training"],"answer":"A","hint":"Staffing is adjusted to the number of workers actually needed."},{"title":"Flexible Labour Market","visual":"flexmarket","difficulty":2,"question":"In one country, companies can quickly employ people on temporary contracts when demand rises and reduce the number of non-permanent employees when demand falls. Which term best describes this labour environment?","options":["Permanent employment system","Flexible labour market","Public sector employment","Management hierarchy"],"answer":"B","hint":"The workforce can expand and shrink quickly."},{"title":"Subcontractor","visual":"subcontract","difficulty":2,"question":"A construction company wins a large project but does not have specialists to install the electrical system. It hires another independent company to complete only that part of the project. What is the second company called?","options":["Shareholder","Subcontractor","Trade representative","Permanent employee"],"answer":"B","hint":"The independent company completes one contracted part of a larger project."},{"title":"Redundancy Package","visual":"redundancy","difficulty":2,"question":"Twenty employees lose their positions after a factory introduces new technology. Because the workers are not responsible for losing their jobs, the company gives each of them financial compensation and other benefits. What is this compensation called?","options":["Annual bonus","Redundancy package","Commission payment","Pension contribution"],"answer":"B","hint":"The payment supports employees whose jobs disappear."},{"title":"Delocalization","visual":"delocalize","difficulty":2,"question":"A clothing company closes one of its factories in its home country and moves production to another country where wages and operating costs are considerably lower. Which term most precisely describes this decision?","options":["Delocalization","Relocation","Outsourcing","Restructuring"],"answer":"A","hint":"Production moves abroad to reduce operating costs."},{"title":"Rationalization","visual":"rationalize","difficulty":3,"question":"A company changes the way its departments operate, removes inefficient activities and simplifies procedures with the specific aim of reducing costs and increasing efficiency. What is this process called?","options":null,"answer":"Rationalization","hint":"The process removes waste and makes operations more efficient."},{"title":"Contract Work","visual":"contract","difficulty":3,"question":"A graphic designer is employed by a company only to complete a six-month advertising project. After the project ends, the employment agreement also ends. What type of work is this?","options":null,"answer":"Contract work","hint":"The job lasts for a specified project and period."},{"title":"Casual Work","visual":"casual","difficulty":3,"question":"A restaurant calls additional workers only when it is unusually busy. Their hours are irregular and there is no guarantee that they will work every week. What type of employment is this?","options":null,"answer":"Casual work","hint":"Workers are called in when extra help is needed."},{"title":"Turnover","visual":"turnover","difficulty":3,"question":"A company reports that the total value of its sales for the year increased from €15 million to €19 million. Which business term refers to this total sales figure?","options":null,"answer":"Turnover","hint":"This term means the total sales revenue for a period."},{"title":"Monopoly","visual":"monopoly","difficulty":4,"question":"Which market situation is represented by the image?","options":["Monopoly","Perfect competition","Oligopoly","Monopolistic competition"],"answer":"A","hint":"One company supplies the entire market."},{"title":"Trade Union","visual":"union","difficulty":4,"question":"Which organization is most likely being represented?","options":["Board of directors","Trade union","Employee association","Management committee"],"answer":"B","hint":"Workers join together to negotiate working conditions, salaries and job losses."},{"title":"Automated Machine","visual":"machine","difficulty":4,"question":"What has most likely replaced part of the manual sorting work?","options":["Temporary workers","Automated machines","Outsourced workers","Additional permanent staff"],"answer":"B","hint":"Machines now sort parcels on the conveyor belt."},{"title":"Technological Progress","visual":"progress","difficulty":5,"question":"What major economic development connects all of these changes?","options":null,"answer":"Technological progress","hint":"Technology raises productivity, changes jobs and creates new technical work."},{"title":"Preserve Jobs","visual":"jobs","difficulty":5,"question":"Instead of dismissing workers, what is the company trying to do?","options":null,"answer":"Preserve jobs","hint":"The company reduces working hours so employees can stay."}];
+  var maskedHints = {
+    12: "R _ _ i _ n _ _ i _ a _ i _ n",
+    13: "_ o _ t _ a _ t   _ o _ k",
+    14: "_ a _ u _ l   _ o _ k",
+    15: "_ u _ n _ v _ _",
+    19: "_ _ ch _ _ _ _ i _ a _   _ _ o _ _ e _ _",
+    20: "_ _ e _ e _ _ e   _ o _ _"
+  };
+  Object.keys(maskedHints).forEach(function (sourceNumber) {
+    questionBank[Number(sourceNumber) - 1].hint = maskedHints[sourceNumber];
+  });
+  var imageAssets = {
+    16: "assets/images/q16-monopoly.webp",
+    17: "assets/images/q17-trade-union.webp",
+    18: "assets/images/q18-automated-machine.webp"
+  };
+  var videoAssets = {
+    19: "assets/video/q19.mp4",
+    20: "assets/video/q20.mp4"
+  };
   var fixedOrder = [0, 6, 1, 11, 7, 15, 2, 12, 8, 18, 3, 16, 9, 13, 4, 19, 10, 17, 5, 14];
   var rounds = fixedOrder.map(function (sourceIndex, index) {
     var round = questionBank[sourceIndex];
@@ -75,11 +96,44 @@ const firebaseConfig = {
       cardPicks: {},
       timerEnd: null,
       autoAt: null,
+      questionStep: "prompt",
+      hintRevealed: false,
+      imageRevealed: false,
       scores: teamNames.map(function (name, i) { return { id: i + 1, name: name, score: 0, wins: 0, rightsWon: 0, correctCount: 0, usedCards: [] }; }),
       history: [],
       lastAward: null,
       sound: true
     };
+  }
+  function makePreviewState(modeName) {
+    var match = /^q(\d{1,2})(?:-(video|prompt|hint|full|result|wrong))?$/i.exec(String(modeName || ""));
+    if (!match) return null;
+    var sourceNumber = Number(match[1]);
+    var roundIndex = rounds.findIndex(function (q) { return Number(q.sourceNumber) === sourceNumber; });
+    if (roundIndex < 0) return null;
+    var mode = String(match[2] || "").toLowerCase();
+    var q = rounds[roundIndex];
+    var demo = freshState();
+    demo.sessionId = "preview-" + sourceNumber;
+    demo.roundIndex = roundIndex;
+    demo.winnerTeam = 1;
+    demo.winnerCard = 20;
+    demo.scores[0].score = 195; demo.scores[1].score = 150; demo.scores[2].score = 125; demo.scores[3].score = 95; demo.scores[4].score = 75;
+    demo.questionStep = q.media === "video" && mode !== "prompt" ? "video" : "prompt";
+    demo.hintRevealed = mode === "hint";
+    demo.imageRevealed = mode === "full";
+    demo.timerEnd = Date.now() + 60000;
+    if (mode === "result" || mode === "wrong") {
+      var correct = mode === "result";
+      demo.phase = "result";
+      demo.lastAward = { teamId: 1, card: 20, points: q.points, delta: correct ? q.points : 0, correct: correct, noWinner: false, before: 195 - (correct ? q.points : 0), after: 195 };
+      demo.autoAt = null;
+      demo.timerEnd = null;
+      demo.imageRevealed = true;
+    } else {
+      demo.phase = "question";
+    }
+    return demo;
   }
 
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
@@ -95,6 +149,15 @@ const firebaseConfig = {
       return t;
     });
   }
+  function normalizeRuntimeState(value) {
+    if (!value) return value;
+    if (value.phase === "mascot") value.phase = "ready";
+    value.cardPicks = value.cardPicks || {};
+    value.questionStep = value.questionStep === "video" ? "video" : "prompt";
+    value.hintRevealed = !!value.hintRevealed;
+    value.imageRevealed = !!value.imageRevealed;
+    return value;
+  }
   function loadState() {
     try {
       var raw = localStorage.getItem(STATE_KEY);
@@ -102,15 +165,13 @@ const firebaseConfig = {
         var loaded = JSON.parse(raw);
         if (loaded && Number(loaded.version) === 4 && Array.isArray(loaded.scores) && loaded.scores.length === 15 && loaded.phase) {
           loaded.scores = normalizeScores(loaded.scores);
-          loaded.cardPicks = loaded.cardPicks || {};
-          if (loaded.phase === "mascot") loaded.phase = "ready";
-          return loaded;
+          return normalizeRuntimeState(loaded);
         }
       }
     } catch (e) {}
     return freshState();
   }
-  state = loadState();
+  state = makePreviewState(previewMode) || loadState();
 
   var bus = null;
   try { bus = new BroadcastChannel(CHANNEL); } catch (e) {}
@@ -126,10 +187,11 @@ const firebaseConfig = {
     if (!firebaseReady && role === "host" && event.key && event.key.indexOf(CARD_PREFIX + state.sessionId + "-" + state.roundIndex + "-") === 0) scanCards();
   });
 
-  function validState(value) { if (value && value.phase === "mascot") value.phase = "ready"; return !!(value && Number(value.version) === 4 && Array.isArray(value.scores) && value.scores.length === 15 && value.phase); }
+  function validState(value) { normalizeRuntimeState(value); return !!(value && Number(value.version) === 4 && Array.isArray(value.scores) && value.scores.length === 15 && value.phase); }
   function setFirebaseError(error) { firebaseReady = false; firebaseError = error && error.message ? error.message : String(error || "Firebase connection unavailable"); render(); }
   function persistLocal() { try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (e) {} }
   function save(reason) {
+    if (previewMode) { render(); return; }
     persistLocal();
     if (firebaseReady && gameRef) {
       var outgoing = clone(state);
@@ -148,7 +210,7 @@ const firebaseConfig = {
       remoteStateExists = snapshot.exists();
       if (snapshot.exists()) {
         var incoming = snapshot.data();
-        if (validState(incoming)) { incoming.scores = normalizeScores(incoming.scores); incoming.cardPicks = incoming.cardPicks || {}; state = incoming; persistLocal(); render(); }
+        if (validState(incoming)) { incoming.scores = normalizeScores(incoming.scores); state = normalizeRuntimeState(incoming); persistLocal(); render(); }
       } else if (role === "host" && !pendingRemoteCreate) {
         pendingRemoteCreate = true;
         save("Create Firebase session");
@@ -393,7 +455,7 @@ const firebaseConfig = {
     hostAnswerOpen = false; hostAnswerKey = "";
     initAudio(); clearRoundKeys();
     mutate(function (s) {
-      s.sessionId = makeSessionId(); s.phase = "ready"; s.roundIndex = 0; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.history = []; s.lastAward = null; s.sound = true;
+      s.sessionId = makeSessionId(); s.phase = "ready"; s.roundIndex = 0; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.questionStep = "prompt"; s.hintRevealed = false; s.imageRevealed = false; s.history = []; s.lastAward = null; s.sound = true;
       s.scores.forEach(function (t) { t.score = 0; t.wins = 0; t.rightsWon = 0; t.correctCount = 0; t.usedCards = []; });
     }, "Open VAULT 20");
     soundFor("open");
@@ -406,7 +468,7 @@ const firebaseConfig = {
   function openRound() {
     if (state.phase !== "ready") return;
     clearRoundKeys();
-    mutate(function (s) { s.phase = "bet"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = Date.now() + 12000; s.autoAt = null; s.lastAward = null; }, "Open question " + String(state.roundIndex + 1).padStart(2, "0"));
+    mutate(function (s) { s.phase = "bet"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = Date.now() + 12000; s.autoAt = null; s.questionStep = "prompt"; s.hintRevealed = false; s.imageRevealed = false; s.lastAward = null; }, "Open question " + String(state.roundIndex + 1).padStart(2, "0"));
     soundFor("open");
   }
   function scanCards() {
@@ -454,7 +516,7 @@ const firebaseConfig = {
         target.usedCards = Array.isArray(target.usedCards) ? target.usedCards : [];
         target.usedCards.push(card);
       });
-      s.winnerTeam = winner ? Number(winner.teamId) : null; s.winnerCard = winner ? Number(winner.card) : null; s.timerEnd = null; s.phase = winner ? "reveal" : "result"; s.autoAt = Date.now() + (winner ? 10000 : 6000);
+      s.winnerTeam = winner ? Number(winner.teamId) : null; s.winnerCard = winner ? Number(winner.card) : null; s.timerEnd = null; s.phase = winner ? "reveal" : "result"; s.autoAt = Date.now() + (winner ? 10000 : 8000);
       s.lastAward = winner ? null : { teamId: null, card: null, points: 0, delta: 0, correct: false, noWinner: true };
     }, winner ? "Reveal · highest code wins" : "No code · 0 points");
     soundFor(winner ? "reveal" : "wrong");
@@ -463,12 +525,41 @@ const firebaseConfig = {
     if (state.phase !== "reveal") return;
     var q = currentRound(); var seconds = q.difficulty >= 4 ? 25 : 20;
     hostAnswerOpen = false; hostAnswerKey = q.id;
-    mutate(function (s) { s.phase = "question"; s.timerEnd = Date.now() + seconds * 1000; s.autoAt = null; }, "Open question");
+    mutate(function (s) {
+      s.phase = "question";
+      s.questionStep = q.media === "video" ? "video" : "prompt";
+      s.hintRevealed = false;
+      s.imageRevealed = false;
+      s.timerEnd = q.media === "video" ? null : Date.now() + seconds * 1000;
+      s.autoAt = null;
+    }, q.media === "video" ? "Play video clue" : "Open question");
     soundFor("open");
+  }
+  function showVideoQuestion() {
+    var q = currentRound();
+    if (state.phase !== "question" || q.media !== "video" || state.questionStep !== "video") return;
+    mutate(function (s) {
+      s.questionStep = "prompt";
+      s.timerEnd = Date.now() + 25000;
+    }, "Video finished · show question");
+    soundFor("reveal");
+  }
+  function revealHint() {
+    var q = currentRound();
+    if (role !== "host" || state.phase !== "question" || !q.hint || q.options) return;
+    mutate(function (s) { s.hintRevealed = true; }, "Reveal answer hint");
+    soundFor("card");
+  }
+  function revealImage() {
+    var q = currentRound();
+    if (role !== "host" || state.phase !== "question" || q.media !== "image" || state.imageRevealed) return;
+    mutate(function (s) { s.imageRevealed = true; }, "Reveal full image");
+    soundFor("reveal");
   }
   function grade(correct) {
     if (state.phase !== "question" || !state.winnerTeam) return;
     var winner = state.winnerTeam; var q = currentRound();
+    if (q.media === "video" && state.questionStep === "video") return;
     mutate(function (s) {
       var target = s.scores.find(function (t) { return t.id === winner; }); var card = Number(s.winnerCard) || 0; var delta = 0; var before = target ? target.score : 0;
       if (target) {
@@ -481,7 +572,7 @@ const firebaseConfig = {
       }
       s.history.push({ round: q.id, teamId: winner, card: card, difficulty: q.difficulty, points: q.points, correct: !!correct, delta: delta });
       s.lastAward = { teamId: winner, card: card, points: q.points, delta: delta, correct: !!correct, noWinner: false, before: before, after: target ? target.score : before };
-      s.phase = "result"; s.timerEnd = null; s.autoAt = Date.now() + 6000;
+      s.phase = "result"; s.timerEnd = null; s.imageRevealed = true; s.autoAt = Date.now() + 10000;
     }, correct ? "Correct · +" + q.points + " pts" : "Wrong · 0 points");
     soundFor(correct ? "win" : "wrong");
   }
@@ -490,7 +581,7 @@ const firebaseConfig = {
     if (state.roundIndex >= rounds.length - 1) { mutate(function (s) { s.phase = "finish"; s.autoAt = null; s.timerEnd = null; }, "Finish VAULT 20"); soundFor("open"); return; }
     hostAnswerOpen = false; hostAnswerKey = "";
     clearRoundKeys();
-    mutate(function (s) { s.roundIndex += 1; s.phase = "ready"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.lastAward = null; }, "Next question");
+    mutate(function (s) { s.roundIndex += 1; s.phase = "ready"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.questionStep = "prompt"; s.hintRevealed = false; s.imageRevealed = false; s.lastAward = null; }, "Next question");
   }
   function showScoreboard() { if (state.phase !== "result") return; mutate(function (s) { s.phase = "scoreboard"; s.autoAt = null; }, "Open leaderboard"); }
   function resetGame() { if (!window.confirm("Reset VAULT 20 and scores?")) return; clearRoundKeys(); state = freshState(); save("Reset session"); }
@@ -498,9 +589,8 @@ const firebaseConfig = {
   function openHostAnswer() {
     if (role !== "host" || state.phase !== "question") return;
     var q = currentRound();
-    if (q.options) return;
     hostAnswerKey = q.id;
-    hostAnswerOpen = true;
+    hostAnswerOpen = !hostAnswerOpen;
     render();
   }
   function replayVoiceOnHost() {
@@ -510,6 +600,16 @@ const firebaseConfig = {
     initAudio();
     speakQuestion(q, true);
   }
+  function answerText(q) {
+    if (!q) return "—";
+    if (q.options && /^[A-D]$/i.test(String(q.answer))) {
+      var index = String(q.answer).toUpperCase().charCodeAt(0) - 65;
+      return String(q.answer).toUpperCase() + " · " + (q.options[index] || "");
+    }
+    return String(q.answer || "—");
+  }
+  function imageAssetFor(q) { return imageAssets[Number(q && q.sourceNumber)] || "assets/vault-shard.jpg"; }
+  function videoAssetFor(q) { return videoAssets[Number(q && q.sourceNumber)] || ""; }
 
   function difficultyBadge(q) {
     var meta = difficultyMeta[q.difficulty];
@@ -534,10 +634,16 @@ const firebaseConfig = {
     if (p === "question") {
       if (hostAnswerKey !== q.id) { hostAnswerKey = q.id; hostAnswerOpen = false; }
       var who = state.winnerTeam ? "TEAM " + String(state.winnerTeam).padStart(2, "0") + " · " + esc(teamName(state.winnerTeam)) : "TEAM NOT SET";
-      var replay = q.media === "audio" ? '<button class="btn ghost large" data-action="replay-voice">↻ REPLAY AUDIO</button>' : '';
-      var answerButton = !q.options ? '<button class="btn gold large" data-action="open-answer">' + (hostAnswerOpen ? '✓ ANSWER OPEN' : '▣ OPEN ANSWER') + '</button>' : '';
-      var answerPanel = !q.options && hostAnswerOpen ? '<div class="host-answer-panel"><span class="eyebrow">ANSWER KEY</span><b>' + esc(q.answer) + '</b></div>' : '';
-      var utilities = replay || answerButton ? '<div class="host-utility-row">' + replay + answerButton + '</div>' : '';
+      if (q.media === "video" && state.questionStep === "video") {
+        return '<div class="remote-live video-live"><span class="eyebrow">VIDEO CLUE · PLAYING ON STAGE</span><b>' + who + '</b><span class="muted">QUESTION STAYS HIDDEN UNTIL VIDEO ENDS</span></div><button class="btn gold large" data-action="show-question">▶ SHOW QUESTION NOW</button>';
+      }
+      var tools = [];
+      if (q.media === "audio") tools.push('<button class="btn ghost large" data-action="replay-voice">↻ REPLAY AUDIO</button>');
+      if (!q.options && q.hint) tools.push('<button class="btn ghost large" data-action="reveal-hint" ' + (state.hintRevealed ? 'disabled' : '') + '>' + (state.hintRevealed ? '✓ HINT ON STAGE' : '✦ REVEAL HINT') + '</button>');
+      if (q.media === "image") tools.push('<button class="btn ghost large" data-action="reveal-image" ' + (state.imageRevealed ? 'disabled' : '') + '>' + (state.imageRevealed ? '✓ FULL IMAGE OPEN' : '◫ REVEAL FULL IMAGE') + '</button>');
+      tools.push('<button class="btn gold large" data-action="open-answer">' + (hostAnswerOpen ? '× HIDE ANSWER' : '▣ SHOW ANSWER') + '</button>');
+      var answerPanel = hostAnswerOpen ? '<div class="host-answer-panel"><span class="eyebrow">ANSWER KEY · HOST ONLY</span><b>' + esc(answerText(q)) + '</b></div>' : '';
+      var utilities = '<div class="host-utility-row">' + tools.join("") + '</div>';
       return '<div class="remote-live"><span class="eyebrow">ANSWER · CODE ' + state.winnerCard + '</span><b>' + who + '</b><span class="muted">CORRECT +' + q.points + ' · WRONG 0</span></div>' + utilities + answerPanel + '<div class="remote-duo"><button class="btn green large" data-action="grade" data-correct="1">✓ CORRECT</button><button class="btn danger large" data-action="grade" data-correct="0">× WRONG</button></div>';
     }
     if (p === "result") {
@@ -594,17 +700,29 @@ const firebaseConfig = {
   function stageQuestion() {
     var q = currentRound();
     var who = '<div class="winner-card"><i class="winner-dot"></i><b>TEAM ' + String(state.winnerTeam).padStart(2, "0") + ' · ' + esc(teamName(state.winnerTeam).replace("Team ", "")) + '</b><span class="tag">CODE ' + state.winnerCard + '</span></div>';
+    var frameStart = '<div class="slide stage-question media-' + esc(q.media) + '"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/20</span>' + who;
+    if (q.media === "video" && state.questionStep === "video") {
+      var videoAction = role === "stage" ? ' data-action="play-video" role="button" tabindex="0" aria-label="Play video clue"' : '';
+      var autoPlay = role === "stage" ? ' autoplay' : '';
+      return frameStart + '<div class="video-clue-shell"' + videoAction + '><video class="stage-video" data-stage-video src="' + esc(videoAssetFor(q)) + '" preload="auto" playsinline' + autoPlay + '></video><div class="video-vignette"></div><div class="video-clue-label"><span>★★★★★</span><b>RAPID VIDEO CLUE</b></div><button class="video-play-fallback" type="button" tabindex="-1">▶ PLAY CLUE</button><div class="video-progress-line"></div></div><div class="video-lock"><i></i><span>QUESTION LOCKED</span></div></div>';
+    }
     var voiceAttrs = role === "stage" ? ' data-action="voice" role="button" tabindex="0" aria-label="Play the audio clue" title="Play audio"' : ' role="img" aria-label="Audio clue"';
     var listenOnly = q.media === "audio" ? '<div class="voice-only"' + voiceAttrs + '><div class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><strong>LISTEN</strong></div>' : '<h2>' + esc(q.question) + '</h2>';
     var options = q.options ? '<div class="options">' + q.options.map(function (o, i) { return '<div class="option"><b>' + String.fromCharCode(65 + i) + '</b><span>' + esc(o) + '</span></div>'; }).join("") + '</div>' : '<div class="open-answer">OPEN ANSWER</div>';
-    var art = q.media === "image" ? '<div class="slide-visual has-image square-art media-placeholder"><img class="slide-art-image" src="assets/vault-shard.jpg" alt=""><span>IMAGE CLUE PENDING</span></div>' : "";
-    var rapid = q.media === "video" ? '<div class="rapid-cue"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span></div>' : "";
-    return '<div class="slide"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/20</span>' + who + art + rapid + '<div class="question-box ' + (q.media === "image" ? "has-art" : "") + ' ' + (q.media === "audio" ? "voice-question" : "") + '">' + listenOnly + options + '</div></div>';
+    var hint = state.hintRevealed && !q.options && q.hint ? '<div class="stage-hint"><span>HINT</span><b>' + esc(q.hint) + '</b></div>' : '';
+    if (q.media === "image") {
+      var revealClass = state.imageRevealed ? " is-revealed" : "";
+      var image = '<div class="image-clue' + revealClass + '"><img src="' + esc(imageAssetFor(q)) + '" alt="Image clue"><div class="image-curtain"><i></i><i></i><i></i></div><span class="image-state">' + (state.imageRevealed ? "FULL IMAGE" : "50% REVEALED") + '</span></div>';
+      return frameStart + '<div class="media-question-grid">' + image + '<div class="question-box image-question">' + listenOnly + options + '</div></div></div>';
+    }
+    return frameStart + '<div class="question-box ' + (q.media === "audio" ? "voice-question" : "") + '">' + listenOnly + hint + options + '</div></div>';
   }
   function stageResult() {
-    var award = state.lastAward || { delta: 0, teamId: null, noWinner: true, correct: false }; var ok = !!award.correct; var n = award.noWinner ? "0" : (award.correct ? "+" : "") + award.delta;
+    var q = currentRound(); var award = state.lastAward || { delta: 0, teamId: null, noWinner: true, correct: false }; var ok = !!award.correct; var n = award.noWinner ? "0" : (award.correct ? "+" : "") + award.delta;
     var burst = ok ? '<div class="celebration-burst" aria-hidden="true"><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i></div>' : "";
-    return '<div class="slide result-slide ' + (ok ? "correct-result" : "wrong-result") + '">' + burst + '<div class="result-mark ' + (ok ? "" : "wrong") + '">' + (award.noWinner ? "·" : (ok ? "✓" : "×")) + '</div><div class="slide-kicker">' + (award.noWinner ? "NO CODE" : (ok ? "VAULT OPEN" : "WRONG · 0 PTS")) + '</div><div class="award">' + n + '</div><h1 style="font-size:clamp(28px,5vw,62px)">' + (award.noWinner ? "EVERYONE" : esc(teamName(award.teamId).replace("Team ", ""))) + '</h1></div>';
+    var fullImage = q.media === "image" ? '<div class="result-clue-image"><img src="' + esc(imageAssetFor(q)) + '" alt="Full image clue"><span>FULL CLUE</span></div>' : '';
+    var resultCopy = '<div class="result-copy"><div class="result-mark ' + (ok ? "" : "wrong") + '">' + (award.noWinner ? "·" : (ok ? "✓" : "×")) + '</div><div class="slide-kicker">' + (award.noWinner ? "NO CODE" : (ok ? "VAULT OPEN" : "WRONG · 0 PTS")) + '</div><div class="award">' + n + '</div><h1>' + (award.noWinner ? "EVERYONE" : esc(teamName(award.teamId).replace("Team ", ""))) + '</h1><div class="result-answer"><span>ANSWER</span><b>' + esc(answerText(q)) + '</b></div></div>';
+    return '<div class="slide result-slide ' + (ok ? "correct-result" : "wrong-result") + (fullImage ? " result-has-image" : "") + '">' + burst + (fullImage ? '<div class="result-grid">' + fullImage + resultCopy + '</div>' : resultCopy) + '</div>';
   }
   function stageScoreboard() { var list = scoreList(5); var max = Math.max(1, list[0] ? list[0].score : 1); return '<div class="slide stage-scoreboard"><div class="slide-kicker">LEADERBOARD · UPDATED</div><h1 style="font-size:clamp(34px,5.6vw,74px)">WHO IS STILL STANDING?</h1><div class="stage-score-strip">' + list.map(function (t, i) { return '<div class="score-row"><span class="score-rank">0' + (i + 1) + '</span><div><div class="score-name">' + esc(t.name) + '</div><div class="score-bar"><i style="width:' + Math.max(4, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="score-points">' + t.score + ' pts</span></div>'; }).join("") + '</div></div>'; }
   function stageFinish() { var list = scoreList(3); return '<div class="slide"><div class="slide-kicker">SESSION COMPLETE · VAULT OPEN</div><h1 style="font-size:clamp(37px,6.3vw,90px)">TOP THREE<br><em>TEAMS</em></h1><div class="podium"><div class="podium-col p2"><b>' + esc(list[1] ? list[1].name : "—") + '</b><div class="podium-block">02</div></div><div class="podium-col p1"><b>' + esc(list[0] ? list[0].name : "—") + '</b><div class="podium-block">01</div></div><div class="podium-col p3"><b>' + esc(list[2] ? list[2].name : "—") + '</b><div class="podium-block">03</div></div></div><p class="slide-sub">20 codes used · 20 questions scored.</p></div>'; }
@@ -644,6 +762,33 @@ const firebaseConfig = {
   }
   function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><div class="eyebrow">PPT GAME · 15 TEAMS</div><h1 class="horror-script">VAULT<br><em>20</em></h1><p>Pick a code · win the answer.</p><div class="home-actions"><a class="btn primary large" href="#/host">OPEN HOST</a><a class="btn ghost large" href="#/stage">OPEN STAGE</a><a class="btn ghost large" href="#/team">SHARED TEAM LINK</a></div><div class="home-note"><div><b>20</b><span>questions</span></div><div><b>15</b><span>teams</span></div><div><b>20</b><span>codes / team</span></div></div></section><section class="museum-card" aria-label="VAULT 20 illustration"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">20</div><div class="eyebrow" style="position:absolute;right:27px;bottom:25px;color:#ffffff66">VAULT 20</div></section></div></main>'; }
 
+  function playStageVideo() {
+    if (role !== "stage" || state.phase !== "question" || state.questionStep !== "video") return;
+    var video = document.querySelector("[data-stage-video]");
+    var shell = video && video.closest(".video-clue-shell");
+    if (!video) return;
+    video.muted = !state.sound;
+    var promise = video.play();
+    if (promise && typeof promise.then === "function") {
+      promise.then(function () { if (shell) shell.classList.remove("needs-play"); }).catch(function () { if (shell) shell.classList.add("needs-play"); });
+    }
+  }
+  function prepareStageVideo() {
+    if (role !== "stage" || state.phase !== "question" || state.questionStep !== "video") return;
+    var video = document.querySelector("[data-stage-video]");
+    var shell = video && video.closest(".video-clue-shell");
+    if (!video || !shell) return;
+    video.muted = !state.sound;
+    video.addEventListener("playing", function () { shell.classList.remove("needs-play", "video-error"); });
+    video.addEventListener("timeupdate", function () {
+      var progress = video.duration ? Math.min(100, video.currentTime / video.duration * 100) : 0;
+      shell.style.setProperty("--video-progress", progress + "%");
+    });
+    video.addEventListener("ended", function () { showVideoQuestion(); }, { once: true });
+    video.addEventListener("error", function () { shell.classList.add("needs-play", "video-error"); }, { once: true });
+    playStageVideo();
+  }
+
   function bind() {
     document.querySelectorAll("[data-action]").forEach(function (el) { el.addEventListener("click", handleAction); });
   }
@@ -659,6 +804,10 @@ const firebaseConfig = {
     if (action === "voice") { if (role === "stage") { initAudio(); speakQuestion(currentRound(), true); } return; }
     if (action === "replay-voice") return replayVoiceOnHost();
     if (action === "open-answer") return openHostAnswer();
+    if (action === "reveal-hint") return revealHint();
+    if (action === "reveal-image") return revealImage();
+    if (action === "show-question") return showVideoQuestion();
+    if (action === "play-video") return playStageVideo();
     if (action === "fullscreen") {
       var stageTarget = document.querySelector(".stage-root:not(.stage-compact)") || document.documentElement;
       if (document.fullscreenElement) {
@@ -722,6 +871,7 @@ const firebaseConfig = {
     document.body.classList.toggle("stage-mode", role === "stage");
     document.getElementById("app").innerHTML = role === "host" ? hostView() : role === "stage" ? stageView(false) : role === "team" ? (selectedTeamId ? teamView() : teamPickerView()) : homeView();
     bind();
+    if (role === "stage" && state.phase === "question" && currentRound().media === "video" && state.questionStep === "video") setTimeout(prepareStageVideo, 60);
   }
   document.addEventListener("keydown", function (event) {
     if (role !== "host" || event.target && /input|textarea/i.test(event.target.tagName)) return;
@@ -740,5 +890,5 @@ const firebaseConfig = {
   }, 220);
   parseRoute();
   render();
-  bootFirebase();
+  if (!previewMode) bootFirebase();
 })();
