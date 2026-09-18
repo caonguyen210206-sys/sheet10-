@@ -25,6 +25,8 @@ const firebaseConfig = {
   var lastStageCelebration = "";
   var lastSpokenQuestion = "";
   var voiceAudio = null;
+  var hostAnswerOpen = false;
+  var hostAnswerKey = "";
   var role = "home";
   var state = null;
   var firebaseApp = initializeApp(firebaseConfig);
@@ -304,10 +306,18 @@ const firebaseConfig = {
     var source = q && Number(q.sourceNumber);
     return source ? "assets/audio/q" + String(source).padStart(2, "0") + ".mp3" : "";
   }
+  function stopBrowserVoice() {
+    if (typeof window.speechSynthesis === "undefined") return;
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+  }
   function stopVoiceAudio() {
     if (!voiceAudio) return;
     try { voiceAudio.pause(); voiceAudio.currentTime = 0; } catch (e) {}
     voiceAudio = null;
+  }
+  function stopVoicePlayback() {
+    stopVoiceAudio();
+    stopBrowserVoice();
   }
   function browserVoice(q) {
     if (!q || q.media !== "audio" || typeof window.speechSynthesis === "undefined" || typeof window.SpeechSynthesisUtterance === "undefined") return;
@@ -349,6 +359,10 @@ const firebaseConfig = {
   }
   function speakQuestion(q, fromGesture) {
     if (!q || q.media !== "audio") return;
+    // Automatic playback belongs to the projector. Host playback is only
+    // allowed through the explicit replay button.
+    if (role !== "stage" && !(role === "host" && fromGesture)) return;
+    stopVoicePlayback();
     var source = voiceAssetFor(q);
     if (source && typeof window.Audio === "function") {
       stopVoiceAudio();
@@ -357,6 +371,11 @@ const firebaseConfig = {
         audio.preload = "auto";
         audio.volume = .98;
         audio.onended = function () { if (voiceAudio === audio) voiceAudio = null; };
+        audio.onerror = function () {
+          if (voiceAudio !== audio) return;
+          voiceAudio = null;
+          browserVoice(q);
+        };
         voiceAudio = audio;
         var playPromise = audio.play();
         if (playPromise && typeof playPromise.catch === "function") {
@@ -371,6 +390,7 @@ const firebaseConfig = {
     browserVoice(q);
   }
   function startGame() {
+    hostAnswerOpen = false; hostAnswerKey = "";
     initAudio(); clearRoundKeys();
     mutate(function (s) {
       s.sessionId = makeSessionId(); s.phase = "ready"; s.roundIndex = 0; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.history = []; s.lastAward = null; s.sound = true;
@@ -442,8 +462,8 @@ const firebaseConfig = {
   function enterQuestion() {
     if (state.phase !== "reveal") return;
     var q = currentRound(); var seconds = q.difficulty >= 4 ? 25 : 20;
+    hostAnswerOpen = false; hostAnswerKey = q.id;
     mutate(function (s) { s.phase = "question"; s.timerEnd = Date.now() + seconds * 1000; s.autoAt = null; }, "Open question");
-    speakQuestion(q, false);
     soundFor("open");
   }
   function grade(correct) {
@@ -468,11 +488,28 @@ const firebaseConfig = {
   function advanceRound() {
     if (state.phase !== "result" && state.phase !== "scoreboard") return;
     if (state.roundIndex >= rounds.length - 1) { mutate(function (s) { s.phase = "finish"; s.autoAt = null; s.timerEnd = null; }, "Finish VAULT 20"); soundFor("open"); return; }
+    hostAnswerOpen = false; hostAnswerKey = "";
     clearRoundKeys();
     mutate(function (s) { s.roundIndex += 1; s.phase = "ready"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.lastAward = null; }, "Next question");
   }
   function showScoreboard() { if (state.phase !== "result") return; mutate(function (s) { s.phase = "scoreboard"; s.autoAt = null; }, "Open leaderboard"); }
   function resetGame() { if (!window.confirm("Reset VAULT 20 and scores?")) return; clearRoundKeys(); state = freshState(); save("Reset session"); }
+
+  function openHostAnswer() {
+    if (role !== "host" || state.phase !== "question") return;
+    var q = currentRound();
+    if (q.options) return;
+    hostAnswerKey = q.id;
+    hostAnswerOpen = true;
+    render();
+  }
+  function replayVoiceOnHost() {
+    if (role !== "host" || state.phase !== "question") return;
+    var q = currentRound();
+    if (q.media !== "audio") return;
+    initAudio();
+    speakQuestion(q, true);
+  }
 
   function difficultyBadge(q) {
     var meta = difficultyMeta[q.difficulty];
@@ -495,8 +532,13 @@ const firebaseConfig = {
     if (p === "bet") return '<div class="remote-live"><span class="eyebrow">CODE LOCK</span><b class="remote-timer">' + currentTime() + 's</b><span class="muted">' + cardCount() + '/15 TEAMS</span></div><button class="btn danger" data-action="reveal">REVEAL CODES</button>';
     if (p === "reveal") return '<div class="remote-live"><span class="eyebrow">RIGHT TO ANSWER</span><b>TEAM ' + String(state.winnerTeam).padStart(2, "0") + ' · CODE ' + state.winnerCard + '</b></div>';
     if (p === "question") {
+      if (hostAnswerKey !== q.id) { hostAnswerKey = q.id; hostAnswerOpen = false; }
       var who = state.winnerTeam ? "TEAM " + String(state.winnerTeam).padStart(2, "0") + " · " + esc(teamName(state.winnerTeam)) : "TEAM NOT SET";
-      return '<div class="remote-live"><span class="eyebrow">ANSWER · CODE ' + state.winnerCard + '</span><b>' + who + '</b><span class="muted">CORRECT +' + q.points + ' · WRONG 0</span></div><div class="remote-duo"><button class="btn green large" data-action="grade" data-correct="1">✓ CORRECT</button><button class="btn danger large" data-action="grade" data-correct="0">× WRONG</button></div>';
+      var replay = q.media === "audio" ? '<button class="btn ghost large" data-action="replay-voice">↻ REPLAY AUDIO</button>' : '';
+      var answerButton = !q.options ? '<button class="btn gold large" data-action="open-answer">' + (hostAnswerOpen ? '✓ ANSWER OPEN' : '▣ OPEN ANSWER') + '</button>' : '';
+      var answerPanel = !q.options && hostAnswerOpen ? '<div class="host-answer-panel"><span class="eyebrow">ANSWER KEY</span><b>' + esc(q.answer) + '</b></div>' : '';
+      var utilities = replay || answerButton ? '<div class="host-utility-row">' + replay + answerButton + '</div>' : '';
+      return '<div class="remote-live"><span class="eyebrow">ANSWER · CODE ' + state.winnerCard + '</span><b>' + who + '</b><span class="muted">CORRECT +' + q.points + ' · WRONG 0</span></div>' + utilities + answerPanel + '<div class="remote-duo"><button class="btn green large" data-action="grade" data-correct="1">✓ CORRECT</button><button class="btn danger large" data-action="grade" data-correct="0">× WRONG</button></div>';
     }
     if (p === "result") {
       var a = state.lastAward; var resultText = a && a.noWinner ? "0 PTS" : ((a && a.correct ? "+" : "") + (a ? a.delta : 0) + " PTS");
@@ -552,7 +594,8 @@ const firebaseConfig = {
   function stageQuestion() {
     var q = currentRound();
     var who = '<div class="winner-card"><i class="winner-dot"></i><b>TEAM ' + String(state.winnerTeam).padStart(2, "0") + ' · ' + esc(teamName(state.winnerTeam).replace("Team ", "")) + '</b><span class="tag">CODE ' + state.winnerCard + '</span></div>';
-    var listenOnly = q.media === "audio" ? '<div class="voice-only" data-action="voice" role="button" tabindex="0" aria-label="Play the audio clue" title="Play audio"><div class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><strong>LISTEN</strong></div>' : '<h2>' + esc(q.question) + '</h2>';
+    var voiceAttrs = role === "stage" ? ' data-action="voice" role="button" tabindex="0" aria-label="Play the audio clue" title="Play audio"' : ' role="img" aria-label="Audio clue"';
+    var listenOnly = q.media === "audio" ? '<div class="voice-only"' + voiceAttrs + '><div class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><strong>LISTEN</strong></div>' : '<h2>' + esc(q.question) + '</h2>';
     var options = q.options ? '<div class="options">' + q.options.map(function (o, i) { return '<div class="option"><b>' + String.fromCharCode(65 + i) + '</b><span>' + esc(o) + '</span></div>'; }).join("") + '</div>' : '<div class="open-answer">OPEN ANSWER</div>';
     var art = q.media === "image" ? '<div class="slide-visual has-image square-art media-placeholder"><img class="slide-art-image" src="assets/vault-shard.jpg" alt=""><span>IMAGE CLUE PENDING</span></div>' : "";
     var rapid = q.media === "video" ? '<div class="rapid-cue"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span></div>' : "";
@@ -613,7 +656,9 @@ const firebaseConfig = {
     if (action === "next") return advanceRound();
     if (action === "scoreboard") return showScoreboard();
     if (action === "reset") return resetGame();
-    if (action === "voice") { initAudio(); speakQuestion(currentRound(), true); return; }
+    if (action === "voice") { if (role === "stage") { initAudio(); speakQuestion(currentRound(), true); } return; }
+    if (action === "replay-voice") return replayVoiceOnHost();
+    if (action === "open-answer") return openHostAnswer();
     if (action === "fullscreen") {
       var stageTarget = document.querySelector(".stage-root:not(.stage-compact)") || document.documentElement;
       if (document.fullscreenElement) {
@@ -667,6 +712,7 @@ const firebaseConfig = {
       }
     } else if (state.phase !== "question") {
       lastSpokenQuestion = "";
+      if (role === "stage") stopVoicePlayback();
     }
     if (role === "host" && firebaseReady && remoteStateKnown && !remoteStateExists && !pendingRemoteCreate) {
       pendingRemoteCreate = true;
