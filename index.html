@@ -895,6 +895,22 @@
       letter-spacing: .12em;
     }
     @media (max-height: 780px) and (min-width: 821px) {
+      /* Keep the READY slide inside a 16:9 720p projector viewport. */
+      .stage-root:not(.stage-compact) .stage-ready h1 {
+        font-size: clamp(36px, 5.6vw, 72px);
+        margin-top: 8px;
+      }
+      .stage-root:not(.stage-compact) .stage-ready .difficulty-badge {
+        min-height: 50px;
+        margin-top: 8px;
+      }
+      .stage-root:not(.stage-compact) .stage-ready .vault-card-scene {
+        width: min(390px, 58vw);
+        margin-top: 10px;
+      }
+      .stage-root:not(.stage-compact) .stage-ready .loot-value {
+        font-size: clamp(31px, 4.4vw, 54px);
+      }
       .stage-root:not(.stage-compact) .stage-reveal h1 { font-size: clamp(30px, 4.8vw, 58px); }
       .stage-root:not(.stage-compact) .stage-reveal .reveal-winner {
         min-height: 60px;
@@ -999,4 +1015,4 @@
 </head>
 <body>
   <div id="app" class="app"></div>
-  <script type="module" src="game.js?v=vault20-stage-audio-host-tools-v3-20260918"></script>
+  <script type="module" src="game.js?v=vault20-stage-audio-host-tools-v4-20260918"></script>
