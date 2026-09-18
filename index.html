@@ -955,6 +955,10 @@
     }
 
     /* Full team names stay readable while code numbers remain dominant. */
+    .stage-root:not(.stage-compact) .stage-reveal .bid-rail {
+      width: 100%;
+      max-width: 1180px;
+    }
     .stage-root:not(.stage-compact) .stage-reveal .bid-row {
       grid-template-columns: 48px minmax(0, 1fr) 86px;
       min-height: clamp(58px, 6.8vh, 80px);
@@ -964,6 +968,10 @@
     .stage-root:not(.stage-compact) .stage-reveal .bid-team b {
       font-size: clamp(15px, 1.45vw, 21px);
       letter-spacing: -.02em;
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      line-height: 1.05;
     }
     .stage-root:not(.stage-compact) .stage-reveal .bid-team .bid-time {
       margin-top: 4px;
@@ -991,4 +999,4 @@
 </head>
 <body>
   <div id="app" class="app"></div>
-  <script type="module" src="game.js?v=vault20-stage-audio-host-tools-v2-20260918"></script>
+  <script type="module" src="game.js?v=vault20-stage-audio-host-tools-v3-20260918"></script>
