@@ -1478,6 +1478,13 @@
       .stage-root:not(.stage-compact) .stage-reveal .reveal-board .bid-number { font-size: 34px; }
     }
 
+    /* Reverse reveal: the lowest code row enters first and #1 locks last. */
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-winner {
+      opacity: 0;
+      animation: winner-lock .55s cubic-bezier(.17, .84, .3, 1) forwards;
+      animation-delay: calc(var(--winner-delay, 0) * 1s);
+    }
+
   </style>
 </head>
 <body>

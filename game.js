@@ -704,11 +704,15 @@ const firebaseConfig = {
       var name = pickedTeam && pickedTeam.name ? pickedTeam.name : "Team " + String(pick.teamId).padStart(2, "0");
       var rank = hasPick ? (rankByTeam[String(pick.teamId)] || "—") : "—";
       var lock = hasPick ? "TEAM " + String(pick.teamId).padStart(2, "0") + " · " + formatLockDelta(pick, baseAt) : "NO LOCK";
-      return '<div class="bid-row reveal-row' + (hasPick ? "" : " is-missing") + '" style="--reveal-index:' + index + '"><span class="bid-rank">' + rank + '</span><span class="bid-team"><b>' + esc(name) + '</b><small class="bid-time">' + lock + '</small></span><strong class="bid-number">' + (hasPick ? pick.card : "—") + '</strong></div>';
+      // Keep the board ordered from #02 downward, but reveal it from the
+      // lowest row upward for a reverse-rank suspense beat.
+      var reverseIndex = otherRows.length - 1 - index;
+      return '<div class="bid-row reveal-row' + (hasPick ? "" : " is-missing") + '" style="--reveal-index:' + reverseIndex + '"><span class="bid-rank">' + rank + '</span><span class="bid-team"><b>' + esc(name) + '</b><small class="bid-time">' + lock + '</small></span><strong class="bid-number">' + (hasPick ? pick.card : "—") + '</strong></div>';
     }
     var board = otherRows.map(revealRow).join("");
     var winnerLock = winnerRows.length ? winnerRows[0] : winnerPick;
-    return '<div class="slide stage-reveal"><div class="slide-kicker">CODE RANKING · ' + leaders.length + '/15 LOCKED</div><h1 class="horror-script">CODES<br><em>REVEALED</em></h1><div class="winner-card reveal-winner"><i class="winner-dot"></i><div><span class="eyebrow">#1 · RIGHT TO ANSWER</span><b>TEAM ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + (winner ? ' · ' + esc(winner.name.replace("Team ", "")) : "") + '</b><small>CODE ' + (state.winnerCard || "—") + ' · ' + (winnerLock ? formatLockDelta(winnerLock, baseAt) : "LOCK —") + '</small></div></div><div class="reveal-others-label">OTHER TEAMS</div><div class="bid-rail reveal-board">' + board + '</div></div>';
+    var winnerDelay = (otherRows.length * .16 + .12).toFixed(2);
+    return '<div class="slide stage-reveal"><div class="slide-kicker">CODE RANKING · ' + leaders.length + '/15 LOCKED</div><h1 class="horror-script">CODES<br><em>REVEALED</em></h1><div class="winner-card reveal-winner" style="--winner-delay:' + winnerDelay + '"><i class="winner-dot"></i><div><span class="eyebrow">#1 · RIGHT TO ANSWER</span><b>TEAM ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + (winner ? ' · ' + esc(winner.name.replace("Team ", "")) : "") + '</b><small>CODE ' + (state.winnerCard || "—") + ' · ' + (winnerLock ? formatLockDelta(winnerLock, baseAt) : "LOCK —") + '</small></div></div><div class="reveal-others-label">OTHER TEAMS</div><div class="bid-rail reveal-board">' + board + '</div></div>';
   }
   function stageQuestion() {
     var q = currentRound();
