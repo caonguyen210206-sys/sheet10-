@@ -1023,6 +1023,9 @@
       padding: 68px 0 22px;
       justify-content: center;
     }
+    .stage-root:not(.stage-compact) .stage-main {
+      padding-right: clamp(280px, 24vw, 350px);
+    }
     .stage-root:not(.stage-compact) .stage-question > .winner-card {
       flex: 0 0 auto;
       margin: 0 auto 15px;
@@ -1315,6 +1318,8 @@
     }
 
     @media (max-width: 820px) {
+      .stage-root:not(.stage-compact) .stage-main { padding-right: 14px; }
+      .stage-root:not(.stage-compact) .stage-score-rail { display: none; }
       .media-question-grid, .result-grid { grid-template-columns: 1fr; }
       .image-clue { max-height: 34vh; }
       .stage-root:not(.stage-compact) .stage-question { padding-top: 60px; }
