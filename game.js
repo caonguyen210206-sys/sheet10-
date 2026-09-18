@@ -24,6 +24,7 @@ const firebaseConfig = {
   var audioContext = null;
   var lastStageCelebration = "";
   var lastSpokenQuestion = "";
+  var voiceAudio = null;
   var role = "home";
   var state = null;
   var firebaseApp = initializeApp(firebaseConfig);
@@ -299,21 +300,75 @@ const firebaseConfig = {
       setTimeout(function () { tone(1080, .07, "triangle", .045); }, 48);
     }
   }
-  function speakQuestion(q) {
-    if (!q || q.media !== "audio" || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+  function voiceAssetFor(q) {
+    var source = q && Number(q.sourceNumber);
+    return source ? "assets/audio/q" + String(source).padStart(2, "0") + ".mp3" : "";
+  }
+  function stopVoiceAudio() {
+    if (!voiceAudio) return;
+    try { voiceAudio.pause(); voiceAudio.currentTime = 0; } catch (e) {}
+    voiceAudio = null;
+  }
+  function browserVoice(q) {
+    if (!q || q.media !== "audio" || typeof window.speechSynthesis === "undefined" || typeof window.SpeechSynthesisUtterance === "undefined") return;
     try {
       var synth = window.speechSynthesis;
+      var speakNow = function () {
+        var utterance = new window.SpeechSynthesisUtterance(q.question);
+        utterance.lang = "en-US";
+        utterance.rate = .84;
+        utterance.pitch = .98;
+        utterance.volume = .98;
+        var voices = synth.getVoices ? synth.getVoices() : [];
+        var voice = voices.find(function (item) { return /^en(-|_)(US|GB)/i.test(item.lang) && /Google|Microsoft|Samantha|Natural|English/i.test(item.name); }) || voices.find(function (item) { return /^en/i.test(item.lang); });
+        if (voice) utterance.voice = voice;
+        if (synth.resume) synth.resume();
+        synth.speak(utterance);
+      };
       synth.cancel();
-      var utterance = new window.SpeechSynthesisUtterance(q.question);
-      utterance.lang = "en-US";
-      utterance.rate = .84;
-      utterance.pitch = .98;
-      utterance.volume = .98;
-      var voices = synth.getVoices ? synth.getVoices() : [];
-      var voice = voices.find(function (item) { return /^en(-|_)(US|GB)/i.test(item.lang) && /Google|Microsoft|Samantha|Natural|English/i.test(item.name); }) || voices.find(function (item) { return /^en/i.test(item.lang); });
-      if (voice) utterance.voice = voice;
-      synth.speak(utterance);
+      if (synth.getVoices && !synth.getVoices().length && synth.addEventListener) {
+        var ready = false;
+        var onVoices = function () {
+          if (ready) return;
+          ready = true;
+          synth.removeEventListener("voiceschanged", onVoices);
+          speakNow();
+        };
+        synth.addEventListener("voiceschanged", onVoices);
+        setTimeout(function () {
+          if (!ready) {
+            ready = true;
+            synth.removeEventListener("voiceschanged", onVoices);
+            speakNow();
+          }
+        }, 700);
+      } else {
+        speakNow();
+      }
     } catch (e) {}
+  }
+  function speakQuestion(q, fromGesture) {
+    if (!q || q.media !== "audio") return;
+    var source = voiceAssetFor(q);
+    if (source && typeof window.Audio === "function") {
+      stopVoiceAudio();
+      try {
+        var audio = new window.Audio(source);
+        audio.preload = "auto";
+        audio.volume = .98;
+        audio.onended = function () { if (voiceAudio === audio) voiceAudio = null; };
+        voiceAudio = audio;
+        var playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(function () {
+            if (voiceAudio === audio) voiceAudio = null;
+            browserVoice(q);
+          });
+        }
+        return;
+      } catch (e) {}
+    }
+    browserVoice(q);
   }
   function startGame() {
     initAudio(); clearRoundKeys();
@@ -388,7 +443,7 @@ const firebaseConfig = {
     if (state.phase !== "reveal") return;
     var q = currentRound(); var seconds = q.difficulty >= 4 ? 25 : 20;
     mutate(function (s) { s.phase = "question"; s.timerEnd = Date.now() + seconds * 1000; s.autoAt = null; }, "Open question");
-    speakQuestion(q);
+    speakQuestion(q, false);
     soundFor("open");
   }
   function grade(correct) {
@@ -489,7 +544,7 @@ const firebaseConfig = {
   function stageQuestion() {
     var q = currentRound();
     var who = '<div class="winner-card"><i class="winner-dot"></i><b>TEAM ' + String(state.winnerTeam).padStart(2, "0") + ' · ' + esc(teamName(state.winnerTeam).replace("Team ", "")) + '</b><span class="tag">CODE ' + state.winnerCard + '</span></div>';
-    var listenOnly = q.media === "audio" ? '<div class="voice-only" aria-label="Listen to the audio clue"><div class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><strong>LISTEN</strong></div>' : '<h2>' + esc(q.question) + '</h2>';
+    var listenOnly = q.media === "audio" ? '<div class="voice-only" data-action="voice" role="button" tabindex="0" aria-label="Play the audio clue" title="Play audio"><div class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><strong>LISTEN</strong></div>' : '<h2>' + esc(q.question) + '</h2>';
     var options = q.options ? '<div class="options">' + q.options.map(function (o, i) { return '<div class="option"><b>' + String.fromCharCode(65 + i) + '</b><span>' + esc(o) + '</span></div>'; }).join("") + '</div>' : '<div class="open-answer">OPEN ANSWER</div>';
     var art = q.media === "image" ? '<div class="slide-visual has-image square-art media-placeholder"><img class="slide-art-image" src="assets/vault-shard.jpg" alt=""><span>IMAGE CLUE PENDING</span></div>' : "";
     var rapid = q.media === "video" ? '<div class="rapid-cue"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span></div>' : "";
@@ -550,6 +605,7 @@ const firebaseConfig = {
     if (action === "next") return advanceRound();
     if (action === "scoreboard") return showScoreboard();
     if (action === "reset") return resetGame();
+    if (action === "voice") { initAudio(); speakQuestion(currentRound(), true); return; }
     if (action === "fullscreen") {
       var stageTarget = document.querySelector(".stage-root:not(.stage-compact)") || document.documentElement;
       if (document.fullscreenElement) {
@@ -599,7 +655,7 @@ const firebaseConfig = {
       var speechKey = String(state.sessionId) + ":" + String(state.roundIndex);
       if (speechKey !== lastSpokenQuestion) {
         lastSpokenQuestion = speechKey;
-        setTimeout(function () { if (role === "stage" && state.phase === "question") speakQuestion(currentRound()); }, 100);
+        setTimeout(function () { if (role === "stage" && state.phase === "question") speakQuestion(currentRound(), false); }, 100);
       }
     } else if (state.phase !== "question") {
       lastSpokenQuestion = "";
