@@ -928,6 +928,8 @@
       outline: 1px solid #69e7ff78;
     }
     .voice-only:focus-visible { outline-offset: 5px; }
+    .stage-compact .voice-only { cursor: default; pointer-events: none; }
+    .stage-compact .voice-only:hover, .stage-compact .voice-only:focus-visible { transform: none; filter: none; background: transparent; outline: 0; }
 
     /* Horizontal clue strip with staggered motion. */
     .stage-root:not(.stage-compact) .rapid-cue {
