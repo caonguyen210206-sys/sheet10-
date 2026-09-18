@@ -534,12 +534,20 @@ const firebaseConfig = {
       var at = actionAt(pick);
       if (Number.isFinite(at) && at < Number.MAX_SAFE_INTEGER && (!baseAt || at < baseAt)) baseAt = at;
     });
-    var board = leaders.map(function (pick, index) {
-      var isWinner = Number(pick.teamId) === Number(state.winnerTeam);
-      return '<div class="bid-row ' + (isWinner ? "is-winner" : "") + '"><span class="bid-rank">#' + String(index + 1).padStart(2, "0") + '</span><span class="bid-team"><b>TEAM ' + String(pick.teamId).padStart(2, "0") + '</b><small class="bid-time">' + formatLockDelta(pick, baseAt) + '</small></span><strong class="bid-number">' + pick.card + '</strong></div>';
+    var picked = {};
+    leaders.forEach(function (pick) { picked[String(pick.teamId)] = pick; });
+    var rows = leaders.slice();
+    for (var i = 1; i <= 15; i++) if (!picked[String(i)]) rows.push({ teamId: i, card: null, missing: true });
+    var board = rows.map(function (pick, index) {
+      var hasPick = !pick.missing;
+      var pickedTeam = team(pick.teamId);
+      var name = pickedTeam && pickedTeam.name ? pickedTeam.name : "Team " + String(pick.teamId).padStart(2, "0");
+      var isWinner = hasPick && Number(pick.teamId) === Number(state.winnerTeam);
+      var rank = hasPick ? "#" + String(index + 1).padStart(2, "0") : "—";
+      var lock = hasPick ? "TEAM " + String(pick.teamId).padStart(2, "0") + " · " + formatLockDelta(pick, baseAt) : "NO LOCK";
+      return '<div class="bid-row ' + (isWinner ? "is-winner" : "") + (hasPick ? "" : " is-missing") + '"><span class="bid-rank">' + rank + '</span><span class="bid-team"><b>' + esc(name) + '</b><small class="bid-time">' + lock + '</small></span><strong class="bid-number">' + (hasPick ? pick.card : "—") + '</strong></div>';
     }).join("");
-    var empty = leaders.length ? "" : '<div class="bid-empty">NO CODES LOCKED</div>';
-    return '<div class="slide stage-reveal"><div class="slide-kicker">CODE RANKING · ' + leaders.length + '/15 LOCKED</div><h1 class="horror-script">CODES<br><em>REVEALED</em></h1><div class="winner-card reveal-winner"><i class="winner-dot"></i><div><span class="eyebrow">RIGHT TO ANSWER</span><b>TEAM ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + (winner ? ' · ' + esc(winner.name.replace("Team ", "")) : "") + '</b><small>CODE ' + (state.winnerCard || "—") + ' · ' + (winnerPick ? formatLockDelta(winnerPick, baseAt) : "LOCK —") + '</small></div></div><div class="bid-rail">' + board + empty + '</div></div>';
+    return '<div class="slide stage-reveal"><div class="slide-kicker">CODE RANKING · ' + leaders.length + '/15 LOCKED</div><h1 class="horror-script">CODES<br><em>REVEALED</em></h1><div class="winner-card reveal-winner"><i class="winner-dot"></i><div><span class="eyebrow">RIGHT TO ANSWER</span><b>TEAM ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + (winner ? ' · ' + esc(winner.name.replace("Team ", "")) : "") + '</b><small>CODE ' + (state.winnerCard || "—") + ' · ' + (winnerPick ? formatLockDelta(winnerPick, baseAt) : "LOCK —") + '</small></div></div><div class="bid-rail">' + board + '</div></div>';
   }
   function stageQuestion() {
     var q = currentRound();
