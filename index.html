@@ -790,8 +790,127 @@
       .stage-root:not(.stage-compact) .stage-reveal .bid-row strong { font-size: 27px; }
     }
 
+
+    /* Voice-only projector view: the browser reads the prompt; the prompt stays hidden. */
+    .stage-root:not(.stage-compact) .voice-question {
+      width: min(920px, 92vw);
+      margin-top: 18px;
+      padding: clamp(18px, 3vw, 30px);
+      border-color: #69e7ff45;
+      background: radial-gradient(circle at 50% 35%, #69e7ff18, transparent 58%), linear-gradient(145deg, #ffffff0d, #ffffff03);
+      box-shadow: 0 0 34px #69e7ff1c, inset 0 0 30px #69e7ff0b;
+    }
+    .voice-only {
+      min-height: clamp(132px, 22vh, 205px);
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 14px;
+      color: var(--gold);
+    }
+    .voice-only strong {
+      font: 900 clamp(30px, 4.4vw, 58px)/1 var(--display);
+      letter-spacing: .08em;
+      text-shadow: 0 0 24px #ffd16660;
+    }
+    .voice-wave {
+      height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(5px, .7vw, 10px);
+    }
+    .voice-wave i {
+      width: clamp(6px, .55vw, 10px);
+      height: 30%;
+      display: block;
+      border-radius: 99px;
+      background: linear-gradient(180deg, var(--gold), var(--cyan));
+      box-shadow: 0 0 15px #69e7ff75;
+      animation: voice-wave 1.05s ease-in-out infinite;
+    }
+    .voice-wave i:nth-child(2) { animation-delay: -.86s; }
+    .voice-wave i:nth-child(3) { animation-delay: -.68s; }
+    .voice-wave i:nth-child(4) { animation-delay: -.49s; }
+    .voice-wave i:nth-child(5) { animation-delay: -.25s; }
+    .voice-wave i:nth-child(6) { animation-delay: -.43s; }
+    .voice-wave i:nth-child(7) { animation-delay: -.67s; }
+    .voice-wave i:nth-child(8) { animation-delay: -.82s; }
+    .voice-wave i:nth-child(9) { animation-delay: -.58s; }
+    @keyframes voice-wave {
+      0%, 100% { height: 24%; opacity: .5; transform: scaleY(.75); }
+      50% { height: 100%; opacity: 1; transform: scaleY(1); }
+    }
+
+    /* Fewer, larger code rows: team number, lock time, and code only. */
+    .stage-root:not(.stage-compact) .stage-reveal { padding-top: 2vh; }
+    .stage-root:not(.stage-compact) .stage-reveal .bid-rail {
+      width: min(1180px, 92vw);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .bid-row {
+      min-height: clamp(54px, 6.6vh, 76px);
+      grid-template-columns: 55px minmax(0, 1fr) 92px;
+      gap: 13px;
+      padding: 8px 14px;
+      border-radius: 14px;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .bid-rank {
+      font-size: clamp(15px, 1.4vw, 20px);
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .bid-team b {
+      font-size: clamp(17px, 1.65vw, 23px);
+      letter-spacing: .02em;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .bid-team .bid-time {
+      margin-top: 4px;
+      color: var(--cyan);
+      font-size: clamp(10px, .9vw, 13px);
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .bid-row strong {
+      font-size: clamp(42px, 4.5vw, 64px);
+      line-height: .9;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .bid-row.is-winner::after {
+      top: -10px;
+      left: 10px;
+      padding: 3px 7px;
+      font-size: 9px;
+    }
+    .bid-empty {
+      grid-column: 1 / -1;
+      min-height: 110px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed #ffffff35;
+      border-radius: 15px;
+      color: var(--muted);
+      font: 800 16px var(--mono);
+      letter-spacing: .12em;
+    }
+    @media (max-height: 780px) and (min-width: 821px) {
+      .stage-root:not(.stage-compact) .stage-reveal h1 { font-size: clamp(30px, 4.8vw, 58px); }
+      .stage-root:not(.stage-compact) .stage-reveal .reveal-winner {
+        min-height: 60px;
+        margin-top: 7px;
+        padding: 8px 14px;
+      }
+      .stage-root:not(.stage-compact) .stage-reveal .reveal-winner b { font-size: 18px; }
+      .stage-root:not(.stage-compact) .stage-reveal .reveal-winner small { font-size: 11px; }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-rail { gap: 8px; margin-top: 8px; }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-row {
+        min-height: 50px;
+        padding: 5px 10px;
+      }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-team b { font-size: 16px; }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-team .bid-time { font-size: 10px; }
+      .stage-root:not(.stage-compact) .stage-reveal .bid-row strong { font-size: 38px; }
+    }
+
   </style>
 </head>
 <body>
   <div id="app" class="app"></div>
-  <script type="module" src="game.js?v=vault20-final2-20260917"></script>
+  <script type="module" src="game.js?v=vault20-voice-only-20260918"></script>
