@@ -24,6 +24,7 @@ const firebaseConfig = {
   var audioContext = null;
   var lastStageCelebration = "";
   var lastSpokenQuestion = "";
+  var lastAudioReplay = "";
   var voiceAudio = null;
   var hostAnswerOpen = false;
   var hostAnswerKey = "";
@@ -96,6 +97,7 @@ const firebaseConfig = {
       cardPicks: {},
       timerEnd: null,
       autoAt: null,
+      audioReplayNonce: "",
       questionStep: "prompt",
       hintRevealed: false,
       imageRevealed: false,
@@ -153,6 +155,7 @@ const firebaseConfig = {
     if (!value) return value;
     if (value.phase === "mascot") value.phase = "ready";
     value.cardPicks = value.cardPicks || {};
+    value.audioReplayNonce = value.audioReplayNonce == null ? "" : String(value.audioReplayNonce);
     value.questionStep = value.questionStep === "video" ? "video" : "prompt";
     value.hintRevealed = !!value.hintRevealed;
     value.imageRevealed = !!value.imageRevealed;
@@ -421,9 +424,9 @@ const firebaseConfig = {
   }
   function speakQuestion(q, fromGesture) {
     if (!q || q.media !== "audio") return;
-    // Automatic playback belongs to the projector. Host playback is only
-    // allowed through the explicit replay button.
-    if (role !== "stage" && !(role === "host" && fromGesture)) return;
+    // Voice always belongs to the projector. Host and team screens never
+    // speak locally; a Host replay is sent to Stage through shared state.
+    if (role !== "stage") return;
     stopVoicePlayback();
     var source = voiceAssetFor(q);
     if (source && typeof window.Audio === "function") {
@@ -455,7 +458,7 @@ const firebaseConfig = {
     hostAnswerOpen = false; hostAnswerKey = "";
     initAudio(); clearRoundKeys();
     mutate(function (s) {
-      s.sessionId = makeSessionId(); s.phase = "ready"; s.roundIndex = 0; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.questionStep = "prompt"; s.hintRevealed = false; s.imageRevealed = false; s.history = []; s.lastAward = null; s.sound = true;
+      s.sessionId = makeSessionId(); s.phase = "ready"; s.roundIndex = 0; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.audioReplayNonce = ""; s.questionStep = "prompt"; s.hintRevealed = false; s.imageRevealed = false; s.history = []; s.lastAward = null; s.sound = true;
       s.scores.forEach(function (t) { t.score = 0; t.wins = 0; t.rightsWon = 0; t.correctCount = 0; t.usedCards = []; });
     }, "Open VAULT 20");
     soundFor("open");
@@ -468,7 +471,7 @@ const firebaseConfig = {
   function openRound() {
     if (state.phase !== "ready") return;
     clearRoundKeys();
-    mutate(function (s) { s.phase = "bet"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = Date.now() + 12000; s.autoAt = null; s.questionStep = "prompt"; s.hintRevealed = false; s.imageRevealed = false; s.lastAward = null; }, "Open question " + String(state.roundIndex + 1).padStart(2, "0"));
+    mutate(function (s) { s.phase = "bet"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = Date.now() + 12000; s.autoAt = null; s.audioReplayNonce = ""; s.questionStep = "prompt"; s.hintRevealed = false; s.imageRevealed = false; s.lastAward = null; }, "Open question " + String(state.roundIndex + 1).padStart(2, "0"));
     soundFor("open");
   }
   function scanCards() {
@@ -516,7 +519,8 @@ const firebaseConfig = {
         target.usedCards = Array.isArray(target.usedCards) ? target.usedCards : [];
         target.usedCards.push(card);
       });
-      s.winnerTeam = winner ? Number(winner.teamId) : null; s.winnerCard = winner ? Number(winner.card) : null; s.timerEnd = null; s.phase = winner ? "reveal" : "result"; s.autoAt = Date.now() + (winner ? 10000 : 8000);
+      s.winnerTeam = winner ? Number(winner.teamId) : null; s.winnerCard = winner ? Number(winner.card) : null; s.timerEnd = null; s.phase = winner ? "reveal" : "result"; s.autoAt = Date.now() + (winner ? 5000 : 8000);
+      s.audioReplayNonce = "";
       s.lastAward = winner ? null : { teamId: null, card: null, points: 0, delta: 0, correct: false, noWinner: true };
     }, winner ? "Reveal · highest code wins" : "No code · 0 points");
     soundFor(winner ? "reveal" : "wrong");
@@ -530,6 +534,7 @@ const firebaseConfig = {
       s.questionStep = q.media === "video" ? "video" : "prompt";
       s.hintRevealed = false;
       s.imageRevealed = false;
+      s.audioReplayNonce = "";
       s.timerEnd = q.media === "video" ? null : Date.now() + seconds * 1000;
       s.autoAt = null;
     }, q.media === "video" ? "Play video clue" : "Open question");
@@ -581,7 +586,7 @@ const firebaseConfig = {
     if (state.roundIndex >= rounds.length - 1) { mutate(function (s) { s.phase = "finish"; s.autoAt = null; s.timerEnd = null; }, "Finish VAULT 20"); soundFor("open"); return; }
     hostAnswerOpen = false; hostAnswerKey = "";
     clearRoundKeys();
-    mutate(function (s) { s.roundIndex += 1; s.phase = "ready"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.questionStep = "prompt"; s.hintRevealed = false; s.imageRevealed = false; s.lastAward = null; }, "Next question");
+    mutate(function (s) { s.roundIndex += 1; s.phase = "ready"; s.winnerTeam = null; s.winnerCard = null; s.cardPicks = {}; s.timerEnd = null; s.autoAt = null; s.audioReplayNonce = ""; s.questionStep = "prompt"; s.hintRevealed = false; s.imageRevealed = false; s.lastAward = null; }, "Next question");
   }
   function showScoreboard() { if (state.phase !== "result") return; mutate(function (s) { s.phase = "scoreboard"; s.autoAt = null; }, "Open leaderboard"); }
   function resetGame() { if (!window.confirm("Reset VAULT 20 and scores?")) return; clearRoundKeys(); state = freshState(); save("Reset session"); }
@@ -597,8 +602,11 @@ const firebaseConfig = {
     if (role !== "host" || state.phase !== "question") return;
     var q = currentRound();
     if (q.media !== "audio") return;
-    initAudio();
-    speakQuestion(q, true);
+    // Do not play on the Host laptop. The Stage receives a nonce change and
+    // replays the same audio in its own user-activated projector context.
+    mutate(function (s) {
+      s.audioReplayNonce = String(Date.now()) + "-" + Math.random().toString(36).slice(2, 8);
+    }, "Replay audio on Stage");
   }
   function answerText(q) {
     if (!q) return "—";
@@ -686,16 +694,21 @@ const firebaseConfig = {
     leaders.forEach(function (pick) { picked[String(pick.teamId)] = pick; });
     var rows = leaders.slice();
     for (var i = 1; i <= 15; i++) if (!picked[String(i)]) rows.push({ teamId: i, card: null, missing: true });
-    var board = rows.map(function (pick, index) {
+    var winnerRows = rows.filter(function (pick) { return Number(pick.teamId) === Number(state.winnerTeam); });
+    var otherRows = rows.filter(function (pick) { return Number(pick.teamId) !== Number(state.winnerTeam); });
+    var rankByTeam = {};
+    leaders.forEach(function (pick, index) { rankByTeam[String(pick.teamId)] = "#" + String(index + 1).padStart(2, "0"); });
+    function revealRow(pick, index) {
       var hasPick = !pick.missing;
       var pickedTeam = team(pick.teamId);
       var name = pickedTeam && pickedTeam.name ? pickedTeam.name : "Team " + String(pick.teamId).padStart(2, "0");
-      var isWinner = hasPick && Number(pick.teamId) === Number(state.winnerTeam);
-      var rank = hasPick ? "#" + String(index + 1).padStart(2, "0") : "—";
+      var rank = hasPick ? (rankByTeam[String(pick.teamId)] || "—") : "—";
       var lock = hasPick ? "TEAM " + String(pick.teamId).padStart(2, "0") + " · " + formatLockDelta(pick, baseAt) : "NO LOCK";
-      return '<div class="bid-row ' + (isWinner ? "is-winner" : "") + (hasPick ? "" : " is-missing") + '"><span class="bid-rank">' + rank + '</span><span class="bid-team"><b>' + esc(name) + '</b><small class="bid-time">' + lock + '</small></span><strong class="bid-number">' + (hasPick ? pick.card : "—") + '</strong></div>';
-    }).join("");
-    return '<div class="slide stage-reveal"><div class="slide-kicker">CODE RANKING · ' + leaders.length + '/15 LOCKED</div><h1 class="horror-script">CODES<br><em>REVEALED</em></h1><div class="winner-card reveal-winner"><i class="winner-dot"></i><div><span class="eyebrow">RIGHT TO ANSWER</span><b>TEAM ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + (winner ? ' · ' + esc(winner.name.replace("Team ", "")) : "") + '</b><small>CODE ' + (state.winnerCard || "—") + ' · ' + (winnerPick ? formatLockDelta(winnerPick, baseAt) : "LOCK —") + '</small></div></div><div class="bid-rail">' + board + '</div></div>';
+      return '<div class="bid-row reveal-row' + (hasPick ? "" : " is-missing") + '" style="--reveal-index:' + index + '"><span class="bid-rank">' + rank + '</span><span class="bid-team"><b>' + esc(name) + '</b><small class="bid-time">' + lock + '</small></span><strong class="bid-number">' + (hasPick ? pick.card : "—") + '</strong></div>';
+    }
+    var board = otherRows.map(revealRow).join("");
+    var winnerLock = winnerRows.length ? winnerRows[0] : winnerPick;
+    return '<div class="slide stage-reveal"><div class="slide-kicker">CODE RANKING · ' + leaders.length + '/15 LOCKED</div><h1 class="horror-script">CODES<br><em>REVEALED</em></h1><div class="winner-card reveal-winner"><i class="winner-dot"></i><div><span class="eyebrow">#1 · RIGHT TO ANSWER</span><b>TEAM ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + (winner ? ' · ' + esc(winner.name.replace("Team ", "")) : "") + '</b><small>CODE ' + (state.winnerCard || "—") + ' · ' + (winnerLock ? formatLockDelta(winnerLock, baseAt) : "LOCK —") + '</small></div></div><div class="reveal-others-label">OTHER TEAMS</div><div class="bid-rail reveal-board">' + board + '</div></div>';
   }
   function stageQuestion() {
     var q = currentRound();
@@ -859,8 +872,14 @@ const firebaseConfig = {
         lastSpokenQuestion = speechKey;
         setTimeout(function () { if (role === "stage" && state.phase === "question") speakQuestion(currentRound(), false); }, 100);
       }
+      var replayKey = speechKey + ":" + String(state.audioReplayNonce || "");
+      if (state.audioReplayNonce && replayKey !== lastAudioReplay) {
+        lastAudioReplay = replayKey;
+        setTimeout(function () { if (role === "stage" && state.phase === "question" && currentRound().media === "audio") speakQuestion(currentRound(), false); }, 70);
+      }
     } else if (state.phase !== "question") {
       lastSpokenQuestion = "";
+      lastAudioReplay = "";
       if (role === "stage") stopVoicePlayback();
     }
     if (role === "host" && firebaseReady && remoteStateKnown && !remoteStateExists && !pendingRemoteCreate) {

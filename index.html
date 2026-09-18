@@ -1327,8 +1327,159 @@
       .result-clue-image { max-height: 32vh; }
     }
 
+    /* Final projector pass: Stage owns voice playback, and every important
+       surface stays opaque enough to read over the animated vault backdrop. */
+    .stage-root:not(.stage-compact) .stage-question > .question-box,
+    .stage-root:not(.stage-compact) .media-question-grid .question-box {
+      background: linear-gradient(145deg, #0b1738f8, #050a19f7);
+      border-color: #b8e6ff78;
+      box-shadow: 0 28px 70px #000d, 0 0 0 1px #69e7ff16, inset 0 0 38px #69e7ff0b;
+      backdrop-filter: blur(12px) saturate(1.12);
+    }
+    .stage-root:not(.stage-compact) .stage-question > .question-box h2,
+    .stage-root:not(.stage-compact) .media-question-grid .question-box h2 {
+      color: #ffffff;
+      text-shadow: 0 3px 18px #000c;
+    }
+    .stage-root:not(.stage-compact) .stage-question > .question-box .option,
+    .stage-root:not(.stage-compact) .media-question-grid .question-box .option {
+      background: linear-gradient(110deg, #14264bf2, #0c1731ef);
+      border-color: #d6f2ff50;
+      box-shadow: 0 8px 20px #0007, inset 0 0 16px #69e7ff0b;
+    }
+    .stage-root:not(.stage-compact) .stage-question > .question-box .option span,
+    .stage-root:not(.stage-compact) .media-question-grid .question-box .option span {
+      color: #ffffff;
+      text-shadow: 0 2px 10px #000b;
+    }
+    .stage-root:not(.stage-compact) .stage-score-rail {
+      background: linear-gradient(160deg, #060d22f7, #030713f7);
+      border-color: #9ceaff84;
+      box-shadow: 0 22px 58px #000d, inset 0 0 26px #69e7ff12;
+      backdrop-filter: blur(16px) saturate(1.15);
+    }
+    .stage-root:not(.stage-compact) .stage-score-rail .rail-title { color: #ffd166; text-shadow: 0 0 12px #ffd16655; }
+    .stage-root:not(.stage-compact) .stage-score-rail .rail-title span { color: #b9c7e5; }
+    .stage-root:not(.stage-compact) .stage-score-rail .rail-name {
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.16;
+      white-space: normal;
+    }
+    .stage-root:not(.stage-compact) .stage-score-rail .rail-score {
+      color: #7deeff;
+      font-size: 15px;
+      font-weight: 900;
+      text-shadow: 0 0 9px #69e7ff55;
+    }
+
+    /* Five-second code reveal: #1 is isolated, then every other team enters
+       in a readable stagger that completes well before auto-advance. */
+    .stage-root:not(.stage-compact) .stage-reveal {
+      padding-top: clamp(10px, 2vh, 24px);
+    }
+    .stage-root:not(.stage-compact) .stage-reveal h1 {
+      margin: 3px 0 0;
+      font-size: clamp(36px, 5.3vw, 72px);
+      line-height: .86;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-winner {
+      width: min(700px, 72vw);
+      min-height: clamp(92px, 11vh, 126px);
+      margin: clamp(9px, 1.4vh, 16px) auto 4px;
+      padding: 16px 26px;
+      border: 2px solid #ffd166d9;
+      border-radius: 21px;
+      background: linear-gradient(110deg, #473a16f5, #102d45f4 72%, #0a152af4);
+      box-shadow: 0 0 38px #ffd16638, 0 18px 34px #0009, inset 0 0 28px #ffd16616;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-winner .winner-dot {
+      width: 17px;
+      height: 17px;
+      box-shadow: 0 0 18px #ffd166, 0 0 34px #ffd16677;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-winner b {
+      color: #ffffff;
+      font-size: clamp(25px, 2.7vw, 43px);
+      line-height: 1;
+      text-shadow: 0 3px 15px #000c;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-winner small {
+      color: #b9f4ff;
+      font-size: clamp(12px, 1.05vw, 16px);
+      font-weight: 800;
+    }
+    .stage-root:not(.stage-compact) .reveal-others-label {
+      margin: 4px auto 3px;
+      color: #9fb4d9;
+      font: 800 clamp(9px, .8vw, 12px) var(--mono);
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-board {
+      width: min(1180px, calc(100% - 40px));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(6px, .8vw, 12px);
+      margin-top: 3px;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-board .reveal-row {
+      min-height: clamp(52px, 6.2vh, 72px);
+      grid-template-columns: 43px minmax(0, 1fr) 68px;
+      gap: 10px;
+      padding: 8px 11px;
+      border: 1px solid #a9dfff45;
+      border-radius: 13px;
+      background: linear-gradient(145deg, #101f3bef, #071127ef);
+      box-shadow: 0 10px 24px #0008, inset 0 0 17px #69e7ff0b;
+      opacity: 0;
+      transform: translateY(15px) scale(.96);
+      animation: reveal-row-stagger .32s cubic-bezier(.17, .84, .3, 1) forwards;
+      animation-delay: calc(var(--reveal-index, 0) * .16s);
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-board .reveal-row.is-missing {
+      background: linear-gradient(145deg, #0b1428df, #050a17df);
+      border-color: #ffffff24;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-board .bid-rank {
+      color: #ffd166;
+      font-size: clamp(15px, 1.35vw, 20px);
+      font-weight: 900;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-board .bid-team b {
+      color: #ffffff;
+      font-size: clamp(14px, 1.25vw, 19px);
+      font-weight: 800;
+      line-height: 1.06;
+      white-space: normal;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-board .bid-team .bid-time {
+      color: #a9c3e7;
+      font-size: clamp(8px, .72vw, 11px);
+      font-weight: 700;
+    }
+    .stage-root:not(.stage-compact) .stage-reveal .reveal-board .bid-number {
+      color: #7deeff;
+      font-size: clamp(32px, 3.25vw, 50px);
+      font-weight: 900;
+      line-height: .9;
+      text-shadow: 0 0 14px #69e7ff55;
+    }
+    @keyframes reveal-row-stagger {
+      0% { opacity: 0; transform: translateY(15px) scale(.96); filter: blur(4px); }
+      65% { opacity: 1; transform: translateY(-2px) scale(1.01); filter: blur(0); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    @media (max-height: 780px) and (min-width: 821px) {
+      .stage-root:not(.stage-compact) .stage-reveal .reveal-winner { min-height: 78px; padding: 10px 20px; margin-top: 7px; }
+      .stage-root:not(.stage-compact) .stage-reveal .reveal-winner b { font-size: 24px; }
+      .stage-root:not(.stage-compact) .stage-reveal .reveal-board .reveal-row { min-height: 48px; padding: 6px 9px; }
+      .stage-root:not(.stage-compact) .stage-reveal .reveal-board .bid-team b { font-size: 14px; }
+      .stage-root:not(.stage-compact) .stage-reveal .reveal-board .bid-number { font-size: 34px; }
+    }
+
   </style>
 </head>
 <body>
   <div id="app" class="app"></div>
-  <script type="module" src="game.js?v=vault20-media-workflow-v6-20260918"></script>
+  <script type="module" src="game.js?v=vault20-stage-audio-v7-20260918"></script>
