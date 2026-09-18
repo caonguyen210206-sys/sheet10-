@@ -454,7 +454,7 @@ const firebaseConfig = {
         target.usedCards = Array.isArray(target.usedCards) ? target.usedCards : [];
         target.usedCards.push(card);
       });
-      s.winnerTeam = winner ? Number(winner.teamId) : null; s.winnerCard = winner ? Number(winner.card) : null; s.timerEnd = null; s.phase = winner ? "reveal" : "result"; s.autoAt = Date.now() + (winner ? 8000 : 6000);
+      s.winnerTeam = winner ? Number(winner.teamId) : null; s.winnerCard = winner ? Number(winner.card) : null; s.timerEnd = null; s.phase = winner ? "reveal" : "result"; s.autoAt = Date.now() + (winner ? 10000 : 6000);
       s.lastAward = winner ? null : { teamId: null, card: null, points: 0, delta: 0, correct: false, noWinner: true };
     }, winner ? "Reveal · highest code wins" : "No code · 0 points");
     soundFor(winner ? "reveal" : "wrong");
