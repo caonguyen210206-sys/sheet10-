@@ -69,9 +69,9 @@ const firebaseConfig = {
     questionBank[Number(sourceNumber) - 1].hint = maskedHints[sourceNumber];
   });
   var imageAssets = {
-    16: "assets/images/q16-monopoly.webp",
-    17: "assets/images/q17-trade-union.webp",
-    18: "assets/images/q18-automated-machine.webp"
+    16: { clue: "assets/images/q16-monopoly-clue.webp", full: "assets/images/q16-monopoly.webp" },
+    17: { clue: "assets/images/q17-trade-union-clue.webp", full: "assets/images/q17-trade-union.webp" },
+    18: { clue: "assets/images/q18-automated-machine-clue.webp", full: "assets/images/q18-automated-machine.webp" }
   };
   var videoAssets = {
     19: "assets/video/q19.mp4",
@@ -108,6 +108,26 @@ const firebaseConfig = {
     };
   }
   function makePreviewState(modeName) {
+    if (String(modeName || "").toLowerCase() === "ranking") {
+      var rankingDemo = freshState();
+      var rankingBase = Date.now();
+      rankingDemo.sessionId = "preview-ranking";
+      rankingDemo.phase = "reveal";
+      rankingDemo.autoAt = null;
+      rankingDemo.winnerTeam = 1;
+      rankingDemo.winnerCard = 20;
+      rankingDemo.scores.forEach(function (score, index) { score.score = Math.max(0, 210 - index * 15); });
+      for (var rankingTeam = 1; rankingTeam <= 15; rankingTeam++) {
+        rankingDemo.cardPicks[String(rankingTeam)] = {
+          sessionId: rankingDemo.sessionId,
+          roundIndex: rankingDemo.roundIndex,
+          teamId: rankingTeam,
+          card: 21 - rankingTeam,
+          at: rankingBase + rankingTeam * 137
+        };
+      }
+      return rankingDemo;
+    }
     var match = /^q(\d{1,2})(?:-(video|prompt|hint|full|result|wrong))?$/i.exec(String(modeName || ""));
     if (!match) return null;
     var sourceNumber = Number(match[1]);
@@ -555,12 +575,6 @@ const firebaseConfig = {
     mutate(function (s) { s.hintRevealed = true; }, "Reveal answer hint");
     soundFor("card");
   }
-  function revealImage() {
-    var q = currentRound();
-    if (role !== "host" || state.phase !== "question" || q.media !== "image" || state.imageRevealed) return;
-    mutate(function (s) { s.imageRevealed = true; }, "Reveal full image");
-    soundFor("reveal");
-  }
   function grade(correct) {
     if (state.phase !== "question" || !state.winnerTeam) return;
     var winner = state.winnerTeam; var q = currentRound();
@@ -616,14 +630,18 @@ const firebaseConfig = {
     }
     return String(q.answer || "—");
   }
-  function imageAssetFor(q) { return imageAssets[Number(q && q.sourceNumber)] || "assets/vault-shard.jpg"; }
+  function imageAssetFor(q, full) {
+    var pair = imageAssets[Number(q && q.sourceNumber)];
+    if (!pair) return "assets/vault-shard.jpg";
+    return full ? pair.full : pair.clue;
+  }
   function videoAssetFor(q) { return videoAssets[Number(q && q.sourceNumber)] || ""; }
 
   function difficultyBadge(q) {
     var meta = difficultyMeta[q.difficulty];
     var stars = "";
     for (var i = 1; i <= 5; i++) stars += '<i class="star-pip ' + (i <= q.difficulty ? "active" : "") + '" style="--star-index:' + i + '">' + (i <= q.difficulty ? "★" : "☆") + '</i>';
-    return '<div class="difficulty-badge difficulty-' + q.difficulty + '"><span class="difficulty-stars" aria-label="' + q.difficulty + ' stars">' + stars + '</span><span class="difficulty-points">+' + meta.points + '</span><span class="difficulty-mode">' + esc(meta.short) + '</span></div>';
+    return '<div class="difficulty-badge difficulty-' + q.difficulty + '"><span class="difficulty-stars" aria-label="' + q.difficulty + ' stars">' + stars + '</span><span class="difficulty-points">+' + meta.points + '</span></div>';
   }
   function formatPickTime(pick) {
     var ms = actionAt(pick);
@@ -648,7 +666,6 @@ const firebaseConfig = {
       var tools = [];
       if (q.media === "audio") tools.push('<button class="btn ghost large" data-action="replay-voice">↻ REPLAY AUDIO</button>');
       if (!q.options && q.hint) tools.push('<button class="btn ghost large" data-action="reveal-hint" ' + (state.hintRevealed ? 'disabled' : '') + '>' + (state.hintRevealed ? '✓ HINT ON STAGE' : '✦ REVEAL HINT') + '</button>');
-      if (q.media === "image") tools.push('<button class="btn ghost large" data-action="reveal-image" ' + (state.imageRevealed ? 'disabled' : '') + '>' + (state.imageRevealed ? '✓ FULL IMAGE OPEN' : '◫ REVEAL FULL IMAGE') + '</button>');
       tools.push('<button class="btn gold large" data-action="open-answer">' + (hostAnswerOpen ? '× HIDE ANSWER' : '▣ SHOW ANSWER') + '</button>');
       var answerPanel = hostAnswerOpen ? '<div class="host-answer-panel"><span class="eyebrow">ANSWER KEY · HOST ONLY</span><b>' + esc(answerText(q)) + '</b></div>' : '';
       var utilities = '<div class="host-utility-row">' + tools.join("") + '</div>';
@@ -664,19 +681,19 @@ const firebaseConfig = {
   }
   function miniScore() { return scoreList(3).map(function (t, i) { return '<div class="mini-score-row"><span>' + (i + 1) + ". " + esc(t.name) + '</span><b>' + t.score + " pts</b></div>"; }).join(""); }
   function hostView() {
-    return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 20</b><span>PPT GAME · HOST</span></span></a><div class="header-actions">' + connectionBadge() + '<a class="btn ghost" href="#/stage">STAGE ↗</a><button class="icon-btn" title="Toggle sound" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Reset" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad remote-title"><div class="eyebrow">HOST CONTROL</div><h1>GAME <span style="color:var(--cyan)">CONTROL</span></h1></div><div class="remote-status"><div class="status-tile"><small>STATUS</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>QUESTION</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div></div><div class="panel"><div class="panel-head"><h3>LEADERBOARD · TOP 3</h3></div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
+    return '<main class="host-root"><header class="simple-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 20</b></span></a><div class="header-actions">' + connectionBadge() + '<a class="btn ghost" href="#/stage">STAGE ↗</a><button class="icon-btn" title="Toggle sound" data-action="sound">' + (state.sound ? "🔊" : "🔇") + '</button><button class="icon-btn" title="Reset" data-action="reset">↻</button></div></header><div class="host-wrap"><div class="host-grid"><section class="preview-frame">' + stageView(true) + '</section><aside class="remote"><div class="panel panel-pad remote-title"><h1>GAME <span style="color:var(--cyan)">CONTROL</span></h1></div><div class="remote-status"><div class="status-tile"><small>STATUS</small><b>' + phaseLabel() + '</b></div><div class="status-tile"><small>QUESTION</small><b>' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + " / " + String(rounds.length).padStart(2, "0") + '</b></div></div><div class="panel panel-pad"><div class="remote-actions">' + hostControls() + '</div></div><div class="panel"><div class="panel-head"><h3>LEADERBOARD · TOP 3</h3></div><div class="panel-pad mini-score">' + miniScore() + '</div></div></aside></div></div></main>';
   }
   function stageDecor() { return '<div class="vault-backdrop" aria-hidden="true"></div><div class="stage-rays" aria-hidden="true"></div><div class="fx-grid" aria-hidden="true"></div><i class="fx-orbit fx-orbit-a" aria-hidden="true"></i><i class="fx-orbit fx-orbit-b" aria-hidden="true"></i><i class="fx-particle fp-a" aria-hidden="true"></i><i class="fx-particle fp-b" aria-hidden="true"></i><i class="fx-particle fp-c" aria-hidden="true"></i><i class="fx-particle fp-d" aria-hidden="true"></i><img class="floating-core" src="assets/vault-core.png" alt=""><i class="spark spark-a"></i><i class="spark spark-b"></i><i class="spark spark-c"></i>'; }
   function stageScoreRail() {
     var list = scoreList(5); var max = Math.max(1, list[0] ? list[0].score : 1);
-    return '<aside class="stage-score-rail" aria-label="Leaderboard"><div class="rail-title">LEADERBOARD <span>TOP 5</span></div>' + list.map(function (t, i) { return '<div class="rail-row"><span class="rail-rank">0' + (i + 1) + '</span><div><div class="rail-name">' + esc(t.name) + '</div><div class="rail-bar"><i style="width:' + Math.max(5, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="rail-score">' + t.score + ' pts</span></div>'; }).join("") + '</aside>';
+    return '<aside class="stage-score-rail" aria-label="Leaderboard"><div class="rail-title">LEADERBOARD</div>' + list.map(function (t, i) { return '<div class="rail-row"><span class="rail-rank">0' + (i + 1) + '</span><div><div class="rail-name">' + esc(t.name) + '</div><div class="rail-bar"><i style="width:' + Math.max(5, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="rail-score">' + t.score + ' pts</span></div>'; }).join("") + '</aside>';
   }
   function cardTokens() {
     return cardNumbers.map(function (n) { return '<span class="card-token">' + n + '</span>'; }).join("");
   }
-  function stageCover() { return '<div class="slide"><div class="slide-kicker">VAULT · 00</div><h1 class="horror-script">VAULT<br><em>20</em></h1><div class="vault-title-mark"><img src="assets/vault-core.png" alt=""></div><p class="slide-sub">20 questions · 20 codes · one team called</p></div>'; }
-  function stageReady() { var q = currentRound(); return '<div class="slide stage-ready"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/20</span><div class="slide-kicker">QUESTION LOCK · ' + q.id + '</div><h1 class="horror-script">' + esc(q.title) + '</h1>' + difficultyBadge(q) + '<div class="vault-card-scene"><img src="assets/vault-core.png" alt=""></div><div class="loot-value">+' + q.points + ' PTS</div></div>'; }
-  function stageBet() { var q = currentRound(); return '<div class="slide stage-bet"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/20</span><div class="slide-kicker">CODE LOCK · ' + esc(q.format) + '</div><h1 class="horror-script">Choose <em>one code</em></h1><div class="buzz-line"><div class="timer ' + (currentTime() > 4 ? "safe" : "") + '">' + currentTime() + 's</div><span>' + cardCount() + '/15 TEAMS LOCKED</span></div><div class="card-grid stage-token-grid">' + cardTokens() + '</div></div>'; }
+  function stageCover() { return '<div class="slide"><h1 class="horror-script">VAULT<br><em>20</em></h1><div class="vault-title-mark"><img src="assets/vault-core.png" alt=""></div></div>'; }
+  function stageReady() { var q = currentRound(); return '<div class="slide stage-ready"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/20</span><h1 class="horror-script">' + esc(q.title) + '</h1>' + difficultyBadge(q) + '<div class="vault-card-scene"><img src="assets/vault-core.png" alt=""></div><div class="loot-value">+' + q.points + ' PTS</div></div>'; }
+  function stageBet() { return '<div class="slide stage-bet"><span class="slide-number">' + String(state.roundIndex + 1).padStart(2, "0") + '/20</span><h1 class="horror-script">Choose <em>one code</em></h1><div class="buzz-line"><div class="timer ' + (currentTime() > 4 ? "safe" : "") + '">' + currentTime() + 's</div><span>' + cardCount() + '/15 TEAMS LOCKED</span></div><div class="card-grid stage-token-grid">' + cardTokens() + '</div></div>'; }
   function formatLockDelta(pick, baseAt) {
     var ms = actionAt(pick); if (!Number.isFinite(ms) || !baseAt) return "LOCK —";
     return "LOCK +" + ((Math.max(0, ms - baseAt)) / 1000).toFixed(2) + "s";
@@ -698,21 +715,36 @@ const firebaseConfig = {
     var otherRows = rows.filter(function (pick) { return Number(pick.teamId) !== Number(state.winnerTeam); });
     var rankByTeam = {};
     leaders.forEach(function (pick, index) { rankByTeam[String(pick.teamId)] = "#" + String(index + 1).padStart(2, "0"); });
-    function revealRow(pick, index) {
+    var revealDelayByTeam = {};
+    var revealCursor = 0;
+    var topTwoDelay = 0;
+    for (var revealIndex = otherRows.length - 1; revealIndex >= 0; revealIndex--) {
+      var revealPick = otherRows[revealIndex];
+      var revealRank = Number(String(rankByTeam[String(revealPick.teamId)] || "").replace("#", "")) || 99;
+      revealDelayByTeam[String(revealPick.teamId)] = revealCursor;
+      if (revealRank === 2) {
+        topTwoDelay = revealCursor;
+      } else if (revealRank === 3) {
+        revealCursor += .48;
+      } else {
+        revealCursor += .075;
+      }
+    }
+    function revealRow(pick) {
       var hasPick = !pick.missing;
       var pickedTeam = team(pick.teamId);
       var name = pickedTeam && pickedTeam.name ? pickedTeam.name : "Team " + String(pick.teamId).padStart(2, "0");
       var rank = hasPick ? (rankByTeam[String(pick.teamId)] || "—") : "—";
-      var lock = hasPick ? "TEAM " + String(pick.teamId).padStart(2, "0") + " · " + formatLockDelta(pick, baseAt) : "NO LOCK";
-      // Keep the board ordered from #02 downward, but reveal it from the
-      // lowest row upward for a reverse-rank suspense beat.
-      var reverseIndex = otherRows.length - 1 - index;
-      return '<div class="bid-row reveal-row' + (hasPick ? "" : " is-missing") + '" style="--reveal-index:' + reverseIndex + '"><span class="bid-rank">' + rank + '</span><span class="bid-team"><b>' + esc(name) + '</b><small class="bid-time">' + lock + '</small></span><strong class="bid-number">' + (hasPick ? pick.card : "—") + '</strong></div>';
+      var rankNumber = Number(String(rank).replace("#", "")) || 99;
+      var finalistClass = rankNumber === 2 || rankNumber === 3 ? " is-finalist rank-" + rankNumber : "";
+      var lock = hasPick ? formatLockDelta(pick, baseAt) : "NO LOCK";
+      var rowDelay = Number(revealDelayByTeam[String(pick.teamId)] || 0).toFixed(3);
+      return '<div class="bid-row reveal-row' + (hasPick ? "" : " is-missing") + finalistClass + '" style="--reveal-delay:' + rowDelay + 's"><span class="bid-rank">' + rank + '</span><span class="bid-team"><b>' + esc(name) + '</b><small class="bid-time">' + lock + '</small></span><strong class="bid-number">' + (hasPick ? pick.card : "—") + '</strong></div>';
     }
     var board = otherRows.map(revealRow).join("");
     var winnerLock = winnerRows.length ? winnerRows[0] : winnerPick;
-    var winnerDelay = (otherRows.length * .16 + .12).toFixed(2);
-    return '<div class="slide stage-reveal"><div class="slide-kicker">CODE RANKING · ' + leaders.length + '/15 LOCKED</div><h1 class="horror-script">CODES<br><em>REVEALED</em></h1><div class="winner-card reveal-winner" style="--winner-delay:' + winnerDelay + '"><i class="winner-dot"></i><div><span class="eyebrow">#1 · RIGHT TO ANSWER</span><b>TEAM ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + (winner ? ' · ' + esc(winner.name.replace("Team ", "")) : "") + '</b><small>CODE ' + (state.winnerCard || "—") + ' · ' + (winnerLock ? formatLockDelta(winnerLock, baseAt) : "LOCK —") + '</small></div></div><div class="reveal-others-label">OTHER TEAMS</div><div class="bid-rail reveal-board">' + board + '</div></div>';
+    var winnerDelay = (topTwoDelay + .52 + 1).toFixed(2);
+    return '<div class="slide stage-reveal"><h1 class="horror-script">CODES<br><em>REVEALED</em></h1><div class="winner-card reveal-winner" style="--winner-delay:' + winnerDelay + 's"><span class="winner-rank">#1</span><i class="winner-dot"></i><div><b>TEAM ' + (state.winnerTeam ? String(state.winnerTeam).padStart(2, "0") : "—") + (winner ? ' · ' + esc(winner.name.replace("Team ", "")) : "") + '</b><small>CODE ' + (state.winnerCard || "—") + ' · ' + (winnerLock ? formatLockDelta(winnerLock, baseAt) : "LOCK —") + '</small></div></div><div class="bid-rail reveal-board">' + board + '</div></div>';
   }
   function stageQuestion() {
     var q = currentRound();
@@ -728,8 +760,7 @@ const firebaseConfig = {
     var options = q.options ? '<div class="options">' + q.options.map(function (o, i) { return '<div class="option"><b>' + String.fromCharCode(65 + i) + '</b><span>' + esc(o) + '</span></div>'; }).join("") + '</div>' : '<div class="open-answer">OPEN ANSWER</div>';
     var hint = state.hintRevealed && !q.options && q.hint ? '<div class="stage-hint"><span>HINT</span><b>' + esc(q.hint) + '</b></div>' : '';
     if (q.media === "image") {
-      var revealClass = state.imageRevealed ? " is-revealed" : "";
-      var image = '<div class="image-clue' + revealClass + '"><img src="' + esc(imageAssetFor(q)) + '" alt="Image clue"><div class="image-curtain"><i></i><i></i><i></i></div><span class="image-state">' + (state.imageRevealed ? "FULL IMAGE" : "50% REVEALED") + '</span></div>';
+      var image = '<div class="image-clue"><img src="' + esc(imageAssetFor(q, state.imageRevealed)) + '" alt="Image clue"></div>';
       return frameStart + '<div class="media-question-grid">' + image + '<div class="question-box image-question">' + listenOnly + options + '</div></div></div>';
     }
     return frameStart + '<div class="question-box ' + (q.media === "audio" ? "voice-question" : "") + '">' + listenOnly + hint + options + '</div></div>';
@@ -737,47 +768,47 @@ const firebaseConfig = {
   function stageResult() {
     var q = currentRound(); var award = state.lastAward || { delta: 0, teamId: null, noWinner: true, correct: false }; var ok = !!award.correct; var n = award.noWinner ? "0" : (award.correct ? "+" : "") + award.delta;
     var burst = ok ? '<div class="celebration-burst" aria-hidden="true"><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i><i>✦</i><i>★</i><i>✧</i></div>' : "";
-    var fullImage = q.media === "image" ? '<div class="result-clue-image"><img src="' + esc(imageAssetFor(q)) + '" alt="Full image clue"><span>FULL CLUE</span></div>' : '';
-    var resultCopy = '<div class="result-copy"><div class="result-mark ' + (ok ? "" : "wrong") + '">' + (award.noWinner ? "·" : (ok ? "✓" : "×")) + '</div><div class="slide-kicker">' + (award.noWinner ? "NO CODE" : (ok ? "VAULT OPEN" : "WRONG · 0 PTS")) + '</div><div class="award">' + n + '</div><h1>' + (award.noWinner ? "EVERYONE" : esc(teamName(award.teamId).replace("Team ", ""))) + '</h1><div class="result-answer"><span>ANSWER</span><b>' + esc(answerText(q)) + '</b></div></div>';
+    var fullImage = q.media === "image" ? '<div class="result-clue-image"><img src="' + esc(imageAssetFor(q, true)) + '" alt="Full image clue"></div>' : '';
+    var resultCopy = '<div class="result-copy"><div class="result-mark ' + (ok ? "" : "wrong") + '">' + (award.noWinner ? "·" : (ok ? "✓" : "×")) + '</div><div class="award">' + n + '</div><h1>' + (award.noWinner ? "EVERYONE" : esc(teamName(award.teamId).replace("Team ", ""))) + '</h1><div class="result-answer"><b>' + esc(answerText(q)) + '</b></div></div>';
     return '<div class="slide result-slide ' + (ok ? "correct-result" : "wrong-result") + (fullImage ? " result-has-image" : "") + '">' + burst + (fullImage ? '<div class="result-grid">' + fullImage + resultCopy + '</div>' : resultCopy) + '</div>';
   }
-  function stageScoreboard() { var list = scoreList(5); var max = Math.max(1, list[0] ? list[0].score : 1); return '<div class="slide stage-scoreboard"><div class="slide-kicker">LEADERBOARD · UPDATED</div><h1 style="font-size:clamp(34px,5.6vw,74px)">WHO IS STILL STANDING?</h1><div class="stage-score-strip">' + list.map(function (t, i) { return '<div class="score-row"><span class="score-rank">0' + (i + 1) + '</span><div><div class="score-name">' + esc(t.name) + '</div><div class="score-bar"><i style="width:' + Math.max(4, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="score-points">' + t.score + ' pts</span></div>'; }).join("") + '</div></div>'; }
-  function stageFinish() { var list = scoreList(3); return '<div class="slide"><div class="slide-kicker">SESSION COMPLETE · VAULT OPEN</div><h1 style="font-size:clamp(37px,6.3vw,90px)">TOP THREE<br><em>TEAMS</em></h1><div class="podium"><div class="podium-col p2"><b>' + esc(list[1] ? list[1].name : "—") + '</b><div class="podium-block">02</div></div><div class="podium-col p1"><b>' + esc(list[0] ? list[0].name : "—") + '</b><div class="podium-block">01</div></div><div class="podium-col p3"><b>' + esc(list[2] ? list[2].name : "—") + '</b><div class="podium-block">03</div></div></div><p class="slide-sub">20 codes used · 20 questions scored.</p></div>'; }
+  function stageScoreboard() { var list = scoreList(5); var max = Math.max(1, list[0] ? list[0].score : 1); return '<div class="slide stage-scoreboard"><h1 style="font-size:clamp(34px,5.6vw,74px)">WHO IS STILL STANDING?</h1><div class="stage-score-strip">' + list.map(function (t, i) { return '<div class="score-row"><span class="score-rank">0' + (i + 1) + '</span><div><div class="score-name">' + esc(t.name) + '</div><div class="score-bar"><i style="width:' + Math.max(4, Math.round(t.score / max * 100)) + '%"></i></div></div><span class="score-points">' + t.score + ' pts</span></div>'; }).join("") + '</div></div>'; }
+  function stageFinish() { var list = scoreList(3); return '<div class="slide"><h1 style="font-size:clamp(37px,6.3vw,90px)">TOP THREE<br><em>TEAMS</em></h1><div class="podium"><div class="podium-col p2"><b>' + esc(list[1] ? list[1].name : "—") + '</b><div class="podium-block">02</div></div><div class="podium-col p1"><b>' + esc(list[0] ? list[0].name : "—") + '</b><div class="podium-block">01</div></div><div class="podium-col p3"><b>' + esc(list[2] ? list[2].name : "—") + '</b><div class="podium-block">03</div></div></div></div>'; }
   function stageSlide() { if (state.phase === "cover") return stageCover(); if (state.phase === "ready") return stageReady(); if (state.phase === "bet") return stageBet(); if (state.phase === "reveal") return stageReveal(); if (state.phase === "question") return stageQuestion(); if (state.phase === "result") return stageResult(); if (state.phase === "scoreboard") return stageScoreboard(); return stageFinish(); }
   function stageView(compact) {
-    return '<main class="stage-root ' + (compact ? "stage-compact" : "") + '"><header class="stage-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 20</b><span>STAGE · PPT MODE</span></span></a><div class="stage-tools"><div class="stage-code">' + phaseLabel() + ' · ' + String(Math.min(state.roundIndex + 1, rounds.length)).padStart(2, "0") + '/' + String(rounds.length).padStart(2, "0") + '</div>' + (compact ? "" : '<button class="stage-fullscreen" data-action="fullscreen" title="Fullscreen" aria-label="Fullscreen">⛶</button>') + '</div></header><section class="stage-main">' + stageDecor() + stageSlide() + (compact ? "" : stageScoreRail()) + '</section></main>';
+    return '<main class="stage-root ' + (compact ? "stage-compact" : "") + '"><header class="stage-header"><a href="#/" class="brand"><span class="brand-mark">◇</span><span class="brand-copy"><b>VAULT 20</b></span></a><div class="stage-tools">' + (compact ? "" : '<button class="stage-fullscreen" data-action="fullscreen" title="Fullscreen" aria-label="Fullscreen">⛶</button>') + '</div></header><section class="stage-main">' + stageDecor() + stageSlide() + (compact ? "" : stageScoreRail()) + '</section></main>';
   }
   function cardGridMarkup(id) {
     var t = team(id); var chosen = cardFor(id); var used = t.usedCards || [];
-    return '<div class="card-grid team-card-grid">' + cardNumbers.map(function (n) { var isUsed = used.indexOf(n) >= 0; var isSelected = chosen && Number(chosen.card) === n; var disabled = isUsed || isSelected; return '<button class="card-token ' + (isUsed ? "used" : "") + ' ' + (isSelected ? "selected" : "") + '" data-action="card" data-card="' + n + '" ' + (disabled ? "disabled" : "") + '>' + n + '</button>'; }).join("") + '</div><div class="card-grid-note"><span>' + (chosen ? "LOCKED · CHANGEABLE" : "PICK 1 / 20 CODE") + '</span><span>USED ' + used.length + '/20</span></div>';
+    return '<div class="card-grid team-card-grid">' + cardNumbers.map(function (n) { var isUsed = used.indexOf(n) >= 0; var isSelected = chosen && Number(chosen.card) === n; var disabled = isUsed || isSelected; return '<button class="card-token ' + (isUsed ? "used" : "") + ' ' + (isSelected ? "selected" : "") + '" data-action="card" data-card="' + n + '" ' + (disabled ? "disabled" : "") + '>' + n + '</button>'; }).join("") + '</div>';
   }
   function teamPickerView() {
-    return '<main class="team-root team-picker-root"><section class="team-phone"><div class="team-picker-body"><div class="eyebrow">VAULT 20 · SHARED LINK</div><div class="team-picker-core"><img src="assets/vault-core.png" alt=""></div><h1>Choose<br><em>your team</em></h1><p>One phone per team.</p><div class="team-picker-grid">' + teamNames.map(function (name, i) { return '<button class="team-picker-card" data-action="select-team" data-team="' + (i + 1) + '"><b>' + String(i + 1).padStart(2, "0") + '</b><span>' + esc(name.replace("Team ", "")) + '</span></button>'; }).join("") + '</div></div><footer class="team-foot">TEAM SELECTED · WAIT FOR HOST</footer></section></main>';
+    return '<main class="team-root team-picker-root"><section class="team-phone"><div class="team-picker-body"><div class="team-picker-core"><img src="assets/vault-core.png" alt=""></div><h1>Choose<br><em>your team</em></h1><div class="team-picker-grid">' + teamNames.map(function (name, i) { return '<button class="team-picker-card" data-action="select-team" data-team="' + (i + 1) + '"><b>' + String(i + 1).padStart(2, "0") + '</b><span>' + esc(name.replace("Team ", "")) + '</span></button>'; }).join("") + '</div></div></section></main>';
   }
   function teamView() {
     var id = selectedTeamId; var t = team(id); var q = currentRound(); var chosen = cardFor(id); var body = "";
     if (state.phase === "cover") {
-      body = waitSvg() + '<div class="team-round">VAULT 20</div><h1>Ready<br>to play?</h1><p>Wait for the host to open the game.</p>';
+      body = waitSvg() + '<div class="team-round">VAULT 20</div><h1>Ready<br>to play?</h1>';
     } else if (state.phase === "ready") {
-      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + ' / 20</div><h1>Get<br>ready.</h1><p>The host is preparing the code lock.</p>' + difficultyBadge(q) + '<div class="team-photo"><img src="assets/vault-shard.jpg" alt=""></div>';
+      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + ' / 20</div><h1>Get<br>ready.</h1>' + difficultyBadge(q) + '<div class="team-photo"><img src="assets/vault-shard.jpg" alt=""></div>';
     } else if (state.phase === "bet") {
-      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + ' / 20 · CODE LOCK</div><h1>' + (chosen ? "Code<br>locked." : "Pick<br>a code.") + '</h1><p>' + (chosen ? "Choose another number before the timer ends." : "+" + q.points + " points for a correct answer.") + '</p><div class="phone-timer">' + currentTime() + 's</div>' + cardGridMarkup(id);
+      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + ' / 20</div><h1>' + (chosen ? "Code<br>locked." : "Pick<br>a code.") + '</h1><div class="phone-timer">' + currentTime() + 's</div>' + cardGridMarkup(id);
     } else if (state.phase === "reveal") {
-      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + ' · REVEAL</div><h1>' + (state.winnerTeam === id ? "Your team<br>is called." : "Codes<br>revealed.") + '</h1><p>' + (state.winnerTeam === id ? "Get ready to answer." : "Watch the projector.") + '</p><div class="card-reveal-number">' + state.winnerCard + '</div>';
+      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + '</div><h1>' + (state.winnerTeam === id ? "Your team<br>is called." : "Codes<br>revealed.") + '</h1><div class="card-reveal-number">' + state.winnerCard + '</div>';
     } else if (state.phase === "question") {
-      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + ' · +' + q.points + ' PTS</div><h1>' + (state.winnerTeam === id ? "Your<br>turn." : "Team<br>answering.") + '</h1><p>' + (state.winnerTeam === id ? "Answer aloud to the host." : "Wait for the result.") + '</p>' + difficultyBadge(q) + '<div class="team-message">CODE ' + state.winnerCard + ' · ' + esc(q.format) + '</div>';
+      body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + '</div><h1>' + (state.winnerTeam === id ? "Your<br>turn." : "Team<br>answering.") + '</h1>' + difficultyBadge(q);
     } else if (state.phase === "result") {
-      var mine = state.lastAward && state.lastAward.teamId === id; var delta = mine ? state.lastAward.delta : 0; body = '<div class="team-round">RESULT · QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + '</div>' + (mine ? '<div class="team-score-flash">' + (state.lastAward.correct ? "+" : "") + delta + '</div><h1>' + (state.lastAward.correct ? "Correct." : "Wrong.") + '</h1><p>' + (state.lastAward.correct ? "Points added." : "Wrong = 0 points.") + '</p>' : '<h1>Wait for<br>the next question.</h1><p>Watch the projector.</p>') + '<div class="team-message">' + esc(q.title) + '</div>';
+      var mine = state.lastAward && state.lastAward.teamId === id; var delta = mine ? state.lastAward.delta : 0; body = '<div class="team-round">QUESTION ' + String(state.roundIndex + 1).padStart(2, "0") + '</div>' + (mine ? '<div class="team-score-flash">' + (state.lastAward.correct ? "+" : "") + delta + '</div><h1>' + (state.lastAward.correct ? "Correct." : "Wrong.") + '</h1>' : '<h1>Next<br>question.</h1>');
     } else if (state.phase === "finish") {
-      body = '<div class="team-photo"><img src="assets/vault-shard.jpg" alt=""></div><div class="team-round">SESSION COMPLETE</div><div class="team-score-flash">' + t.score + '</div><p>points · see the projector leaderboard</p>';
+      body = '<div class="team-photo"><img src="assets/vault-shard.jpg" alt=""></div><div class="team-round">FINAL SCORE</div><div class="team-score-flash">' + t.score + '</div>';
     } else if (state.phase === "scoreboard") {
-      body = waitSvg() + '<div class="team-round">LEADERBOARD</div><h1>Scores<br>updated.</h1><p>' + t.score + ' points · check the projector.</p>';
+      body = waitSvg() + '<div class="team-round">LEADERBOARD</div><h1>Scores<br>updated.</h1><div class="team-score-flash">' + t.score + '</div>';
     } else {
-      body = waitSvg() + '<div class="team-round">WAITING</div><h1>Watch<br>the projector.</h1><p>Wait for the next screen.</p>';
+      body = waitSvg() + '<div class="team-round">WAITING</div><h1>Watch<br>the projector.</h1>';
     }
-    return '<main class="team-root"><section class="team-phone"><header class="team-head"><div><b>' + esc(t.name.replace("Team ", "")) + '</b><small>TEAM ' + String(id).padStart(2, "0") + '</small></div><div class="team-head-actions"><button class="team-switch" data-action="team-switch" title="Switch team">↺</button><span class="team-score">' + t.score + ' pts</span></div></header><div class="team-body">' + body + '</div><footer class="team-foot">VAULT 20 · ' + (state.phase === "bet" ? "PICK 1 CODE" : "WATCH THE PROJECTOR") + '</footer></section></main>';
+    return '<main class="team-root"><section class="team-phone"><header class="team-head"><div><b>' + esc(t.name.replace("Team ", "")) + '</b><small>TEAM ' + String(id).padStart(2, "0") + '</small></div><div class="team-head-actions"><button class="team-switch" data-action="team-switch" title="Switch team">↺</button><span class="team-score">' + t.score + ' pts</span></div></header><div class="team-body">' + body + '</div></section></main>';
   }
-  function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><div class="eyebrow">PPT GAME · 15 TEAMS</div><h1 class="horror-script">VAULT<br><em>20</em></h1><p>Pick a code · win the answer.</p><div class="home-actions"><a class="btn primary large" href="#/host">OPEN HOST</a><a class="btn ghost large" href="#/stage">OPEN STAGE</a><a class="btn ghost large" href="#/team">SHARED TEAM LINK</a></div><div class="home-note"><div><b>20</b><span>questions</span></div><div><b>15</b><span>teams</span></div><div><b>20</b><span>codes / team</span></div></div></section><section class="museum-card" aria-label="VAULT 20 illustration"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">20</div><div class="eyebrow" style="position:absolute;right:27px;bottom:25px;color:#ffffff66">VAULT 20</div></section></div></main>'; }
+  function homeView() { return '<main class="home"><div class="home-grid"><section class="home-copy"><h1 class="horror-script">VAULT<br><em>20</em></h1><p>Pick a code · win the answer.</p><div class="home-actions"><a class="btn primary large" href="#/host">OPEN HOST</a><a class="btn ghost large" href="#/stage">OPEN STAGE</a><a class="btn ghost large" href="#/team">SHARED TEAM LINK</a></div></section><section class="museum-card" aria-label="VAULT 20 illustration"><div class="home-orbit"></div><div class="home-door"></div><i class="home-piece hp1"></i><i class="home-piece hp2"></i><i class="home-piece hp3"></i><i class="home-piece hp4"></i><div class="museum-word">20</div></section></div></main>'; }
 
   function playStageVideo() {
     if (role !== "stage" || state.phase !== "question" || state.questionStep !== "video") return;
@@ -822,7 +853,6 @@ const firebaseConfig = {
     if (action === "replay-voice") return replayVoiceOnHost();
     if (action === "open-answer") return openHostAnswer();
     if (action === "reveal-hint") return revealHint();
-    if (action === "reveal-image") return revealImage();
     if (action === "show-question") return showVideoQuestion();
     if (action === "play-video") return playStageVideo();
     if (action === "fullscreen") {
